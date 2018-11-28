@@ -1,0 +1,45 @@
+{
+	"name": "cebe/yii2-openapi",
+	"description": "Generate full REST API application from OpenAPI 3 specification.",
+	"keywords": ["yii2", "rest", "openapi"],
+	"homepage": "https://github.com/cebe/yii2-openapi#readme",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Carsten Brandt",
+			"email": "mail@cebe.cc",
+			"homepage": "https://cebe.cc/",
+			"role": "Creator"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/cebe/yii2-openapi/issues",
+		"source": "https://github.com/cebe/yii2-openapi"
+	},
+	"require": {
+		"php": ">=7.1.0",
+		"cebe/php-openapi": "0.9@dev",
+		"yiisoft/yii2-gii": "~2.0.0"
+	},
+	"require-dev": {
+		"cebe/indent": "*",
+		"friendsofphp/php-cs-fixer": "~2.13.1",
+		"phpunit/phpunit": "^6.5"
+	},
+	"autoload": {
+		"psr-4": {
+			"cebe\\yii2openapi\\": "src/"
+		}
+	},
+	"config": {
+		"platform": {
+			"php": "7.1.3"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "1.0.x-dev"
+		}
+	}
+}
