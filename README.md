@@ -9,7 +9,7 @@ REST API application generator for Yii2, openapi 3.0 YAML -> Yii2
 
 ## what should this do?
 
-Input: [OpenAPI 3.0 YAML](https://github.com/OAI/OpenAPI-Specification#the-openapi-specification)
+Input: [OpenAPI 3.0 YAML or JSON](https://github.com/OAI/OpenAPI-Specification#the-openapi-specification) (via [cebe/php-openapi](https://github.com/cebe/php-openapi))
 
 Output: Controllers, Models, database schema
 
