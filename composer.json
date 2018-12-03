@@ -19,7 +19,7 @@
 	},
 	"require": {
 		"php": ">=7.1.0",
-		"cebe/php-openapi": "0.9@dev",
+		"cebe/php-openapi": "dev-master",
 		"yiisoft/yii2": "~2.0.15",
 		"yiisoft/yii2-gii": "~2.0.0"
 	},
