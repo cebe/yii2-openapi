@@ -2,7 +2,9 @@
 
 > **Note: The status of this code is experimental. Use at your own risk.**
 
-REST API application generator for Yii2, openapi 3.0 YAML -> Yii2
+REST API application generator for Yii2, openapi 3.0 YAML -> Yii2.
+
+Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/extension/yiisoft/yii2-gii).
 
 [![Latest Stable Version](https://poser.pugx.org/cebe/yii2-openapi/v/stable)](https://packagist.org/packages/cebe/yii2-openapi)
 [![License](https://poser.pugx.org/cebe/yii2-openapi/license)](https://packagist.org/packages/cebe/yii2-openapi)
@@ -30,6 +32,17 @@ This library is currently work in progress, current features are checked here wh
 ## Requirements
 
 - PHP 7.1 or higher
+
+
+## Screenshots
+
+Gii Generator Form:
+
+![Gii Generator Form](docs/screenshot-form.png)
+
+Generated files:
+
+![Gii Generated Files](docs/screenshot-files.png)
 
 
 # Support
