@@ -38,11 +38,11 @@ This library is currently work in progress, current features are checked here wh
 
 Gii Generator Form:
 
-![Gii Generator Form](docs/screenshot-form.png)
+![Gii Generator Form](doc/screenshot-form.png)
 
 Generated files:
 
-![Gii Generated Files](docs/screenshot-files.png)
+![Gii Generated Files](doc/screenshot-files.png)
 
 
 # Support
