@@ -30,6 +30,7 @@ class ApiGenerator extends Generator
     public $generateUrls = true;
     public $generateControllers = true;
     public $generateModels = true;
+    public $generateMigrations = true;
 
 
     public $urlConfigFile = '@app/config/urls.rest.php';
@@ -121,13 +122,13 @@ class ApiGenerator extends Generator
                 if (DIRECTORY_SEPARATOR === '\\') {
                     $file = str_replace('\\', '/', $file);
                 }
+            } elseif (strpos($file[0], $runtime) === 0) {
+                $file = null;
             } elseif (strpos($file[0], $app) === 0) {
                 $file = '@app' . substr($file[0], strlen($app));
                 if (DIRECTORY_SEPARATOR === '\\') {
                     $file = str_replace('\\', '/', $file);
                 }
-            } elseif (strpos($file[0], $runtime) === 0) {
-                $file = null;
             } else {
                 $file = $file[0];
             }
@@ -274,36 +275,66 @@ class ApiGenerator extends Generator
         $resolvedOpenApi = $this->getOpenApiWithoutReferences();
         foreach($this->getOpenApi()->components->schemas as $schemaName => $schema) {
             $attributes = [];
+            $relations = [];
             foreach($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
                     $ref = $property->getReference();
                     $resolvedProperty = $resolvedOpenApi->components->schemas[$schemaName];
-                    $type = (strpos($ref, '#/components/schemas/') === 0) ? substr($ref, 21) : $type = $this->getSchemaType($resolvedProperty);
+                    $dbName = "{$name}_id";
+                    $dbType = 'integer'; // for a foreign key
+                    if (strpos($ref, '#/components/schemas/') === 0) {
+                        // relation
+                        $type = substr($ref, 21);
+                        $relations[$name] = [
+                            'class' => $type,
+                            'method' => 'hasOne',
+                            'link' => ['id' => $dbName], // TODO pk may not be 'id'
+                        ];
+                    } else {
+                        $type = $this->getSchemaType($resolvedProperty);
+                    }
                 } else {
                     $resolvedProperty = $property;
                     $type = $this->getSchemaType($property);
+                    $dbName = $name;
+                    $dbType = $this->getDbType($name, $property);
                 }
+                // relation
+                if (is_array($type)) {
+                    $relations[$name] = [
+                        'class' => $type[1],
+                        'method' => 'hasMany',
+                        'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+                    ];
+                    $type = $type[0];
+                }
+
                 $attributes[] = [
                     'name' => $name,
                     'type' => $type,
+                    'dbType' => $dbType,
+                    'dbName' => $dbName,
                     'description' => $resolvedProperty->description,
                 ];
             }
 
             $models[$schemaName] = [
                 'name' => $schemaName,
-                'attributes' => $attributes,
                 'description' => $schema->description,
+                'attributes' => $attributes,
+                'relations' => $relations,
             ];
 
         }
+
+        // TODO generate hasMany relations and inverse relations
 
         return $models;
     }
 
     /**
      * @param Schema $schema
-     * @return string
+     * @return string|array
      */
     protected function getSchemaType($schema)
     {
@@ -318,12 +349,48 @@ class ApiGenerator extends Generator
                 if (isset($schema->items) && $schema->items instanceof Reference) {
                     $ref = $schema->items->getReference();
                     if (strpos($ref, '#/components/schemas/') === 0) {
-                        return substr($ref, 21) . '[]';
+                        return [substr($ref, 21) . '[]', substr($ref, 21)];
                     }
                 }
                 // no break here
             default:
                 return $schema->type;
+        }
+    }
+
+    /**
+     * @param string $name
+     * @param Schema $schema
+     * @return string
+     */
+    protected function getDbType($name, $schema)
+    {
+        if ($name === 'id') {
+            return 'pk';
+        }
+
+        switch ($schema->type) {
+            case 'string':
+                if (isset($schema->maxLength)) {
+                    return 'string(' . ((int) $schema->maxLength) . ')';
+                }
+                return 'text';
+            case 'integer':
+            case 'boolean':
+                return $schema->type;
+            case 'number': // can be double and float
+                return $schema->format ?? 'float';
+//            case 'array':
+        // TODO array might refer to has_many relation
+//                if (isset($schema->items) && $schema->items instanceof Reference) {
+//                    $ref = $schema->items->getReference();
+//                    if (strpos($ref, '#/components/schemas/') === 0) {
+//                        return substr($ref, 21) . '[]';
+//                    }
+//                }
+//                // no break here
+            default:
+                return 'text';
         }
     }
 
@@ -373,8 +440,34 @@ class ApiGenerator extends Generator
                     $this->render('model.php', [
                         'className' => $className,
                         'namespace' => 'app\\models',
-                        'attributes' => $model['attributes'],
                         'description' => $model['description'],
+                        'attributes' => $model['attributes'],
+                        'relations' => $model['relations'],
+                    ])
+                );
+            }
+
+        }
+
+        if ($this->generateMigrations) {
+            if (!isset($models)) {
+                $models = $this->generateModels();
+            }
+            foreach($models as $modelName => $model) {
+                // migration files get invalidated directly after generating
+                // if they contain a timestamp
+                // use fixed time here instead
+                $m = date('ymd_000000');
+                $className = "m{$m}_$modelName";
+                $tableName = '{{%' . Inflector::camel2id(StringHelper::basename($modelName), '_') . '}}';
+                $files[] = new CodeFile(
+                    Yii::getAlias("@app/migrations/$className.php"),
+                    $this->render('migration.php', [
+                        'className' => $className,
+                        'tableName' => $tableName,
+                        'attributes' => $model['attributes'],
+                        'relations' => $model['relations'],
+                        'description' => 'Table for ' . $modelName,
                     ])
                 );
             }

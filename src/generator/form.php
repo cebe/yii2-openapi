@@ -2,7 +2,7 @@
 
 /* @var $this yii\web\View */
 /* @var $form yii\widgets\ActiveForm */
-/* @var $generator \app\generator\ApiGenerator */
+/* @var $generator \cebe\yii2openapi\generator\ApiGenerator */
 
 echo $form->field($generator, 'openApiPath')->error(['encode' => false]);
 echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
@@ -18,6 +18,7 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
 <?php
 echo $form->field($generator, 'generateControllers')->checkbox();
 echo $form->field($generator, 'generateModels')->checkbox();
+echo $form->field($generator, 'generateMigrations')->checkbox();
 
 $this->registerCss(<<<CSS
     .panel-heading .form-group,
