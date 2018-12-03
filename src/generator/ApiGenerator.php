@@ -5,6 +5,8 @@ namespace cebe\yii2openapi\generator;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\PathItem;
+use cebe\openapi\spec\Reference;
+use cebe\openapi\spec\Schema;
 use Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -73,7 +75,7 @@ class ApiGenerator extends Generator
             return;
         }
 
-        $openApi = $this->getOpenApi();
+        $openApi = $this->getOpenApiWithoutReferences();
         if (!$openApi->validate()) {
             $this->addError($attribute, 'Failed to validate OpenAPI spec:' . Html::ul($openApi->getErrors()));
         }
@@ -108,6 +110,7 @@ class ApiGenerator extends Generator
     {
         $vendor = Yii::getAlias('@vendor');
         $app = Yii::getAlias('@app');
+        $runtime = Yii::getAlias('@runtime');
         $paths = [];
         $pathIterator = new RecursiveDirectoryIterator($app);
         $recursiveIterator = new RecursiveIteratorIterator($pathIterator);
@@ -123,10 +126,15 @@ class ApiGenerator extends Generator
                 if (DIRECTORY_SEPARATOR === '\\') {
                     $file = str_replace('\\', '/', $file);
                 }
+            } elseif (strpos($file[0], $runtime) === 0) {
+                $file = null;
             } else {
                 $file = $file[0];
             }
-            $paths[] = $file;
+
+            if ($file !== null) {
+                $paths[] = $file;
+            }
         }
         return [
             'openApiPath' => $paths,
@@ -162,6 +170,10 @@ class ApiGenerator extends Generator
      * @var OpenApi
      */
     private $_openApi;
+    /**
+     * @var OpenApi
+     */
+    private $_openApiWithoutRef;
 
 
     /**
@@ -172,18 +184,31 @@ class ApiGenerator extends Generator
         if ($this->_openApi === null) {
             $file = Yii::getAlias($this->openApiPath);
             if (StringHelper::endsWith($this->openApiPath, '.json', false)) {
-                $this->_openApi = Reader::readFromJsonFile($file);
+                $this->_openApi = Reader::readFromJsonFile($file, OpenApi::class, false);
             } else {
-                $this->_openApi = Reader::readFromYamlFile($file);
+                $this->_openApi = Reader::readFromYamlFile($file, OpenApi::class, false);
             }
         }
         return $this->_openApi;
     }
 
+    protected function getOpenApiWithoutReferences()
+    {
+        if ($this->_openApiWithoutRef === null) {
+            $file = Yii::getAlias($this->openApiPath);
+            if (StringHelper::endsWith($this->openApiPath, '.json', false)) {
+                $this->_openApiWithoutRef = Reader::readFromJsonFile($file, OpenApi::class, true);
+            } else {
+                $this->_openApiWithoutRef = Reader::readFromYamlFile($file, OpenApi::class, true);
+            }
+        }
+        return $this->_openApiWithoutRef;
+    }
+
 
     protected function generateUrls()
     {
-        $openApi = $this->getOpenApi();
+        $openApi = $this->getOpenApiWithoutReferences();
 
         $urlRules = [];
         foreach($openApi->paths as $path => $pathItem) {
@@ -246,11 +271,60 @@ class ApiGenerator extends Generator
     protected function generateModels()
     {
         $models = [];
-        foreach($this->getOpenApi()->components->schemas as $schema) {
-            // TODO implement
+        $resolvedOpenApi = $this->getOpenApiWithoutReferences();
+        foreach($this->getOpenApi()->components->schemas as $schemaName => $schema) {
+            $attributes = [];
+            foreach($schema->properties as $name => $property) {
+                if ($property instanceof Reference) {
+                    $ref = $property->getReference();
+                    $resolvedProperty = $resolvedOpenApi->components->schemas[$schemaName];
+                    $type = (strpos($ref, '#/components/schemas/') === 0) ? substr($ref, 21) : $type = $this->getSchemaType($resolvedProperty);
+                } else {
+                    $resolvedProperty = $property;
+                    $type = $this->getSchemaType($property);
+                }
+                $attributes[] = [
+                    'name' => $name,
+                    'type' => $type,
+                    'description' => $resolvedProperty->description,
+                ];
+            }
+
+            $models[$schemaName] = [
+                'name' => $schemaName,
+                'attributes' => $attributes,
+                'description' => $schema->description,
+            ];
+
         }
 
         return $models;
+    }
+
+    /**
+     * @param Schema $schema
+     * @return string
+     */
+    protected function getSchemaType($schema)
+    {
+        switch ($schema->type) {
+            case 'integer':
+                return 'int';
+            case 'boolean':
+                return 'bool';
+            case 'number': // can be double and float
+                return 'float';
+            case 'array':
+                if (isset($schema->items) && $schema->items instanceof Reference) {
+                    $ref = $schema->items->getReference();
+                    if (strpos($ref, '#/components/schemas/') === 0) {
+                        return substr($ref, 21) . '[]';
+                    }
+                }
+                // no break here
+            default:
+                return $schema->type;
+        }
     }
 
 
@@ -292,17 +366,18 @@ class ApiGenerator extends Generator
 
         if ($this->generateModels) {
             $models = $this->generateModels();
-//            foreach($models as $modelName => $model) {
-//                $className = \yii\helpers\Inflector::id2camel($modelName) . 'Controller';
-//                $files[] = new CodeFile(
-//                    Yii::getAlias("@app/models/$className.php"),
-//                    $this->render('model.php', [
-//                        'className' => $className,
-//                        'namespace' => 'app\\models',
-//                        'actions' => $actions,
-//                    ])
-//                );
-//            }
+            foreach($models as $modelName => $model) {
+                $className = $modelName;
+                $files[] = new CodeFile(
+                    Yii::getAlias("@app/models/$className.php"),
+                    $this->render('model.php', [
+                        'className' => $className,
+                        'namespace' => 'app\\models',
+                        'attributes' => $model['attributes'],
+                        'description' => $model['description'],
+                    ])
+                );
+            }
 
         }
 
