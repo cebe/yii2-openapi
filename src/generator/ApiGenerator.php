@@ -30,6 +30,10 @@ class ApiGenerator extends Generator
     public $generateUrls = true;
     public $generateControllers = true;
     public $generateModels = true;
+    /**
+     * @var array List of model names to exclude
+     */
+    public $excludeModels = [];
     public $generateMigrations = true;
 
 
@@ -154,6 +158,15 @@ class ApiGenerator extends Generator
         if ($this->generateUrls) {
             $required[] = 'urls.php';
         }
+        if ($this->generateControllers) {
+            $required[] = 'controller.php';
+        }
+        if ($this->generateModels) {
+            $required[] = 'model.php';
+        }
+        if ($this->generateMigrations) {
+            $required[] = 'migration.php';
+        }
         return $required;
     }
 
@@ -262,9 +275,14 @@ class ApiGenerator extends Generator
         $urls = $this->generateUrls();
 
         $c = [];
-        foreach($urls as $route) {
-            $parts = explode('/', $route);
-            $c[$parts[0]][] = $parts[1];
+        foreach($urls as $url => $route) {
+            $parts = explode('/', $route, 2);
+            preg_match_all('~<([^>:]+)(:.+)?>~', $url, $paramsMatches);
+            $c[$parts[0]][] = [
+                'id' => $parts[1],
+                'params' => $paramsMatches[1],
+            ];
+            echo "#";
         }
         return $c;
     }
@@ -276,6 +294,16 @@ class ApiGenerator extends Generator
         foreach($this->getOpenApi()->components->schemas as $schemaName => $schema) {
             $attributes = [];
             $relations = [];
+            if ((empty($schema->type) || $schema->type === 'object') && empty($schema->properties)) {
+                continue;
+            }
+            if (!empty($schema->type) && $schema->type !== 'object') {
+                continue;
+            }
+            if (in_array($schemaName, $this->excludeModels)) {
+                continue;
+            }
+
             foreach($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
                     $ref = $property->getReference();
