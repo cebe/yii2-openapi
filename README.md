@@ -8,6 +8,7 @@ Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/ext
 
 [![Latest Stable Version](https://poser.pugx.org/cebe/yii2-openapi/v/stable)](https://packagist.org/packages/cebe/yii2-openapi)
 [![License](https://poser.pugx.org/cebe/yii2-openapi/license)](https://packagist.org/packages/cebe/yii2-openapi)
+[![Build Status](https://travis-ci.org/cebe/yii2-openapi.svg?branch=master)](https://travis-ci.org/cebe/yii2-openapi)
 
 ## what should this do?
 
