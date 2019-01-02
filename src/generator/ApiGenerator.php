@@ -242,11 +242,17 @@ class ApiGenerator extends Generator
             $controller = [];
             $action = [];
             $params = false;
+            $actionParams = [];
             foreach ($parts as $p => $part) {
                 if (preg_match('/\{(.*)\}/', $part, $m)) {
                     $params = true;
                     $parts[$p] = '<' . $m[1] . '>';
-                // TODO add regex to param based on openAPI type
+                    if (isset($pathItem->parameters[$m[1]])) {
+                        $actionParams[$m[1]] = $pathItem->parameters[$m[1]];
+                    } else {
+                        $actionParams[$m[1]] = null;
+                    }
+                    // TODO add regex to param based on openAPI type
                 } elseif ($params) {
                     $action[] = $part;
                 } else {
@@ -260,16 +266,33 @@ class ApiGenerator extends Generator
                 $controller = 'default';
             }
             $action = empty($action) ? '' : '-' . implode('-', $action);
-            foreach (array_keys($pathItem->getOperations()) as $method) {
+            foreach ($pathItem->getOperations() as $method => $operation) {
+                $modelClass = null;
                 switch ($method) {
-                    case 'get': $a = $params ? 'view' : 'index'; break;
+                    case 'get':
+                        $a = $params ? 'view' : 'index';
+                        if (isset($operation->responses->getResponse(200)->content['application/json']->schema)) {
+                            $schema = $operation->responses->getResponse(200)->content['application/json']->schema;
+                            if ($schema instanceof Reference && strpos($schema->getReference(), '#/components/schemas/') === 0) {
+                                $modelClass = substr($schema->getReference(), 21);
+                            }
+                        }
+                        break;
                     case 'post': $a = 'create'; break;
                     case 'put': $a = 'update'; break;
                     case 'patch': $a = 'update'; break;
                     case 'delete': $a = 'delete'; break;
                     default: $a = "http-$method"; break;
                 }
-                $urlRules[strtoupper($method) . " $pattern"] = "$controller/$a$action";
+                $urlRules[] = [
+                    'path' => $path,
+                    'method' => strtoupper($method),
+                    'pattern' => $pattern,
+                    'route' => "$controller/$a$action",
+                    'actionParams' => $actionParams,
+                    'openApiOperation' => $operation,
+                    'modelClass' => $modelClass,
+                ];
             }
             // TODO add options action
         }
@@ -281,14 +304,13 @@ class ApiGenerator extends Generator
         $urls = $this->generateUrls();
 
         $c = [];
-        foreach ($urls as $url => $route) {
-            $parts = explode('/', $route, 2);
-            preg_match_all('~<([^>:]+)(:.+)?>~', $url, $paramsMatches);
+        foreach ($urls as $url) {
+            $parts = explode('/', $url['route'], 2);
             $c[$parts[0]][] = [
                 'id' => $parts[1],
-                'params' => $paramsMatches[1],
+                'params' => array_keys($url['actionParams']),
+                'modelClass' => $url['modelClass'],
             ];
-            echo "#";
         }
         return $c;
     }
@@ -440,10 +462,14 @@ class ApiGenerator extends Generator
         $files = [];
 
         if ($this->generateUrls) {
+            $urls = [];
+            foreach($this->generateUrls() as $urlRule) {
+                $urls["{$urlRule['method']} {$urlRule['pattern']}"] = $urlRule['route'];
+            }
             $files[] = new CodeFile(
                 Yii::getAlias($this->urlConfigFile),
                 $this->render('urls.php', [
-                    'urls' => $this->generateUrls(),
+                    'urls' => $urls,
                 ])
             );
         }
