@@ -20,7 +20,8 @@ echo $form->field($generator, 'generateControllers')->checkbox();
 echo $form->field($generator, 'generateModels')->checkbox();
 echo $form->field($generator, 'generateMigrations')->checkbox();
 
-$this->registerCss(<<<CSS
+$this->registerCss(
+    <<<CSS
     .panel-heading .form-group,
     .panel-heading .form-group label,
     .panel-heading .form-group .help-block {
@@ -29,7 +30,8 @@ $this->registerCss(<<<CSS
 CSS
 );
 
-$this->registerJs(<<<JS
+$this->registerJs(
+    <<<JS
     
     togglePanel = function() {
         $(this).parents('.panel').find('.panel-body input').prop('disabled', !this.checked);
@@ -45,8 +47,3 @@ $this->registerJs(<<<JS
     
 JS
 );
-
-
-
-
-

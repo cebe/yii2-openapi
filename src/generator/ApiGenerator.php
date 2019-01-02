@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\generator;
 
 use cebe\openapi\Reader;
@@ -21,7 +26,6 @@ use yii\helpers\StringHelper;
 /**
  *
  *
- * @author Carsten Brandt <mail@cebe.cc>
  */
 class ApiGenerator extends Generator
 {
@@ -68,7 +72,9 @@ class ApiGenerator extends Generator
 
             ['openApiPath', 'required'],
             ['openApiPath', 'validateSpec'],
-            [['urlConfigFile'], 'required', 'when' => function(ApiGenerator $model) { return (bool) $model->generateUrls; }],
+            [['urlConfigFile'], 'required', 'when' => function (ApiGenerator $model) {
+                return (bool) $model->generateUrls;
+            }],
 
 
         ]);
@@ -120,7 +126,7 @@ class ApiGenerator extends Generator
         $pathIterator = new RecursiveDirectoryIterator($app);
         $recursiveIterator = new RecursiveIteratorIterator($pathIterator);
         $files = new RegexIterator($recursiveIterator, '~.+\.(json|yaml|yml)$~i', RegexIterator::GET_MATCH);
-        foreach($files as $file) {
+        foreach ($files as $file) {
             if (strpos($file[0], $vendor) === 0) {
                 $file = '@vendor' . substr($file[0], strlen($vendor));
                 if (DIRECTORY_SEPARATOR === '\\') {
@@ -225,7 +231,7 @@ class ApiGenerator extends Generator
         $openApi = $this->getOpenApiWithoutReferences();
 
         $urlRules = [];
-        foreach($openApi->paths as $path => $pathItem) {
+        foreach ($openApi->paths as $path => $pathItem) {
             /** @var $pathItem PathItem */
             if ($path[0] !== '/') {
                 throw new Exception('Path must begin with /');
@@ -240,7 +246,7 @@ class ApiGenerator extends Generator
                 if (preg_match('/\{(.*)\}/', $part, $m)) {
                     $params = true;
                     $parts[$p] = '<' . $m[1] . '>';
-                    // TODO add regex to param based on openAPI type
+                // TODO add regex to param based on openAPI type
                 } elseif ($params) {
                     $action[] = $part;
                 } else {
@@ -254,7 +260,7 @@ class ApiGenerator extends Generator
                 $controller = 'default';
             }
             $action = empty($action) ? '' : '-' . implode('-', $action);
-            foreach(array_keys($pathItem->getOperations()) as $method) {
+            foreach (array_keys($pathItem->getOperations()) as $method) {
                 switch ($method) {
                     case 'get': $a = $params ? 'view' : 'index'; break;
                     case 'post': $a = 'create'; break;
@@ -275,7 +281,7 @@ class ApiGenerator extends Generator
         $urls = $this->generateUrls();
 
         $c = [];
-        foreach($urls as $url => $route) {
+        foreach ($urls as $url => $route) {
             $parts = explode('/', $route, 2);
             preg_match_all('~<([^>:]+)(:.+)?>~', $url, $paramsMatches);
             $c[$parts[0]][] = [
@@ -291,7 +297,7 @@ class ApiGenerator extends Generator
     {
         $models = [];
         $resolvedOpenApi = $this->getOpenApiWithoutReferences();
-        foreach($this->getOpenApi()->components->schemas as $schemaName => $schema) {
+        foreach ($this->getOpenApi()->components->schemas as $schemaName => $schema) {
             $attributes = [];
             $relations = [];
             if ((empty($schema->type) || $schema->type === 'object') && empty($schema->properties)) {
@@ -304,7 +310,7 @@ class ApiGenerator extends Generator
                 continue;
             }
 
-            foreach($schema->properties as $name => $property) {
+            foreach ($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
                     $ref = $property->getReference();
                     $resolvedProperty = $resolvedOpenApi->components->schemas[$schemaName];
@@ -352,7 +358,6 @@ class ApiGenerator extends Generator
                 'attributes' => $attributes,
                 'relations' => $relations,
             ];
-
         }
 
         // TODO generate hasMany relations and inverse relations
@@ -445,7 +450,7 @@ class ApiGenerator extends Generator
 
         if ($this->generateControllers) {
             $controllers = $this->generateControllers();
-            foreach($controllers as $controller => $actions) {
+            foreach ($controllers as $controller => $actions) {
                 $className = \yii\helpers\Inflector::id2camel($controller) . 'Controller';
                 $files[] = new CodeFile(
                     Yii::getAlias(Yii::$app->controllerPath . "/$className.php"),
@@ -456,12 +461,11 @@ class ApiGenerator extends Generator
                     ])
                 );
             }
-
         }
 
         if ($this->generateModels) {
             $models = $this->generateModels();
-            foreach($models as $modelName => $model) {
+            foreach ($models as $modelName => $model) {
                 $className = $modelName;
                 $files[] = new CodeFile(
                     Yii::getAlias("@app/models/$className.php"),
@@ -474,14 +478,13 @@ class ApiGenerator extends Generator
                     ])
                 );
             }
-
         }
 
         if ($this->generateMigrations) {
             if (!isset($models)) {
                 $models = $this->generateModels();
             }
-            foreach($models as $modelName => $model) {
+            foreach ($models as $modelName => $model) {
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp
                 // use fixed time here instead
@@ -499,7 +502,6 @@ class ApiGenerator extends Generator
                     ])
                 );
             }
-
         }
 
         return $files;
