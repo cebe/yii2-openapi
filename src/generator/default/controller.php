@@ -21,10 +21,10 @@ class <?= $className ?> extends \yii\rest\Controller
 <?php
 
 foreach ($actions as $action):
-    if (isset($modelActions[$action['id']])): ?>
+    if (isset($modelActions[$action['id']], $action['modelClass'])): ?>
             <?= var_export($action['id']) ?> => [
                 'class' => \<?= $modelActions[$action['id']] ?>::class,
-                'modelClass' => <?= isset($action['modelClass']) ? '\\app\\models\\' . $action['modelClass'] . '::class' : '/* TODO add model class! */' ?>,
+                'modelClass' => <?= '\\app\\models\\' . $action['modelClass'] . '::class' ?>,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
 <?php endif;
@@ -56,7 +56,7 @@ endforeach;
 
 <?php
     foreach ($actions as $action):
-        if (isset($modelActions[$action['id']])) {
+        if (isset($modelActions[$action['id']], $action['modelClass'])) {
             continue;
         }
 

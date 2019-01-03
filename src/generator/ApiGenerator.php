@@ -315,8 +315,12 @@ class ApiGenerator extends Generator
 
                 // first, check request body
 
-                if ($operationWithReference->requestBody !== null) {
-                    foreach ($operationWithReference->requestBody->content as $contentType => $content) {
+                $requestBody = $operationWithReference->requestBody;
+                if ($requestBody !== null) {
+                    if ($requestBody instanceof Reference) {
+                        $requestBody = $this->resolveReference($requestBody);
+                    }
+                    foreach ($requestBody->content as $contentType => $content) {
                         $modelClass = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
@@ -337,6 +341,9 @@ class ApiGenerator extends Generator
                     if (((string) $code)[0] !== '2') {
                         continue;
                     }
+                    if ($successResponse instanceof Reference) {
+                        $successResponse = $this->resolveReference($successResponse);
+                    }
                     foreach ($successResponse->content as $contentType => $content) {
                         $modelClass = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
@@ -356,7 +363,7 @@ class ApiGenerator extends Generator
         }
 
         /** @var $referencedSchema Schema */
-        $referencedSchema = $content->schema->resolve(new ReferenceContext($this->getOpenApi(), Yii::getAlias($this->openApiPath)));
+        $referencedSchema = $this->resolveReference($content->schema);
         if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
             $ref = $referencedSchema->items->getReference();
         } elseif ($referencedSchema->type === null || $referencedSchema->type === 'object') {
@@ -368,6 +375,15 @@ class ApiGenerator extends Generator
             return substr($ref, 21);
         }
         return null;
+    }
+
+    /**
+     * @param Reference $reference
+     * @return \cebe\openapi\SpecObjectInterface
+     */
+    private function resolveReference(Reference $reference)
+    {
+        return $reference->resolve(new ReferenceContext($this->getOpenApi(), Yii::getAlias($this->openApiPath)));
     }
 
     protected function generateControllers()
