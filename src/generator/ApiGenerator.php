@@ -333,11 +333,11 @@ class ApiGenerator extends Generator
                 if (!isset($operationWithReference->responses)) {
                     break;
                 }
-                foreach($operationWithReference->responses as $code => $successResponse) {
+                foreach ($operationWithReference->responses as $code => $successResponse) {
                     if (((string) $code)[0] !== '2') {
                         continue;
                     }
-                    foreach($successResponse->content as $contentType => $content) {
+                    foreach ($successResponse->content as $contentType => $content) {
                         $modelClass = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
@@ -534,7 +534,7 @@ class ApiGenerator extends Generator
 
         if ($this->generateUrls) {
             $urls = [];
-            foreach($this->generateUrls() as $urlRule) {
+            foreach ($this->generateUrls() as $urlRule) {
                 $urls["{$urlRule['method']} {$urlRule['pattern']}"] = $urlRule['route'];
             }
             $files[] = new CodeFile(
