@@ -463,6 +463,7 @@ class ApiGenerator extends Generator
 
             $models[$schemaName] = [
                 'name' => $schemaName,
+                'tableName' => '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_') . '}}',
                 'description' => $schema->description,
                 'attributes' => $attributes,
                 'relations' => $relations,
@@ -584,6 +585,7 @@ class ApiGenerator extends Generator
                     Yii::getAlias("@app/models/$className.php"),
                     $this->render('model.php', [
                         'className' => $className,
+                        'tableName' => $model['tableName'],
                         'namespace' => 'app\\models',
                         'description' => $model['description'],
                         'attributes' => $model['attributes'],
@@ -603,7 +605,7 @@ class ApiGenerator extends Generator
                 // use fixed time here instead
                 $m = date('ymd_000000');
                 $className = "m{$m}_$modelName";
-                $tableName = '{{%' . Inflector::camel2id(StringHelper::basename($modelName), '_') . '}}';
+                $tableName = $model['tableName'];
                 $files[] = new CodeFile(
                     Yii::getAlias("@app/migrations/$className.php"),
                     $this->render('migration.php', [

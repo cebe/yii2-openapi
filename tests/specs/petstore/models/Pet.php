@@ -11,7 +11,9 @@ namespace app\models;
  */
 class Pet extends \yii\db\ActiveRecord
 {
-    // TODO implement
-
+    public static function tableName()
+    {
+        return '{{%pets}}';
+    }
 
 }

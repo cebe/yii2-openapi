@@ -14,7 +14,10 @@ namespace <?= $namespace ?>;
  */
 class <?= $className ?> extends \yii\db\ActiveRecord
 {
-    // TODO implement
+    public static function tableName()
+    {
+        return <?= var_export($tableName) ?>;
+    }
 
 <?php foreach ($relations as $relationName => $relation): ?>
     public function get<?= ucfirst($relationName) ?>()
@@ -29,5 +32,4 @@ class <?= $className ?> extends \yii\db\ActiveRecord
     }
 
 <?php endforeach; ?>
-
 }
