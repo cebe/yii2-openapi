@@ -20,19 +20,51 @@ Output: Controllers, Models, database schema
 
 This library is currently work in progress, current features are checked here when ready:
 
-- [ ] generate Controllers + Actions
-- [ ] generate Models
-- [ ] generate Database migration
+- [x] generate Controllers + Actions
+- [x] generate Models
+- [x] generate Database migration
 
 - [ ] update Database and models when API schema changes
-
-## Install
-
-    composer require cebe/php-openapi:~0.9@beta
 
 ## Requirements
 
 - PHP 7.1 or higher
+
+
+## Install
+
+    composer require cebe/yii2-openapi:@dev
+
+## Usage
+
+In your Yii application config (works for console as well as web):
+
+```php
+<?php
+$config = [
+    // ... this is your application config ...
+];
+
+if (YII_ENV_DEV) {
+    // enable Gii module
+    $config['bootstrap'][] = 'gii';
+    $config['modules']['gii'] = [
+        'class' => yii\gii\Module::class,
+        'generators' => [
+            // add ApiGenerator to Gii module
+            'api' => \cebe\yii2openapi\generator\ApiGenerator::class,
+        ],
+    ];
+}
+
+return $config;
+```
+
+To use the web generator, open `index.php?r=gii` and select the `REST API Generator`.
+
+On console you can run the generator with `./yii gii/api --openApiPath=@app/openapi.yaml`. Where `@app/openapi.yaml` should be the absolute path to your OpenAPI spec file. This can be JSON as well as YAML (see also [cebe/php-openapi](https://github.com/cebe/php-openapi/) for supported formats).
+
+Run `./yii gii/api --help` for all options.
 
 
 ## Screenshots
