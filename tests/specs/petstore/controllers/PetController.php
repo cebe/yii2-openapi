@@ -14,7 +14,7 @@ class PetController extends \yii\rest\Controller
             ],
             'create' => [
                 'class' => \yii\rest\CreateAction::class,
-                'modelClass' => '',
+                'modelClass' => \app\models\Pet::class,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
             'view' => [

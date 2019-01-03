@@ -8,7 +8,10 @@
 namespace cebe\yii2openapi\generator;
 
 use cebe\openapi\Reader;
+use cebe\openapi\ReferenceContext;
+use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\OpenApi;
+use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
@@ -267,22 +270,24 @@ class ApiGenerator extends Generator
             }
             $action = empty($action) ? '' : '-' . implode('-', $action);
             foreach ($pathItem->getOperations() as $method => $operation) {
-                $modelClass = null;
                 switch ($method) {
-                    case 'get':
-                        $a = $params ? 'view' : 'index';
-                        if (isset($operation->responses->getResponse(200)->content['application/json']->schema)) {
-                            $schema = $operation->responses->getResponse(200)->content['application/json']->schema;
-                            if ($schema instanceof Reference && strpos($schema->getReference(), '#/components/schemas/') === 0) {
-                                $modelClass = substr($schema->getReference(), 21);
-                            }
-                        }
-                        break;
+                    case 'get': $a = $params ? 'view' : 'index'; break;
                     case 'post': $a = 'create'; break;
                     case 'put': $a = 'update'; break;
                     case 'patch': $a = 'update'; break;
                     case 'delete': $a = 'delete'; break;
                     default: $a = "http-$method"; break;
+                }
+                $modelClass = null;
+                if (isset($this->getOpenApi()->paths[$path]->getOperations()[$method])) {
+                    $operationWithReference = $this->getOpenApi()->paths[$path]->getOperations()[$method];
+                    $modelClass = $this->guessModelClass($operationWithReference, $a);
+                }
+                // fallback to known model class on same URL
+                if ($modelClass === null && isset($this->_knownModelclasses[$path])) {
+                    $modelClass = $this->_knownModelclasses[$path];
+                } else {
+                    $this->_knownModelclasses[$path] = $modelClass;
                 }
                 $urlRules[] = [
                     'path' => $path,
@@ -297,6 +302,72 @@ class ApiGenerator extends Generator
             // TODO add options action
         }
         return $urlRules;
+    }
+
+    private $_knownModelclasses = [];
+
+    private function guessModelClass(Operation $operationWithReference, $actionName)
+    {
+        switch ($actionName) {
+            case 'create':
+            case 'update':
+            case 'delete':
+
+                // first, check request body
+
+                if ($operationWithReference->requestBody !== null) {
+                    foreach ($operationWithReference->requestBody->content as $contentType => $content) {
+                        $modelClass = $this->guessModelClassFromContent($content);
+                        if ($modelClass !== null) {
+                            return $modelClass;
+                        }
+                    }
+                }
+
+                // no break, check response body if guess did not find model in request body
+            case 'view':
+            case 'index':
+
+                // then, check response body
+
+                if (!isset($operationWithReference->responses)) {
+                    break;
+                }
+                foreach($operationWithReference->responses as $code => $successResponse) {
+                    if (((string) $code)[0] !== '2') {
+                        continue;
+                    }
+                    foreach($successResponse->content as $contentType => $content) {
+                        $modelClass = $this->guessModelClassFromContent($content);
+                        if ($modelClass !== null) {
+                            return $modelClass;
+                        }
+                    }
+                }
+
+                break;
+        }
+    }
+
+    private function guessModelClassFromContent(MediaType $content)
+    {
+        if (!($content->schema instanceof Reference)) {
+            return null;
+        }
+
+        /** @var $referencedSchema Schema */
+        $referencedSchema = $content->schema->resolve(new ReferenceContext($this->getOpenApi(), Yii::getAlias($this->openApiPath)));
+        if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
+            $ref = $referencedSchema->items->getReference();
+        } elseif ($referencedSchema->type === null || $referencedSchema->type === 'object') {
+            $ref = $content->schema->getReference();
+        } else {
+            return null;
+        }
+        if (strpos($ref, '#/components/schemas/') === 0) {
+            return substr($ref, 21);
+        }
+        return null;
     }
 
     protected function generateControllers()
