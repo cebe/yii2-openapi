@@ -23,6 +23,7 @@ This library is currently work in progress, current features are checked here wh
 - [x] generate Controllers + Actions
 - [x] generate Models
 - [x] generate Database migration
+- [ ] provide Dummy API via Faker
 
 - [ ] update Database and models when API schema changes
 
