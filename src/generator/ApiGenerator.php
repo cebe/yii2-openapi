@@ -285,6 +285,7 @@ class ApiGenerator extends Generator
                     default: $a = "http-$method"; break;
                 }
                 $modelClass = $this->guessModelClass($operation, $a);
+                $responseWrapper = $this->findResponseWrapper($operation, $a, $modelClass);
                 // fallback to known model class on same URL
                 if ($modelClass === null && isset($this->_knownModelclasses[$path])) {
                     $modelClass = $this->_knownModelclasses[$path];
@@ -299,6 +300,7 @@ class ApiGenerator extends Generator
                     'actionParams' => $actionParams,
                     'openApiOperation' => $operation,
                     'modelClass' => $modelClass,
+                    'responseWrapper' => $responseWrapper,
                 ];
             }
             // TODO add options action
@@ -323,7 +325,7 @@ class ApiGenerator extends Generator
                         $requestBody = $requestBody->resolve();
                     }
                     foreach ($requestBody->content as $contentType => $content) {
-                        $modelClass = $this->guessModelClassFromContent($content);
+                        list($modelClass, ) = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -347,7 +349,7 @@ class ApiGenerator extends Generator
                         $successResponse = $successResponse->resolve();
                     }
                     foreach ($successResponse->content as $contentType => $content) {
-                        $modelClass = $this->guessModelClassFromContent($content);
+                        list($modelClass, ) = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -360,24 +362,87 @@ class ApiGenerator extends Generator
 
     private function guessModelClassFromContent(MediaType $content)
     {
-        if (!($content->schema instanceof Reference)) {
-            return null;
-        }
-
         /** @var $referencedSchema Schema */
-        $referencedSchema = $content->schema->resolve();
-        if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
-            $ref = $referencedSchema->items->getReference();
-        } elseif ($referencedSchema->type === null || $referencedSchema->type === 'object') {
-            $ref = $content->schema->getReference();
+        if ($content->schema instanceof Reference) {
+            $referencedSchema = $content->schema->resolve();
+            // Model data is directly returned
+            if ($referencedSchema->type === null || $referencedSchema->type === 'object') {
+                $ref = $content->schema->getReference();
+                if (strpos($ref, '#/components/schemas/') === 0) {
+                    return [substr($ref, 21), '', ''];
+                }
+            }
+            // an array of Model data is directly returned
+            if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
+                $ref = $referencedSchema->items->getReference();
+                if (strpos($ref, '#/components/schemas/') === 0) {
+                    return [substr($ref, 21), '', ''];
+                }
+            }
         } else {
+            $referencedSchema = $content->schema;
+        }
+        if ($referencedSchema === null) {
+            return [null, null, null];
+        }
+        if ($referencedSchema->type === null || $referencedSchema->type === 'object') {
+            foreach($referencedSchema->properties as $propertyName => $property) {
+                if ($property instanceof Reference) {
+                    $referencedModelSchema = $property->resolve();
+                    if ($referencedModelSchema->type === null || $referencedModelSchema->type === 'object') {
+                        // Model data is wrapped
+                        $ref = $property->getReference();
+                        if (strpos($ref, '#/components/schemas/') === 0) {
+                            return [substr($ref, 21), $propertyName, null];
+                        }
+                    } elseif ($referencedModelSchema->type === 'array' && $referencedModelSchema->items instanceof Reference) {
+                        // an array of Model data is wrapped
+                        $ref = $referencedModelSchema->items->getReference();
+                        if (strpos($ref, '#/components/schemas/') === 0) {
+                            return [substr($ref, 21), null, $propertyName];
+                        }
+                    }
+                } elseif ($property->type === 'array' && $property->items instanceof Reference) {
+                    // an array of Model data is wrapped
+                    $ref = $property->items->getReference();
+                    if (strpos($ref, '#/components/schemas/') === 0) {
+                        return [substr($ref, 21), null, $propertyName];
+                    }
+                }
+            }
+        }
+        return [null, null, null];
+    }
+
+    /**
+     * Figure out whether response item is wrapped in response.
+     * @param Operation $operation
+     * @param $actionName
+     * @param $modelClass
+     * @return null|array
+     */
+    private function findResponseWrapper(Operation $operation, $actionName, $modelClass)
+    {
+        if (!isset($operation->responses)) {
             return null;
         }
-        if (strpos($ref, '#/components/schemas/') === 0) {
-            return substr($ref, 21);
+        foreach ($operation->responses as $code => $successResponse) {
+            if (((string) $code)[0] !== '2') {
+                continue;
+            }
+            if ($successResponse instanceof Reference) {
+                $successResponse = $successResponse->resolve();
+            }
+            foreach ($successResponse->content as $contentType => $content) {
+                list($detectedModelClass, $itemWrapper, $itemsWrapper) = $this->guessModelClassFromContent($content);
+                if (($itemWrapper !== null || $itemsWrapper !== null) && $detectedModelClass === $modelClass) {
+                    return [$itemWrapper, $itemsWrapper];
+                }
+            }
         }
         return null;
     }
+
 
     /**
      * @param Reference $reference
@@ -399,6 +464,7 @@ class ApiGenerator extends Generator
                 'id' => $parts[1],
                 'params' => array_keys($url['actionParams']),
                 'modelClass' => $url['modelClass'],
+                'responseWrapper' => $url['responseWrapper'],
             ];
         }
         return $c;

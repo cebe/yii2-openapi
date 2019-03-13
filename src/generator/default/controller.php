@@ -22,7 +22,7 @@ class <?= $className ?> extends \yii\rest\Controller
 
 foreach ($actions as $action):
     if (isset($modelActions[$action['id']], $action['modelClass'])): ?>
-            <?= var_export($action['id']) ?> => [
+            <?= var_export($action['id'], true) ?> => [
                 'class' => \<?= $modelActions[$action['id']] ?>::class,
                 'modelClass' => <?= '\\app\\models\\' . $action['modelClass'] . '::class' ?>,
                 'checkAccess' => [$this, 'checkAccess'],
@@ -36,6 +36,37 @@ endforeach;
             ],
         ];
     }
+<?php
+    $serializerConfigs = [];
+    foreach ($actions as $action) {
+        if (isset($modelActions[$action['id']]) && !empty($action['responseWrapper'])) {
+            if (!empty($action['responseWrapper'][0])) {
+                $serializerConfigs[] = '        if ($action->id === ' . var_export($action['id'], true) . ") {\n"
+                    . '            return ['.var_export($action['responseWrapper'][0], true).' => $serializer->serialize($result)];' . "\n"
+                    . '        }';
+            } elseif (!empty($action['responseWrapper'][1])) {
+                $serializerConfigs[] = '        if ($action->id === ' . var_export($action['id'], true) . ") {\n"
+                    . '            $serializer->collectionEnvelope = ' . var_export($action['responseWrapper'][1], true) . ";\n"
+                    . '            return $serializer->serialize($result);' . "\n"
+                    . '        }';
+            }
+        }
+    }
+    if (!empty($serializerConfigs)): ?>
+
+    /**
+     * {@inheritdoc}
+     */
+    public function afterAction($action, $result)
+    {
+        $result = parent::afterAction($action, $result);
+        /** @var $serializer \yii\rest\Serializer */
+        $serializer = \Yii::createObject($this->serializer);
+<?= implode("\n", $serializerConfigs) ?>
+
+        return $serializer->serialize($result);
+    }
+<?php endif; ?>
 
     /**
      * Checks the privilege of the current user.

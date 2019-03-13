@@ -19,7 +19,7 @@ class GeneratorTest extends \PHPUnit\Framework\TestCase
         $tests = FileHelper::findFiles(Yii::getAlias('@specs'), ['recursive' => false, 'only' => ['*.php']]);
         $ret = [];
         foreach($tests as $testFile) {
-            $ret[] = [$testFile];
+            $ret[] = [substr($testFile, strlen(Yii::getAlias('@specs')) + 1)];
         }
         return $ret;
     }
@@ -29,6 +29,7 @@ class GeneratorTest extends \PHPUnit\Framework\TestCase
      */
     public function testGenerate($testFile)
     {
+        $testFile = Yii::getAlias("@specs/$testFile");
         FileHelper::removeDirectory(__DIR__ . '/tmp');
         FileHelper::createDirectory(__DIR__ . '/tmp');
         Yii::setAlias('@app', __DIR__ . '/tmp');
