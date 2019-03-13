@@ -231,13 +231,19 @@ class ApiGenerator extends Generator
 
     protected function generateUrls()
     {
-        $openApi = $this->getOpenApiWithoutReferences();
+        $openApi = $this->getOpenApi();
 
         $urlRules = [];
         foreach ($openApi->paths as $path => $pathItem) {
             /** @var $pathItem PathItem */
             if ($path[0] !== '/') {
                 throw new Exception('Path must begin with /');
+            }
+            if ($pathItem === null) {
+                continue;
+            }
+            if ($pathItem instanceof Reference) {
+                $pathItem = $pathItem->resolve();
             }
 
             $parts = explode('/', trim($path, '/'));
@@ -278,11 +284,7 @@ class ApiGenerator extends Generator
                     case 'delete': $a = 'delete'; break;
                     default: $a = "http-$method"; break;
                 }
-                $modelClass = null;
-                if (isset($this->getOpenApi()->paths[$path]->getOperations()[$method])) {
-                    $operationWithReference = $this->getOpenApi()->paths[$path]->getOperations()[$method];
-                    $modelClass = $this->guessModelClass($operationWithReference, $a);
-                }
+                $modelClass = $this->guessModelClass($operation, $a);
                 // fallback to known model class on same URL
                 if ($modelClass === null && isset($this->_knownModelclasses[$path])) {
                     $modelClass = $this->_knownModelclasses[$path];
@@ -306,7 +308,7 @@ class ApiGenerator extends Generator
 
     private $_knownModelclasses = [];
 
-    private function guessModelClass(Operation $operationWithReference, $actionName)
+    private function guessModelClass(Operation $operation, $actionName)
     {
         switch ($actionName) {
             case 'create':
@@ -315,10 +317,10 @@ class ApiGenerator extends Generator
 
                 // first, check request body
 
-                $requestBody = $operationWithReference->requestBody;
+                $requestBody = $operation->requestBody;
                 if ($requestBody !== null) {
                     if ($requestBody instanceof Reference) {
-                        $requestBody = $this->resolveReference($requestBody);
+                        $requestBody = $requestBody->resolve();
                     }
                     foreach ($requestBody->content as $contentType => $content) {
                         $modelClass = $this->guessModelClassFromContent($content);
@@ -334,15 +336,15 @@ class ApiGenerator extends Generator
 
                 // then, check response body
 
-                if (!isset($operationWithReference->responses)) {
+                if (!isset($operation->responses)) {
                     break;
                 }
-                foreach ($operationWithReference->responses as $code => $successResponse) {
+                foreach ($operation->responses as $code => $successResponse) {
                     if (((string) $code)[0] !== '2') {
                         continue;
                     }
                     if ($successResponse instanceof Reference) {
-                        $successResponse = $this->resolveReference($successResponse);
+                        $successResponse = $successResponse->resolve();
                     }
                     foreach ($successResponse->content as $contentType => $content) {
                         $modelClass = $this->guessModelClassFromContent($content);
@@ -363,7 +365,7 @@ class ApiGenerator extends Generator
         }
 
         /** @var $referencedSchema Schema */
-        $referencedSchema = $this->resolveReference($content->schema);
+        $referencedSchema = $content->schema->resolve();
         if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
             $ref = $referencedSchema->items->getReference();
         } elseif ($referencedSchema->type === null || $referencedSchema->type === 'object') {
@@ -405,8 +407,10 @@ class ApiGenerator extends Generator
     protected function generateModels()
     {
         $models = [];
-        $resolvedOpenApi = $this->getOpenApiWithoutReferences();
         foreach ($this->getOpenApi()->components->schemas as $schemaName => $schema) {
+            if ($schema instanceof Reference) {
+                $schema = $schema->resolve();
+            }
             $attributes = [];
             $relations = [];
             if ((empty($schema->type) || $schema->type === 'object') && empty($schema->properties)) {
@@ -422,7 +426,7 @@ class ApiGenerator extends Generator
             foreach ($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
                     $ref = $property->getReference();
-                    $resolvedProperty = $resolvedOpenApi->components->schemas[$schemaName];
+                    $resolvedProperty = $property->resolve();
                     $dbName = "{$name}_id";
                     $dbType = 'integer'; // for a foreign key
                     if (strpos($ref, '#/components/schemas/') === 0) {
