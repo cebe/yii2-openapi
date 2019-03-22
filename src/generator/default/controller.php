@@ -24,7 +24,7 @@ foreach ($actions as $action):
     if (isset($modelActions[$action['id']], $action['modelClass'])): ?>
             <?= var_export($action['id'], true) ?> => [
                 'class' => \<?= $modelActions[$action['id']] ?>::class,
-                'modelClass' => <?= '\\app\\models\\' . $action['modelClass'] . '::class' ?>,
+                'modelClass' => <?= '\\' . $action['modelClass'] . '::class' ?>,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
 <?php endif;

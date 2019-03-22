@@ -390,7 +390,7 @@ class ApiGenerator extends Generator
                     'route' => "$controller/$a$action",
                     'actionParams' => $actionParams,
                     'openApiOperation' => $operation,
-                    'modelClass' => $modelClass,
+                    'modelClass' => $this->modelNamespace . '\\' . $modelClass,
                     'responseWrapper' => $responseWrapper,
                 ];
             }
