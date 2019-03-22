@@ -19,7 +19,7 @@
 	},
 	"require": {
 		"php": ">=7.1.0",
-		"cebe/php-openapi": "dev-master",
+		"cebe/php-openapi": "^0.9.3@beta",
 		"yiisoft/yii2": "~2.0.15",
 		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0",
 		"fzaninotto/faker": "^1.8"
@@ -27,8 +27,7 @@
 	"require-dev": {
 		"cebe/indent": "*",
 		"friendsofphp/php-cs-fixer": "~2.13.1",
-		"phpunit/phpunit": "^6.5",
-		"yiisoft/yii2-gii": "dev-codefile-module-independent as 2.1.0"
+		"phpunit/phpunit": "^6.5"
 	},
 	"autoload": {
 		"psr-4": {
