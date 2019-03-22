@@ -17,7 +17,9 @@ class <?= $className ?>
         $faker = FakerFactory::create(\Yii::$app->language);
         $model = new <?= $modelClass ?>;
 <?php foreach ($attributes as $attribute):
-        if (!isset($attribute['faker'])) { continue; } ?>
+        if (!isset($attribute['faker'])) {
+            continue;
+        } ?>
         $model-><?= $attribute['name'] ?> = <?= $attribute['faker'] ?>;
 <?php endforeach; ?>
         return $model;

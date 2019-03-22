@@ -14,7 +14,7 @@ class PetFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $model = new Pet;
         $model->id = $faker->numberBetween(0, PHP_INT_MAX);
-        $model->name = $faker->words;
+        $model->name = $faker->sentence;
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
         return $model;
     }
