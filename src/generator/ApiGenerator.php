@@ -22,6 +22,7 @@ use RegexIterator;
 use Yii;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
+use yii\helpers\FileHelper;
 use yii\helpers\Html;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -32,19 +33,65 @@ use yii\helpers\StringHelper;
  */
 class ApiGenerator extends Generator
 {
+    /**
+     * @var string path to the OpenAPI specification file. This can be an absolute path or a Yii path alias.
+     */
     public $openApiPath;
+    /**
+     * @var bool this flag controls whether files should be generated even if the spec contains errors.
+     * If this is true, the spec will not be validated. Defaults to false.
+     */
     public $ignoreSpecErrors = false;
+
+    /**
+     * @var bool whether to generate URL rules for Yii UrlManager from the API spec.
+     */
     public $generateUrls = true;
+    /**
+     * @var string file name for URL rules.
+     */
+    public $urlConfigFile = '@app/config/urls.rest.php';
+
+    /**
+     * @var bool whether to generate Controllers from the spec.
+     */
     public $generateControllers = true;
+    /**
+     * @var string namespace to create controllers in. This must be resolvable via Yii alias.
+     * Defaults to `null` which means to use the application controller namespace: `Yii::$app->controllerNamespace`.
+     */
+    public $controllerNamespace;
+
+    /**
+     * @var bool whether to generate ActiveRecord models from the spec.
+     */
     public $generateModels = true;
     /**
-     * @var array List of model names to exclude
+     * @var bool namespace to create models in. This must be resolvable via Yii alias.
+     * Defaults to `app\models`.
+     */
+    public $modelNamespace = 'app\\models';
+    /**
+     * @var array List of model names to exclude.
      */
     public $excludeModels = [];
+
+    /**
+     * @var bool whether to generate database migrations.
+     */
     public $generateMigrations = true;
+    /**
+     * @var string path to create migration files in.
+     * Defaults to `@app/migrations`.
+     */
+    public $migrationPath = '@app/migrations';
+    /**
+     * @var string namespace to create migrations in.
+     * Defaults to `null` which means that migrations are generated without namespace.
+     */
+    public $migrationNamespace;
 
 
-    public $urlConfigFile = '@app/config/urls.rest.php';
 
 
     /**
@@ -69,16 +116,24 @@ class ApiGenerator extends Generator
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['openApiPath', 'urlConfigFile'], 'filter', 'filter' => 'trim'],
+            [['openApiPath', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'migrationPath', 'migrationNamespace'], 'filter', 'filter' => 'trim'],
+
+            [['controllerNamespace', 'migrationNamespace'], 'default', 'value' => null],
 
             [['ignoreSpecErrors', 'generateUrls', 'generateModels', 'generateControllers'], 'boolean'],
 
             ['openApiPath', 'required'],
             ['openApiPath', 'validateSpec'],
+
             [['urlConfigFile'], 'required', 'when' => function (ApiGenerator $model) {
                 return (bool) $model->generateUrls;
             }],
-
+            [['modelNamespace'], 'required', 'when' => function (ApiGenerator $model) {
+                return (bool) $model->generateModels;
+            }],
+            [['migrationPath'], 'required', 'when' => function (ApiGenerator $model) {
+                return (bool) $model->generateMigrations;
+            }],
 
         ]);
     }
@@ -114,6 +169,10 @@ class ApiGenerator extends Generator
         return array_merge(parent::hints(), [
             'openApiPath' => 'Path to the OpenAPI 3 Spec file. Type <code>@</code> to trigger autocomplete.',
             'urlConfigFile' => 'UrlRules will be written to this file.',
+            'controllerNamespace' => 'Namespace to create controllers in. This must be resolvable via Yii alias. Default is the application controller namespace: <code>Yii::$app->controllerNamespace</code>.',
+            'modelNamespace' => 'Namespace to create models in. This must be resolvable via Yii alias.',
+            'migrationPath' => 'Path to create migration files in.',
+            'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
         ]);
     }
 
@@ -150,8 +209,32 @@ class ApiGenerator extends Generator
                 $paths[] = $file;
             }
         }
+
+        $namespaces = array_map(function ($alias) {
+            $path = Yii::getAlias($alias, false);
+            if (in_array($alias, ['@web', '@runtime', '@vendor', '@bower', '@npm'])) {
+                return [];
+            }
+            if (!file_exists($path)) {
+                return [];
+            }
+            return array_map(function ($dir) use ($path, $alias) {
+                return str_replace('/', '\\', substr($alias, 1) . substr($dir, strlen($path)));
+            }, FileHelper::findDirectories($path, ['except' => [
+                'vendor/',
+                'runtime/',
+                'assets/',
+                '.git/',
+                '.svn/',
+            ]]));
+        }, array_keys(Yii::$aliases));
+        $namespaces = array_merge(...$namespaces);
+
         return [
             'openApiPath' => $paths,
+            'controllerNamespace' => $namespaces,
+            'modelNamespace' => $namespaces,
+            'migrationNamespace' => $namespaces,
 //            'urlConfigFile' => [
 //                '@app/config/urls.rest.php',
 //            ],
@@ -184,7 +267,7 @@ class ApiGenerator extends Generator
      */
     public function stickyAttributes()
     {
-        return array_merge(parent::stickyAttributes(), ['generateUrls', 'urlConfigFile']);
+        return array_merge(parent::stickyAttributes(), ['generateUrls', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'migrationPath', 'migrationNamespace']);
     }
 
 
@@ -386,7 +469,7 @@ class ApiGenerator extends Generator
             return [null, null, null];
         }
         if ($referencedSchema->type === null || $referencedSchema->type === 'object') {
-            foreach($referencedSchema->properties as $propertyName => $property) {
+            foreach ($referencedSchema->properties as $propertyName => $property) {
                 if ($property instanceof Reference) {
                     $referencedModelSchema = $property->resolve();
                     if ($referencedModelSchema->type === null || $referencedModelSchema->type === 'object') {
@@ -634,13 +717,15 @@ class ApiGenerator extends Generator
 
         if ($this->generateControllers) {
             $controllers = $this->generateControllers();
+            $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
+            $controllerPath = $this->getPathFromNamespace($controllerNamespace);
             foreach ($controllers as $controller => $actions) {
                 $className = \yii\helpers\Inflector::id2camel($controller) . 'Controller';
                 $files[] = new CodeFile(
-                    Yii::getAlias(Yii::$app->controllerPath . "/$className.php"),
+                    Yii::getAlias($controllerPath . "/$className.php"),
                     $this->render('controller.php', [
                         'className' => $className,
-                        'namespace' => Yii::$app->controllerNamespace,
+                        'namespace' => $controllerNamespace,
                         'actions' => $actions,
                     ])
                 );
@@ -649,14 +734,15 @@ class ApiGenerator extends Generator
 
         if ($this->generateModels) {
             $models = $this->generateModels();
+            $modelPath = $this->getPathFromNamespace($this->modelNamespace);
             foreach ($models as $modelName => $model) {
                 $className = $modelName;
                 $files[] = new CodeFile(
-                    Yii::getAlias("@app/models/$className.php"),
+                    Yii::getAlias("$modelPath/$className.php"),
                     $this->render('model.php', [
                         'className' => $className,
                         'tableName' => $model['tableName'],
-                        'namespace' => 'app\\models',
+                        'namespace' => $this->modelNamespace,
                         'description' => $model['description'],
                         'attributes' => $model['attributes'],
                         'relations' => $model['relations'],
@@ -669,17 +755,27 @@ class ApiGenerator extends Generator
             if (!isset($models)) {
                 $models = $this->generateModels();
             }
+            $migrationPath = Yii::getAlias($this->migrationPath);
+            $migrationNamespace = $this->migrationNamespace;
             foreach ($models as $modelName => $model) {
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp
                 // use fixed time here instead
-                $m = date('ymd_000000');
-                $className = "m{$m}_$modelName";
+                if ($migrationNamespace) {
+                    $m = date('ymd000000');
+                    $className = "M{$m}$modelName";
+                } else {
+                    $m = date('ymd_000000');
+                    $className = "m{$m}_$modelName";
+                }
                 $tableName = $model['tableName'];
+
+
                 $files[] = new CodeFile(
-                    Yii::getAlias("@app/migrations/$className.php"),
+                    Yii::getAlias("$migrationPath/$className.php"),
                     $this->render('migration.php', [
                         'className' => $className,
+                        'namespace' => $migrationNamespace,
                         'tableName' => $tableName,
                         'attributes' => $model['attributes'],
                         'relations' => $model['relations'],
@@ -690,5 +786,10 @@ class ApiGenerator extends Generator
         }
 
         return $files;
+    }
+
+    private function getPathFromNamespace($namespace)
+    {
+        return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
     }
 }

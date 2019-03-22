@@ -1,5 +1,8 @@
 <?= '<?php' ?>
 
+<?php if (isset($namespace)) {
+    echo "\nnamespace $namespace;\n";
+} ?>
 
 /**
  * <?= $description ?>
