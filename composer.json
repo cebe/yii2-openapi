@@ -21,7 +21,8 @@
 		"php": ">=7.1.0",
 		"cebe/php-openapi": "dev-master",
 		"yiisoft/yii2": "~2.0.15",
-		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0"
+		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0",
+		"fzaninotto/faker": "^1.8"
 	},
 	"require-dev": {
 		"cebe/indent": "*",

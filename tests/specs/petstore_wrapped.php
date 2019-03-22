@@ -4,6 +4,7 @@ return [
     'openApiPath' => '@specs/petstore_wrapped.yaml',
     'generateUrls' => true,
     'generateModels' => true,
+    'generateModelFaker' => false,
     'excludeModels' => [
         'Error',
     ],

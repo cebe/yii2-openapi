@@ -67,6 +67,10 @@ class ApiGenerator extends Generator
      */
     public $generateModels = true;
     /**
+     * @var bool whether to generate Faker for generating dummy data for each model.
+     */
+    public $generateModelFaker = true;
+    /**
      * @var bool namespace to create models in. This must be resolvable via Yii alias.
      * Defaults to `app\models`.
      */
@@ -120,7 +124,7 @@ class ApiGenerator extends Generator
 
             [['controllerNamespace', 'migrationNamespace'], 'default', 'value' => null],
 
-            [['ignoreSpecErrors', 'generateUrls', 'generateModels', 'generateControllers'], 'boolean'],
+            [['ignoreSpecErrors', 'generateUrls', 'generateModels', 'generateModelFaker', 'generateControllers'], 'boolean'],
 
             ['openApiPath', 'required'],
             ['openApiPath', 'validateSpec'],
@@ -173,6 +177,7 @@ class ApiGenerator extends Generator
             'modelNamespace' => 'Namespace to create models in. This must be resolvable via Yii alias.',
             'migrationPath' => 'Path to create migration files in.',
             'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
+            'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
         ]);
     }
 
@@ -255,6 +260,9 @@ class ApiGenerator extends Generator
         }
         if ($this->generateModels) {
             $required[] = 'model.php';
+        }
+        if ($this->generateModelFaker) {
+            $required[] = 'faker.php';
         }
         if ($this->generateMigrations) {
             $required[] = 'migration.php';
@@ -611,6 +619,7 @@ class ApiGenerator extends Generator
                     'dbType' => $dbType,
                     'dbName' => $dbName,
                     'description' => $resolvedProperty->description,
+                    'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
                 ];
             }
 
@@ -626,6 +635,125 @@ class ApiGenerator extends Generator
         // TODO generate hasMany relations and inverse relations
 
         return $models;
+    }
+
+    /**
+     * Guess faker for attribute.
+     * @param string $name
+     * @param string $type
+     * @return string|null the faker PHP code or null.
+     * @link https://github.com/fzaninotto/Faker#formatters
+     */
+    private function guessModelFaker($name, $type, Schema $property)
+    {
+        if (isset($property->{'x-faker'})) {
+            return $property->{'x-faker'};
+        }
+
+        $min = $max = null;
+        if (isset($property->minimum)) {
+            $min = $property->minimum;
+        } elseif (isset($property->exclusiveMinimum)) {
+            $min = $property->exclusiveMinimum + 1;
+        }
+        if (isset($property->maximum)) {
+            $min = $property->maximum;
+        } elseif (isset($property->exclusiveMaximum)) {
+            $min = $property->exclusiveMaximum - 1;
+        }
+
+        switch ($type) {
+            case 'string':
+                if ($property->format === 'date') {
+                    return '$faker->iso8601';
+                }
+                if (!empty($property->enum) && is_array($property->enum)) {
+                    return '$faker->randomElement('.var_export($property->enum).')';
+                }
+                if ($name === 'title' && isset($property->maxLength) && $property->maxLength < 10) {
+                    return '$faker->title';
+                }
+
+                $patterns = [
+                    '~_id$~' => '$faker->numberBetween(0, PHP_INT_MAX)',
+                    '~uuid$~' => '$faker->uuid',
+                    '~firstname~i' => '$faker->firstName',
+                    '~(last|sur)name~i' => '$faker->lastName',
+                    '~(username|login)~i' => '$faker->userName',
+                    '~(company|employer)~i' => '$faker->company',
+                    '~(city|town)~i' => '$faker->city',
+                    '~(post|zip)code~i' => '$faker->postcode',
+                    '~streetaddress~i' => '$faker->streetAddress',
+                    '~address~i' => '$faker->address',
+                    '~street~i' => '$faker->streetName',
+                    '~state~i' => '$faker->state',
+                    '~county~i' => 'sprintf("%s County", $faker->city)',
+                    '~country~i' => '$faker->countryCode',
+                    '~lang~i' => '$faker->languageCode',
+                    '~locale~i' => '$faker->locale',
+                    '~currency~i' => '$faker->currencyCode',
+                    '~hash~i' => '$faker->sha256',
+                    '~e?mail~i' => '$faker->safeEmail',
+                    '~timestamp~i' => '$faker->unixTime',
+                    '~.*ed_at$~i' => '$faker->dateTimeThisCentury(\'Y-m-d H:i:s\')', // created_at, updated_at, ...
+                    '~(phone|fax|mobile|telnumber)~i' => '$faker->e164PhoneNumber',
+                    '~(^lat|coord)~i' => '$faker->latitude',
+                    '~^lon~i' => '$faker->longitude',
+                    '~title~i' => '$faker->sentences',
+                    '~(body|summary|article|content|descr|comment|detail)~i' => '$faker->text',
+                    '~(url|site|website)~i' => '$faker->url',
+                ];
+                foreach ($patterns as $pattern => $faker) {
+                    if (preg_match($pattern, $name)) {
+                        if (isset($property->maxLength)) {
+                            return 'substr(' . $faker . ', 0, ' . $property->maxLength . ')';
+                        } else {
+                            return $faker;
+                        }
+                    }
+                }
+
+                // TODO maybe also consider OpenAPI examples here
+
+                if (isset($property->maxLength)) {
+                    return 'substr($faker->paragraphs(10), 0, ' . $property->maxLength . ')';
+                }
+                return '$faker->words';
+            case 'int':
+                if ($min !== null && $max !== null) {
+                    return "\$faker->numberBetween($min, $max)";
+                } elseif ($min !== null) {
+                    return "\$faker->numberBetween($min, PHP_INT_MAX)";
+                } elseif ($max !== null) {
+                    return "\$faker->numberBetween(0, $max)";
+                }
+
+                $patterns = [
+                    '~timestamp~i' => '$faker->unixTime',
+                    '~.*ed_at$~i' => '$faker->unixTime', // created_at, updated_at, ...
+                ];
+                foreach ($patterns as $pattern => $faker) {
+                    if (preg_match($pattern, $name)) {
+                        return $faker;
+                    }
+                }
+
+                return '$faker->numberBetween(0, PHP_INT_MAX)';
+            case 'bool':
+                return '$faker->boolean';
+            case 'float':
+                if ($min !== null && $max !== null) {
+                    return "\$faker->randomFloat(null, $min, $max)";
+                } elseif ($min !== null) {
+                    return "\$faker->randomFloat(null, $min)";
+                } elseif ($max !== null) {
+                    return "\$faker->randomFloat(null, 0, $max)";
+                }
+                return '$faker->randomFloat()';
+        }
+
+
+        return null;
     }
 
     /**
@@ -746,6 +874,19 @@ class ApiGenerator extends Generator
                         'description' => $model['description'],
                         'attributes' => $model['attributes'],
                         'relations' => $model['relations'],
+                    ])
+                );
+                if (!$this->generateModelFaker) {
+                    continue;
+                }
+                $files[] = new CodeFile(
+                    Yii::getAlias("$modelPath/{$className}Faker.php"),
+                    $this->render('faker.php', [
+                        'className' => "{$className}Faker",
+                        'modelClass' => $className,
+                        'namespace' => $this->modelNamespace,
+                        'attributes' => $model['attributes'],
+//                        'relations' => $model['relations'],
                     ])
                 );
             }

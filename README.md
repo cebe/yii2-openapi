@@ -23,7 +23,7 @@ This library is currently work in progress, current features are checked here wh
 - [x] generate Controllers + Actions
 - [x] generate Models
 - [x] generate Database migration
-- [ ] provide Dummy API via Faker
+- [x] provide Dummy API via Faker
 
 - [ ] update Database and models when API schema changes
 
@@ -66,6 +66,28 @@ To use the web generator, open `index.php?r=gii` and select the `REST API Genera
 On console you can run the generator with `./yii gii/api --openApiPath=@app/openapi.yaml`. Where `@app/openapi.yaml` should be the absolute path to your OpenAPI spec file. This can be JSON as well as YAML (see also [cebe/php-openapi](https://github.com/cebe/php-openapi/) for supported formats).
 
 Run `./yii gii/api --help` for all options.
+
+
+## OpenAPI extensions
+
+This library understands the following extensions to the OpenAPI spec:
+
+### `x-faker`
+
+You may specify custom PHP code for generating fake data for a property:
+
+```yaml
+    Post:
+      properties:
+        id:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+          example: ['one', 'two']
+          x-faker: "$faker->randomElements(['one', 'two', 'three', 'four'])"
+```
 
 
 ## Screenshots

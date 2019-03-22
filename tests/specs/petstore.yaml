@@ -94,6 +94,7 @@ components:
           type: string
         tag:
           type: string
+          x-faker: "$faker->randomElement(['one', 'two', 'three', 'four'])"
     Pets:
       type: array
       items:
