@@ -4,11 +4,11 @@
 namespace <?= $namespace ?>;
 
 /**
- * <?= $description ?>
+ * <?= str_replace("\n", "\n * ", trim($description)) ?>
 
  *
 <?php foreach ($attributes as $attribute): ?>
- * @var <?= $attribute['type'] ?? 'mixed' ?> $<?= rtrim($attribute['name'] . ' ' . $attribute['description']) ?>
+ * @property <?= $attribute['type'] ?? 'mixed' ?> $<?= str_replace("\n", "\n * ", rtrim($attribute['name'] . ' ' . $attribute['description'])) ?>
 
 <?php endforeach; ?>
  */
