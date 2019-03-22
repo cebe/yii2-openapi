@@ -699,8 +699,8 @@ class ApiGenerator extends Generator
                     '~(phone|fax|mobile|telnumber)~i' => '$faker->e164PhoneNumber',
                     '~(^lat|coord)~i' => '$faker->latitude',
                     '~^lon~i' => '$faker->longitude',
-                    '~title~i' => '$faker->sentences',
-                    '~(body|summary|article|content|descr|comment|detail)~i' => '$faker->text',
+                    '~title~i' => '$faker->sentence',
+                    '~(body|summary|article|content|descr|comment|detail)~i' => '$faker->paragraphs(6, true)',
                     '~(url|site|website)~i' => '$faker->url',
                 ];
                 foreach ($patterns as $pattern => $faker) {
@@ -716,9 +716,9 @@ class ApiGenerator extends Generator
                 // TODO maybe also consider OpenAPI examples here
 
                 if (isset($property->maxLength)) {
-                    return 'substr($faker->paragraphs(10), 0, ' . $property->maxLength . ')';
+                    return 'substr($faker->text(' . $property->maxLength . '), 0, ' . $property->maxLength . ')';
                 }
-                return '$faker->words';
+                return '$faker->sentence';
             case 'int':
                 if ($min !== null && $max !== null) {
                     return "\$faker->numberBetween($min, $max)";
