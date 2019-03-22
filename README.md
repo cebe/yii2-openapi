@@ -1,7 +1,5 @@
 # yii2-openapi
 
-> **Note: The status of this code is experimental. Use at your own risk.**
-
 REST API application generator for Yii2, openapi 3.0 YAML -> Yii2.
 
 Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/extension/yiisoft/yii2-gii).
