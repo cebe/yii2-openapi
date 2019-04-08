@@ -36,7 +36,11 @@ This library is currently work in progress, current features are checked here wh
 
 ## Usage
 
-In your Yii application config (works for console as well as web):
+You can use this package in your existing application or start a new project using the
+[yii2-app-api](https://github.com/cebe/yii2-app-api) application template.
+For usage of the template, see instructions in the template repo readme.
+
+In your existing Yii application config (works for console as well as web):
 
 ```php
 <?php
