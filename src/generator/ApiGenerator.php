@@ -223,15 +223,21 @@ class ApiGenerator extends Generator
             if (!file_exists($path)) {
                 return [];
             }
-            return array_map(function ($dir) use ($path, $alias) {
-                return str_replace('/', '\\', substr($alias, 1) . substr($dir, strlen($path)));
-            }, FileHelper::findDirectories($path, ['except' => [
-                'vendor/',
-                'runtime/',
-                'assets/',
-                '.git/',
-                '.svn/',
-            ]]));
+            try {
+                return array_map(function ($dir) use ($path, $alias) {
+                    return str_replace('/', '\\', substr($alias, 1) . substr($dir, strlen($path)));
+                }, FileHelper::findDirectories($path, ['except' => [
+                    'vendor/',
+                    'runtime/',
+                    'assets/',
+                    '.git/',
+                    '.svn/',
+                ]]));
+            } catch (\Throwable $e) {
+                // ignore errors with file permissions
+                Yii::error($e);
+                return [];
+            }
         }, array_keys(Yii::$aliases));
         $namespaces = array_merge(...$namespaces);
 
