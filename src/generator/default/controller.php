@@ -148,7 +148,7 @@ endforeach;
 
     }
 <?php endforeach; ?>
-<?php foreach($findModel as $modelName => $methodName): ?>
+<?php foreach ($findModel as $modelName => $methodName): ?>
 
     /**
      * Returns the <?= \yii\helpers\StringHelper::basename($modelName) ?> model based on the primary key given.
