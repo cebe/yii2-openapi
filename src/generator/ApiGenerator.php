@@ -396,7 +396,7 @@ class ApiGenerator extends Generator
                     'route' => "$controller/$a$action",
                     'actionParams' => $actionParams,
                     'openApiOperation' => $operation,
-                    'modelClass' => $this->modelNamespace . '\\' . $modelClass,
+                    'modelClass' => $modelClass !== null ? $this->modelNamespace . '\\' . $modelClass : null,
                     'responseWrapper' => $responseWrapper,
                 ];
             }
@@ -464,16 +464,16 @@ class ApiGenerator extends Generator
             $referencedSchema = $content->schema->resolve();
             // Model data is directly returned
             if ($referencedSchema->type === null || $referencedSchema->type === 'object') {
-                $ref = $content->schema->getReference();
-                if (strpos($ref, '#/components/schemas/') === 0) {
-                    return [substr($ref, 21), '', ''];
+                $ref = $content->schema->getJsonReference()->getJsonPointer()->getPointer();
+                if (strpos($ref, '/components/schemas/') === 0) {
+                    return [substr($ref, 20), '', ''];
                 }
             }
             // an array of Model data is directly returned
             if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
-                $ref = $referencedSchema->items->getReference();
-                if (strpos($ref, '#/components/schemas/') === 0) {
-                    return [substr($ref, 21), '', ''];
+                $ref = $referencedSchema->items->getJsonReference()->getJsonPointer()->getPointer();
+                if (strpos($ref, '/components/schemas/') === 0) {
+                    return [substr($ref, 20), '', ''];
                 }
             }
         } else {
@@ -488,24 +488,30 @@ class ApiGenerator extends Generator
                     $referencedModelSchema = $property->resolve();
                     if ($referencedModelSchema->type === null || $referencedModelSchema->type === 'object') {
                         // Model data is wrapped
-                        $ref = $property->getReference();
-                        if (strpos($ref, '#/components/schemas/') === 0) {
-                            return [substr($ref, 21), $propertyName, null];
+                        $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
+                        if (strpos($ref, '/components/schemas/') === 0) {
+                            return [substr($ref, 20), $propertyName, null];
                         }
                     } elseif ($referencedModelSchema->type === 'array' && $referencedModelSchema->items instanceof Reference) {
                         // an array of Model data is wrapped
-                        $ref = $referencedModelSchema->items->getReference();
-                        if (strpos($ref, '#/components/schemas/') === 0) {
-                            return [substr($ref, 21), null, $propertyName];
+                        $ref = $referencedModelSchema->items->getJsonReference()->getJsonPointer()->getPointer();
+                        if (strpos($ref, '/components/schemas/') === 0) {
+                            return [substr($ref, 20), null, $propertyName];
                         }
                     }
                 } elseif ($property->type === 'array' && $property->items instanceof Reference) {
                     // an array of Model data is wrapped
-                    $ref = $property->items->getReference();
-                    if (strpos($ref, '#/components/schemas/') === 0) {
-                        return [substr($ref, 21), null, $propertyName];
+                    $ref = $property->items->getJsonReference()->getJsonPointer()->getPointer();
+                    if (strpos($ref, '/components/schemas/') === 0) {
+                        return [substr($ref, 20), null, $propertyName];
                     }
                 }
+            }
+        }
+        if ($referencedSchema->type === 'array' && $referencedSchema->items instanceof Reference) {
+            $ref = $referencedSchema->items->getJsonReference()->getJsonPointer()->getPointer();
+            if (strpos($ref, '/components/schemas/') === 0) {
+                return [substr($ref, 20), '', ''];
             }
         }
         return [null, null, null];
@@ -588,13 +594,13 @@ class ApiGenerator extends Generator
 
             foreach ($schema->properties as $name => $property) {
                 if ($property instanceof Reference) {
-                    $ref = $property->getReference();
+                    $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
                     $resolvedProperty = $property->resolve();
                     $dbName = "{$name}_id";
                     $dbType = 'integer'; // for a foreign key
-                    if (strpos($ref, '#/components/schemas/') === 0) {
+                    if (strpos($ref, '/components/schemas/') === 0) {
                         // relation
-                        $type = substr($ref, 21);
+                        $type = substr($ref, 20);
                         $relations[$name] = [
                             'class' => $type,
                             'method' => 'hasOne',
@@ -777,9 +783,9 @@ class ApiGenerator extends Generator
                 return 'float';
             case 'array':
                 if (isset($schema->items) && $schema->items instanceof Reference) {
-                    $ref = $schema->items->getReference();
-                    if (strpos($ref, '#/components/schemas/') === 0) {
-                        return [substr($ref, 21) . '[]', substr($ref, 21)];
+                    $ref = $schema->items->getJsonReference()->getJsonPointer()->getPointer();
+                    if (strpos($ref, '/components/schemas/') === 0) {
+                        return [substr($ref, 20) . '[]', substr($ref, 20)];
                     }
                 }
                 // no break here
@@ -813,9 +819,9 @@ class ApiGenerator extends Generator
 //            case 'array':
         // TODO array might refer to has_many relation
 //                if (isset($schema->items) && $schema->items instanceof Reference) {
-//                    $ref = $schema->items->getReference();
-//                    if (strpos($ref, '#/components/schemas/') === 0) {
-//                        return substr($ref, 21) . '[]';
+//                    $ref = $schema->items->getJsonReference()->getJsonPointer()->getPointer();
+//                    if (strpos($ref, '/components/schemas/') === 0) {
+//                        return substr($ref, 20) . '[]';
 //                    }
 //                }
 //                // no break here
