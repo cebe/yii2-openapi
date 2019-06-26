@@ -625,14 +625,22 @@ class ApiGenerator extends Generator
                     $type = $type[0];
                 }
 
-                $attributes[] = [
+                $attributes[$name] = [
                     'name' => $name,
                     'type' => $type,
                     'dbType' => $dbType,
                     'dbName' => $dbName,
+                    'required' => false,
+                    'readOnly' => $resolvedProperty->readOnly ?? false,
                     'description' => $resolvedProperty->description,
                     'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
                 ];
+            }
+            foreach ($schema->required as $property) {
+                if (!isset($attributes[$property])) {
+                    continue;
+                }
+                $attributes[$property]['required'] = true;
             }
 
             $models[$schemaName] = [

@@ -16,4 +16,13 @@ class Pet extends \yii\db\ActiveRecord
         return '{{%pets}}';
     }
 
+    public function rules()
+    {
+        return [
+            [['name', 'tag'], 'trim'],
+            [['name'], 'required'],
+            [['name', 'tag'], 'string'],
+        ];
+    }
+
 }

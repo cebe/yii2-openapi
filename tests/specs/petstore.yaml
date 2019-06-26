@@ -90,6 +90,7 @@ components:
         id:
           type: integer
           format: int64
+          readOnly: True
         name:
           type: string
         tag:
