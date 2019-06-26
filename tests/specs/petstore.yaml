@@ -53,14 +53,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /pets/{petId}:
+  /pets/{id}:
     get:
       summary: Info for a specific pet
       operationId: showPetById
       tags:
         - pets
       parameters:
-        - name: petId
+        - name: id
           in: path
           required: true
           description: The id of the pet to retrieve
@@ -79,6 +79,41 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    patch:
+      summary: update a specific pet
+      operationId: updatePetById
+      tags:
+        - pets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the pet to update
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The updated pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+    delete:
+      summary: delete a specific pet
+      operationId: deletePetById
+      tags:
+        - pets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The id of the pet to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: successfully deleted pet
+
 components:
   schemas:
     Pet:

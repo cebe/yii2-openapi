@@ -7,5 +7,7 @@
 return array (
   'GET pets' => 'pet/index',
   'POST pets' => 'pet/create',
-  'GET pets/<petId>' => 'pet/view',
+  'GET pets/<id>' => 'pet/view',
+  'DELETE pets/<id>' => 'pet/delete',
+  'PATCH pets/<id>' => 'pet/update',
 );

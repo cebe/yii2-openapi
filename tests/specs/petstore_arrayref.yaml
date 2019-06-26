@@ -30,7 +30,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Pets"
         default:
@@ -75,6 +75,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+    patch:
+      summary: update a specific pet
+      operationId: updatePetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to update
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The updated pet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Pet"
+    delete:
+      summary: delete a specific pet
+      operationId: deletePetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: The id of the pet to delete
+          schema:
+            type: string
+      responses:
+        '204':
+          description: successfully deleted pet
 components:
   schemas:
     Pet:

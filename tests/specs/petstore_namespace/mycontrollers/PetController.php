@@ -22,6 +22,16 @@ class PetController extends \yii\rest\Controller
                 'modelClass' => \app\mymodels\Pet::class,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
+            'delete' => [
+                'class' => \yii\rest\DeleteAction::class,
+                'modelClass' => \app\mymodels\Pet::class,
+                'checkAccess' => [$this, 'checkAccess'],
+            ],
+            'update' => [
+                'class' => \yii\rest\UpdateAction::class,
+                'modelClass' => \app\mymodels\Pet::class,
+                'checkAccess' => [$this, 'checkAccess'],
+            ],
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
             ],
@@ -44,5 +54,4 @@ class PetController extends \yii\rest\Controller
     {
         // TODO implement checkAccess
     }
-
 }

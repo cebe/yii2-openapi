@@ -17,11 +17,6 @@ class PetController extends \yii\rest\Controller
                 'modelClass' => \app\models\Pet::class,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
-            'view' => [
-                'class' => \yii\rest\ViewAction::class,
-                'modelClass' => \app\models\Pet::class,
-                'checkAccess' => [$this, 'checkAccess'],
-            ],
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
             ],
@@ -45,4 +40,51 @@ class PetController extends \yii\rest\Controller
         // TODO implement checkAccess
     }
 
+    public function actionView($petId)
+    {
+        $model = $this->findPetModel($petId);
+        $this->checkAccess('view', $model);
+        return $model;
+    }
+
+    public function actionDelete($petId)
+    {
+        $model = $this->findPetModel($petId);
+        $this->checkAccess('delete', $model);
+
+        if ($model->delete() === false) {
+            throw new ServerErrorHttpException('Failed to delete the object for unknown reason.');
+        }
+
+        \Yii::$app->response->setStatusCode(204);
+    }
+
+    public function actionUpdate($petId)
+    {
+        $model = $this->findPetModel($petId);
+        $this->checkAccess('update', $model);
+
+        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        if ($model->save() === false && !$model->hasErrors()) {
+            throw new ServerErrorHttpException('Failed to update the object for unknown reason.');
+        }
+
+        return $model;
+    }
+
+    /**
+     * Returns the Pet model based on the primary key given.
+     * If the data model is not found, a 404 HTTP exception will be raised.
+     * @param string $id the ID of the model to be loaded.
+     * @return \app\models\Pet the model found
+     * @throws NotFoundHttpException if the model cannot be found.
+     */
+    public function findPetModel($id)
+    {
+        $model = \app\models\Pet::findOne($id);
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException("Object not found: $id");
+    }
 }

@@ -1,12 +1,49 @@
 <?php echo '<?php';
 
 $modelActions = [
-    'index' => yii\rest\IndexAction::class,
-    'view' => yii\rest\ViewAction::class,
-    'create' => yii\rest\CreateAction::class,
-    'update' => yii\rest\UpdateAction::class,
-    'delete' => yii\rest\UpdateAction::class,
+    'index' => [
+        'class' => yii\rest\IndexAction::class,
+    ],
+    'view' => [
+        'class' => yii\rest\ViewAction::class,
+        'implementation' => <<<'PHP'
+        $model = $this->findModel($id);
+        $this->checkAccess(ACTION_ID, $model);
+        return $model;
+PHP
+    ],
+    'create' => [
+        'class' => yii\rest\CreateAction::class,
+    ],
+    'update' => [
+        'class' => yii\rest\UpdateAction::class,
+        'implementation' => <<<'PHP'
+        $model = $this->findModel($id);
+        $this->checkAccess(ACTION_ID, $model);
+
+        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
+        if ($model->save() === false && !$model->hasErrors()) {
+            throw new ServerErrorHttpException('Failed to update the object for unknown reason.');
+        }
+
+        return $model;
+PHP
+    ],
+    'delete' => [
+        'class' => yii\rest\DeleteAction::class,
+        'implementation' => <<<'PHP'
+        $model = $this->findModel($id);
+        $this->checkAccess(ACTION_ID, $model);
+
+        if ($model->delete() === false) {
+            throw new ServerErrorHttpException('Failed to delete the object for unknown reason.');
+        }
+
+        \Yii::$app->response->setStatusCode(204);
+PHP
+    ],
 ];
+$findModel = [];
 
 ?>
 
@@ -21,9 +58,9 @@ class <?= $className ?> extends \yii\rest\Controller
 <?php
 
 foreach ($actions as $action):
-    if (isset($modelActions[$action['id']], $action['modelClass'])): ?>
+    if (isset($modelActions[$action['id']], $action['modelClass']) && ($action['idParam'] === null || $action['idParam'] === 'id')): ?>
             <?= var_export($action['id'], true) ?> => [
-                'class' => \<?= $modelActions[$action['id']] ?>::class,
+                'class' => \<?= $modelActions[$action['id']]['class'] ?>::class,
                 'modelClass' => <?= '\\' . $action['modelClass'] . '::class' ?>,
                 'checkAccess' => [$this, 'checkAccess'],
             ],
@@ -84,11 +121,19 @@ endforeach;
     {
         // TODO implement checkAccess
     }
-
 <?php
     foreach ($actions as $action):
         if (isset($modelActions[$action['id']], $action['modelClass'])) {
-            continue;
+            if ($action['idParam'] === null || $action['idParam'] === 'id') {
+                continue;
+            }
+            if (isset($modelActions[$action['id']]['implementation'])) {
+                $implementation = $modelActions[$action['id']]['implementation'];
+                $findModel[$action['modelClass']] = 'find' . \yii\helpers\StringHelper::basename($action['modelClass']) . 'Model';
+                $implementation = str_replace('findModel', $findModel[$action['modelClass']], $implementation);
+                $implementation = str_replace('$id', '$'.$action['idParam'], $implementation);
+                $implementation = str_replace('ACTION_ID', var_export($action['id'], true), $implementation);
+            }
         }
 
         $actionName = 'action' . \yii\helpers\Inflector::id2camel($action['id']);
@@ -96,11 +141,29 @@ endforeach;
             return "\$$p";
         }, $action['params']));
         ?>
+
     public function <?= $actionName ?>(<?= $actionParams ?>)
     {
-        // TODO implement <?= $actionName ?>
+<?= $implementation ?? '        // TODO implement ' . $actionName ?>
 
     }
+<?php endforeach; ?>
+<?php foreach($findModel as $modelName => $methodName): ?>
 
+    /**
+     * Returns the <?= \yii\helpers\StringHelper::basename($modelName) ?> model based on the primary key given.
+     * If the data model is not found, a 404 HTTP exception will be raised.
+     * @param string $id the ID of the model to be loaded.
+     * @return \<?= $modelName ?> the model found
+     * @throws NotFoundHttpException if the model cannot be found.
+     */
+    public function <?= $methodName ?>($id)
+    {
+        $model = \<?= $modelName ?>::findOne($id);
+        if ($model !== null) {
+            return $model;
+        }
+        throw new NotFoundHttpException("Object not found: $id");
+    }
 <?php endforeach; ?>
 }

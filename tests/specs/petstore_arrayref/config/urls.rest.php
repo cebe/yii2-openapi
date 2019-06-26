@@ -8,4 +8,6 @@ return array (
   'GET pets' => 'pet/index',
   'POST pets' => 'pet/create',
   'GET pets/<petId>' => 'pet/view',
+  'DELETE pets/<petId>' => 'pet/delete',
+  'PATCH pets/<petId>' => 'pet/update',
 );
