@@ -103,8 +103,9 @@ Generated files:
 
 ![Gii Generated Files](doc/screenshot-files.png)
 
-
 # Support
+
+**Need help with your API project?**
 
 Professional support, consulting as well as software development services are available:
 
