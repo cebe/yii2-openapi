@@ -12,4 +12,8 @@ return array (
   'PATCH pets/<id>' => 'pet/update',
   'GET petComments' => 'pet-comment/index',
   'GET pet-details' => 'pet-detail/index',
+  'pets' => 'pet/options',
+  'pets/<id>' => 'pet/options',
+  'petComments' => 'pet-comment/options',
+  'pet-details' => 'pet-detail/options',
 );

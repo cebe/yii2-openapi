@@ -860,9 +860,15 @@ class ApiGenerator extends Generator
 
         if ($this->generateUrls) {
             $urls = [];
+            $optionsUrls = [];
             foreach ($this->generateUrls() as $urlRule) {
                 $urls["{$urlRule['method']} {$urlRule['pattern']}"] = $urlRule['route'];
+                // add options action
+                $parts = explode('/', $urlRule['route']);
+                unset($parts[count($parts) - 1]);
+                $optionsUrls[$urlRule['pattern']] = implode('/', $parts) . '/options';
             }
+            $urls = array_merge($urls, $optionsUrls);
             $files[] = new CodeFile(
                 Yii::getAlias($this->urlConfigFile),
                 $this->render('urls.php', [
