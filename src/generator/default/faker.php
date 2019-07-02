@@ -4,6 +4,7 @@
 namespace <?= $namespace ?>;
 
 use Faker\Factory as FakerFactory;
+use Faker\UniqueGenerator;
 
 /**
  * Fake data generator for <?= $modelClass ?>
@@ -15,6 +16,7 @@ class <?= $className ?>
     public function generateModel()
     {
         $faker = FakerFactory::create(\Yii::$app->language);
+        $uniqueFaker = new UniqueGenerator($faker);
         $model = new <?= $modelClass ?>;
 <?php foreach ($attributes as $attribute):
         if (!isset($attribute['faker'])) {

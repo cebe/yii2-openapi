@@ -701,8 +701,8 @@ class ApiGenerator extends Generator
                 }
 
                 $patterns = [
-                    '~_id$~' => '$faker->numberBetween(0, PHP_INT_MAX)',
-                    '~uuid$~' => '$faker->uuid',
+                    '~_id$~' => '$uniqueFaker->numberBetween(0, PHP_INT_MAX)',
+                    '~uuid$~' => '$uniqueFaker->uuid',
                     '~firstname~i' => '$faker->firstName',
                     '~(last|sur)name~i' => '$faker->lastName',
                     '~(username|login)~i' => '$faker->userName',
@@ -746,12 +746,14 @@ class ApiGenerator extends Generator
                 }
                 return '$faker->sentence';
             case 'int':
+                $fakerVariable = preg_match('~_?id$~', $name) ? 'uniqueFaker' : 'faker';
+
                 if ($min !== null && $max !== null) {
-                    return "\$faker->numberBetween($min, $max)";
+                    return "\${$fakerVariable}->numberBetween($min, $max)";
                 } elseif ($min !== null) {
-                    return "\$faker->numberBetween($min, PHP_INT_MAX)";
+                    return "\${$fakerVariable}->numberBetween($min, PHP_INT_MAX)";
                 } elseif ($max !== null) {
-                    return "\$faker->numberBetween(0, $max)";
+                    return "\${$fakerVariable}->numberBetween(0, $max)";
                 }
 
                 $patterns = [
@@ -764,7 +766,7 @@ class ApiGenerator extends Generator
                     }
                 }
 
-                return '$faker->numberBetween(0, PHP_INT_MAX)';
+                return "\${$fakerVariable}->numberBetween(0, PHP_INT_MAX)";
             case 'bool':
                 return '$faker->boolean';
             case 'float':
