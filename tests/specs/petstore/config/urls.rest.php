@@ -10,4 +10,6 @@ return array (
   'GET pets/<id>' => 'pet/view',
   'DELETE pets/<id>' => 'pet/delete',
   'PATCH pets/<id>' => 'pet/update',
+  'GET petComments' => 'pet-comment/index',
+  'GET pet-details' => 'pet-detail/index',
 );

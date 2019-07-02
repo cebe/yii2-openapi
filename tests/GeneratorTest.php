@@ -40,7 +40,7 @@ class GeneratorTest extends \PHPUnit\Framework\TestCase
         ]);
 
         $generator = $this->createGenerator($testFile);
-        $this->assertTrue($generator->validate());
+        $this->assertTrue($generator->validate(), print_r($generator->getErrors(), true));
 
         $codeFiles = $generator->generate();
         foreach($codeFiles as $file) {

@@ -113,6 +113,18 @@ paths:
       responses:
         '204':
           description: successfully deleted pet
+  /petComments:
+    get:
+      description: list all pet comments
+      responses:
+        '200':
+          description: list of comments
+  /pet-details:
+    get:
+      description: list all pet details
+      responses:
+        '200':
+          description: list of details
 
 components:
   schemas:

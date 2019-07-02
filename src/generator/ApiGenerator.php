@@ -366,7 +366,7 @@ class ApiGenerator extends Generator
                 } elseif ($params) {
                     $action[] = $part;
                 } else {
-                    $controller[] = Inflector::singularize($part);
+                    $controller[] = Inflector::camel2id(Inflector::singularize($part));
                 }
             }
             $pattern = implode('/', $parts);
