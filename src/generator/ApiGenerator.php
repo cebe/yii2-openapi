@@ -694,14 +694,14 @@ class ApiGenerator extends Generator
                     return '$faker->iso8601';
                 }
                 if (!empty($property->enum) && is_array($property->enum)) {
-                    return '$faker->randomElement('.var_export($property->enum).')';
+                    return '$faker->randomElement('.var_export($property->enum, true).')';
                 }
                 if ($name === 'title' && isset($property->maxLength) && $property->maxLength < 10) {
                     return '$faker->title';
                 }
 
                 $patterns = [
-                    '~_id$~' => '$uniqueFaker->numberBetween(0, PHP_INT_MAX)',
+                    '~_id$~' => '$uniqueFaker->numberBetween(0, 1000000)',
                     '~uuid$~' => '$uniqueFaker->uuid',
                     '~firstname~i' => '$faker->firstName',
                     '~(last|sur)name~i' => '$faker->lastName',
