@@ -642,11 +642,13 @@ class ApiGenerator extends Generator
                     'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
                 ];
             }
-            foreach ($schema->required as $property) {
-                if (!isset($attributes[$property])) {
-                    continue;
+            if (!empty($schema->required)) {
+                foreach ($schema->required as $property) {
+                    if (!isset($attributes[$property])) {
+                        continue;
+                    }
+                    $attributes[$property]['required'] = true;
                 }
-                $attributes[$property]['required'] = true;
             }
 
             $models[$schemaName] = [
