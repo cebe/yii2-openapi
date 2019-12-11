@@ -685,9 +685,9 @@ class ApiGenerator extends Generator
             $min = $property->exclusiveMinimum + 1;
         }
         if (isset($property->maximum)) {
-            $min = $property->maximum;
+            $max = $property->maximum;
         } elseif (isset($property->exclusiveMaximum)) {
-            $min = $property->exclusiveMaximum - 1;
+            $max = $property->exclusiveMaximum - 1;
         }
 
         switch ($type) {
