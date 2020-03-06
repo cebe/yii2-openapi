@@ -92,6 +92,19 @@ You may specify custom PHP code for generating fake data for a property:
           x-faker: "$faker->randomElements(['one', 'two', 'three', 'four'])"
 ```
 
+### `x-table`
+
+Specify the table name for a Schema that defines a model which is stored in the database.
+
+```yaml
+    Post:
+      x-table: posts
+      properties:
+        id:
+           type: integer
+        title:
+           type: string
+```
 
 ## Screenshots
 

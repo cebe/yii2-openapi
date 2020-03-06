@@ -3,23 +3,21 @@
 
 namespace <?= $namespace ?>;
 
-use yii\base\Model;
-
 /**
  * <?= str_replace("\n", "\n * ", trim($description)) ?>
 
  *
- */
-class <?= $className ?> extends Model
-{
 <?php foreach ($attributes as $attribute): ?>
-    /**
-     * @var <?= trim(($attribute['type'] ?? 'mixed') . ' ' . str_replace("\n", "\n     * ", rtrim($attribute['description']))) ?>
+ * @property <?= $attribute['type'] ?? 'mixed' ?> $<?= str_replace("\n", "\n * ", rtrim($attribute['name'] . ' ' . $attribute['description'])) ?>
 
-     */
-    public $<?= $attribute['name'] ?>;
 <?php endforeach; ?>
-
+ */
+class <?= $className ?> extends \yii\db\ActiveRecord
+{
+    public static function tableName()
+    {
+        return <?= var_export($tableName) ?>;
+    }
 
     public function rules()
     {
@@ -70,4 +68,18 @@ class <?= $className ?> extends Model
 ?>
         ];
     }
+
+<?php foreach ($relations as $relationName => $relation): ?>
+    public function get<?= ucfirst($relationName) ?>()
+    {
+        return $this-><?= $relation['method'] ?>(<?= $relation['class'] ?>::class, <?php
+            echo str_replace(
+                    [',', '=>', ', ]'],
+                    [', ', ' => ', ']'],
+                    preg_replace('~\s+~', '', \yii\helpers\VarDumper::export($relation['link']))
+            )
+        ?>);
+    }
+
+<?php endforeach; ?>
 }

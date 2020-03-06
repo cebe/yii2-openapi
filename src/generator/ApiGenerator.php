@@ -79,6 +79,10 @@ class ApiGenerator extends Generator
      * @var array List of model names to exclude.
      */
     public $excludeModels = [];
+    /**
+     * @var array Generate database models only for Schemas that have the `x-table` annotation.
+     */
+    public $generateModelsOnlyXTable = false;
 
     /**
      * @var bool whether to generate database migrations.
@@ -124,7 +128,7 @@ class ApiGenerator extends Generator
 
             [['controllerNamespace', 'migrationNamespace'], 'default', 'value' => null],
 
-            [['ignoreSpecErrors', 'generateUrls', 'generateModels', 'generateModelFaker', 'generateControllers'], 'boolean'],
+            [['ignoreSpecErrors', 'generateUrls', 'generateModels', 'generateModelFaker', 'generateControllers', 'generateModelsOnlyXTable'], 'boolean'],
 
             ['openApiPath', 'required'],
             ['openApiPath', 'validateSpec'],
@@ -162,6 +166,7 @@ class ApiGenerator extends Generator
         return array_merge(parent::attributeLabels(), [
             'openApiPath' => 'OpenAPI 3 Spec file',
             'generateUrls' => 'Generate URL Rules',
+            'generateModelsOnlyXTable' => 'Generate DB Models and Tables only for schemas that include `x-table` property',
         ]);
     }
 
@@ -586,8 +591,7 @@ class ApiGenerator extends Generator
             if ($schema instanceof Reference) {
                 $schema = $schema->resolve();
             }
-            $attributes = [];
-            $relations = [];
+
             if ((empty($schema->type) || $schema->type === 'object') && empty($schema->properties)) {
                 continue;
             }
@@ -598,71 +602,85 @@ class ApiGenerator extends Generator
                 continue;
             }
 
-            foreach ($schema->properties as $name => $property) {
-                if ($property instanceof Reference) {
-                    $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
-                    $resolvedProperty = $property->resolve();
-                    $dbName = "{$name}_id";
-                    $dbType = 'integer'; // for a foreign key
-                    if (strpos($ref, '/components/schemas/') === 0) {
-                        // relation
-                        $type = substr($ref, 20);
-                        $relations[$name] = [
-                            'class' => $type,
-                            'method' => 'hasOne',
-                            'link' => ['id' => $dbName], // TODO pk may not be 'id'
-                        ];
-                    } else {
-                        $type = $this->getSchemaType($resolvedProperty);
-                    }
-                } else {
-                    $resolvedProperty = $property;
-                    $type = $this->getSchemaType($property);
-                    $dbName = $name;
-                    $dbType = $this->getDbType($name, $property);
-                }
-                // relation
-                if (is_array($type)) {
-                    $relations[$name] = [
-                        'class' => $type[1],
-                        'method' => 'hasMany',
-                        'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
-                    ];
-                    $type = $type[0];
-                }
-
-                $attributes[$name] = [
-                    'name' => $name,
-                    'type' => $type,
-                    'dbType' => $dbType,
-                    'dbName' => $dbName,
-                    'required' => false,
-                    'readOnly' => $resolvedProperty->readOnly ?? false,
-                    'description' => $resolvedProperty->description,
-                    'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
-                ];
-            }
-            if (!empty($schema->required)) {
-                foreach ($schema->required as $property) {
-                    if (!isset($attributes[$property])) {
-                        continue;
-                    }
-                    $attributes[$property]['required'] = true;
-                }
-            }
+            list($attributes, $relations) = $this->generateActiveRecordAttributes($schemaName, $schema);
 
             $models[$schemaName] = [
                 'name' => $schemaName,
-                'tableName' => '{{%' . Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_') . '}}',
+                'tableName' => '{{%' . ($schema->{'x-table'} ?? Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_')) . '}}',
+                'isDbModel' => true,
                 'description' => $schema->description,
                 'attributes' => $attributes,
                 'relations' => $relations,
             ];
+
+            if ($this->generateModelsOnlyXTable && empty($schema->{'x-table'})) {
+                unset($models[$schemaName]['tableName']);
+                $models[$schemaName]['isDbModel'] = false;
+            }
         }
 
         // TODO generate hasMany relations and inverse relations
 
         return $models;
+    }
+
+    private function generateActiveRecordAttributes($schemaName, Schema $schema)
+    {
+        $attributes = [];
+        $relations = [];
+        foreach ($schema->properties as $name => $property) {
+            if ($property instanceof Reference) {
+                $ref = $property->getJsonReference()->getJsonPointer()->getPointer();
+                $resolvedProperty = $property->resolve();
+                $dbName = "{$name}_id";
+                $dbType = 'integer'; // for a foreign key
+                if (strpos($ref, '/components/schemas/') === 0) {
+                    // relation
+                    $type = substr($ref, 20);
+                    $relations[$name] = [
+                        'class' => $type,
+                        'method' => 'hasOne',
+                        'link' => ['id' => $dbName], // TODO pk may not be 'id'
+                    ];
+                } else {
+                    $type = $this->getSchemaType($resolvedProperty);
+                }
+            } else {
+                $resolvedProperty = $property;
+                $type = $this->getSchemaType($property);
+                $dbName = $name;
+                $dbType = $this->getDbType($name, $property);
+            }
+            // relation
+            if (is_array($type)) {
+                $relations[$name] = [
+                    'class' => $type[1],
+                    'method' => 'hasMany',
+                    'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
+                ];
+                $type = $type[0];
+            }
+
+            $attributes[$name] = [
+                'name' => $name,
+                'type' => $type,
+                'dbType' => $dbType,
+                'dbName' => $dbName,
+                'required' => false,
+                'readOnly' => $resolvedProperty->readOnly ?? false,
+                'description' => $resolvedProperty->description,
+                'faker' => $this->guessModelFaker($name, $type, $resolvedProperty),
+            ];
+        }
+        if (!empty($schema->required)) {
+            foreach ($schema->required as $property) {
+                if (!isset($attributes[$property])) {
+                    continue;
+                }
+                $attributes[$property]['required'] = true;
+            }
+        }
+        return [$attributes, $relations];
     }
 
     /**
@@ -681,13 +699,15 @@ class ApiGenerator extends Generator
         $min = $max = null;
         if (isset($property->minimum)) {
             $min = $property->minimum;
-        } elseif (isset($property->exclusiveMinimum)) {
-            $min = $property->exclusiveMinimum + 1;
+            if ($property->exclusiveMinimum) {
+                $min++;
+            }
         }
         if (isset($property->maximum)) {
             $max = $property->maximum;
-        } elseif (isset($property->exclusiveMaximum)) {
-            $max = $property->exclusiveMaximum - 1;
+            if ($property->exclusiveMaximum) {
+                $max++;
+            }
         }
 
         switch ($type) {
@@ -901,30 +921,42 @@ class ApiGenerator extends Generator
             $modelPath = $this->getPathFromNamespace($this->modelNamespace);
             foreach ($models as $modelName => $model) {
                 $className = $modelName;
-                $files[] = new CodeFile(
-                    Yii::getAlias("$modelPath/$className.php"),
-                    $this->render('model.php', [
-                        'className' => $className,
-                        'tableName' => $model['tableName'],
-                        'namespace' => $this->modelNamespace,
-                        'description' => $model['description'],
-                        'attributes' => $model['attributes'],
-                        'relations' => $model['relations'],
-                    ])
-                );
-                if (!$this->generateModelFaker) {
-                    continue;
-                }
-                $files[] = new CodeFile(
-                    Yii::getAlias("$modelPath/{$className}Faker.php"),
-                    $this->render('faker.php', [
-                        'className' => "{$className}Faker",
-                        'modelClass' => $className,
-                        'namespace' => $this->modelNamespace,
-                        'attributes' => $model['attributes'],
+                if ($model['isDbModel']) {
+                    $files[] = new CodeFile(
+                        Yii::getAlias("$modelPath/$className.php"),
+                        $this->render('dbmodel.php', [
+                            'className' => $className,
+                            'tableName' => $model['tableName'],
+                            'namespace' => $this->modelNamespace,
+                            'description' => $model['description'],
+                            'attributes' => $model['attributes'],
+                            'relations' => $model['relations'],
+                        ])
+                    );
+                    if (!$this->generateModelFaker) {
+                        continue;
+                    }
+                    $files[] = new CodeFile(
+                        Yii::getAlias("$modelPath/{$className}Faker.php"),
+                        $this->render('faker.php', [
+                            'className' => "{$className}Faker",
+                            'modelClass' => $className,
+                            'namespace' => $this->modelNamespace,
+                            'attributes' => $model['attributes'],
 //                        'relations' => $model['relations'],
-                    ])
-                );
+                        ])
+                    );
+                } else {
+                    $files[] = new CodeFile(
+                        Yii::getAlias("$modelPath/$className.php"),
+                        $this->render('model.php', [
+                            'className' => $className,
+                            'namespace' => $this->modelNamespace,
+                            'description' => $model['description'],
+                            'attributes' => $model['attributes'],
+                        ])
+                    );
+                }
             }
         }
 
@@ -935,6 +967,11 @@ class ApiGenerator extends Generator
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
             foreach ($models as $modelName => $model) {
+
+                if (!$model['isDbModel']) {
+                    continue;
+                }
+
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp
                 // use fixed time here instead
