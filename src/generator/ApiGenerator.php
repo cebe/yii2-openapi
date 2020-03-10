@@ -16,6 +16,7 @@ use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use Exception;
+use Laminas\Code\Generator\ClassGenerator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
@@ -98,8 +99,6 @@ class ApiGenerator extends Generator
      * Defaults to `null` which means that migrations are generated without namespace.
      */
     public $migrationNamespace;
-
-
 
 
     /**
@@ -270,6 +269,9 @@ class ApiGenerator extends Generator
             $required[] = 'controller.php';
         }
         if ($this->generateModels) {
+            $required[] = 'dbmodel.php';
+        }
+        if ($this->generateModelsOnlyXTable) {
             $required[] = 'model.php';
         }
         if ($this->generateModelFaker) {
@@ -923,16 +925,29 @@ class ApiGenerator extends Generator
                 $className = $modelName;
                 if ($model['isDbModel']) {
                     $files[] = new CodeFile(
-                        Yii::getAlias("$modelPath/$className.php"),
+                        Yii::getAlias("$modelPath/base/$className.php"),
                         $this->render('dbmodel.php', [
                             'className' => $className,
                             'tableName' => $model['tableName'],
-                            'namespace' => $this->modelNamespace,
+                            'namespace' => $this->modelNamespace . '\\base',
                             'description' => $model['description'],
                             'attributes' => $model['attributes'],
                             'relations' => $model['relations'],
                         ])
                     );
+                    // only generate custom classes if they do not exist, do not override
+                    if (!file_exists(Yii::getAlias("$modelPath/$className.php"))) {
+                        $reflection = new ClassGenerator(
+                            $className,
+                            $this->modelNamespace,
+                            null,
+                            $this->modelNamespace . '\\base\\' . $className
+                        );
+                        $files[] = new CodeFile(
+                            Yii::getAlias("$modelPath/$className.php"),
+                            $reflection->generate()
+                        );
+                    }
                     if (!$this->generateModelFaker) {
                         continue;
                     }
@@ -948,7 +963,7 @@ class ApiGenerator extends Generator
                     );
                 } else {
                     $files[] = new CodeFile(
-                        Yii::getAlias("$modelPath/$className.php"),
+                        Yii::getAlias("$modelPath/base/$className.php"),
                         $this->render('model.php', [
                             'className' => $className,
                             'namespace' => $this->modelNamespace,
