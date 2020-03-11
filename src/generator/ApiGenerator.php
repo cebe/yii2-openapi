@@ -15,8 +15,10 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
+use cebe\yii2openapi\generator\helpers\DatabaseDiff;
 use Exception;
 use Laminas\Code\Generator\ClassGenerator;
+use Laminas\Code\Generator\FileGenerator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
@@ -935,32 +937,18 @@ class ApiGenerator extends Generator
                             'relations' => $model['relations'],
                         ])
                     );
-                    // only generate custom classes if they do not exist, do not override
-                    if (!file_exists(Yii::getAlias("$modelPath/$className.php"))) {
-                        $reflection = new ClassGenerator(
-                            $className,
-                            $this->modelNamespace,
-                            null,
-                            $this->modelNamespace . '\\base\\' . $className
-                        );
+                    if ($this->generateModelFaker) {
                         $files[] = new CodeFile(
-                            Yii::getAlias("$modelPath/$className.php"),
-                            $reflection->generate()
+                            Yii::getAlias("$modelPath/{$className}Faker.php"),
+                            $this->render('faker.php', [
+                                'className' => "{$className}Faker",
+                                'modelClass' => $className,
+                                'namespace' => $this->modelNamespace,
+                                'attributes' => $model['attributes'],
+//                        'relations' => $model['relations'],
+                            ])
                         );
                     }
-                    if (!$this->generateModelFaker) {
-                        continue;
-                    }
-                    $files[] = new CodeFile(
-                        Yii::getAlias("$modelPath/{$className}Faker.php"),
-                        $this->render('faker.php', [
-                            'className' => "{$className}Faker",
-                            'modelClass' => $className,
-                            'namespace' => $this->modelNamespace,
-                            'attributes' => $model['attributes'],
-//                        'relations' => $model['relations'],
-                        ])
-                    );
                 } else {
                     $files[] = new CodeFile(
                         Yii::getAlias("$modelPath/base/$className.php"),
@@ -972,6 +960,23 @@ class ApiGenerator extends Generator
                         ])
                     );
                 }
+
+                // only generate custom classes if they do not exist, do not override
+                if (!file_exists(Yii::getAlias("$modelPath/$className.php"))) {
+                    $classFileGenerator = new FileGenerator();
+                    $reflection = new ClassGenerator(
+                        $className,
+                        $this->modelNamespace,
+                        null,
+                        $this->modelNamespace . '\\base\\' . $className
+                    );
+                    $classFileGenerator->setClasses([$reflection]);
+                    $files[] = new CodeFile(
+                        Yii::getAlias("$modelPath/$className.php"),
+                        $classFileGenerator->generate()
+                    );
+                }
+
             }
         }
 
@@ -981,23 +986,34 @@ class ApiGenerator extends Generator
             }
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
+            $dbDiff = new DatabaseDiff();
             foreach ($models as $modelName => $model) {
 
                 if (!$model['isDbModel']) {
                     continue;
                 }
 
+                // TODO generate foreign keys
+
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp
                 // use fixed time here instead
-                if ($migrationNamespace) {
-                    $m = date('ymd000000');
-                    $className = "M{$m}$modelName";
-                } else {
-                    $m = date('ymd_000000');
-                    $className = "m{$m}_$modelName";
-                }
+                $i = 0;
+                do {
+                    if ($migrationNamespace) {
+                        $m = sprintf('%s%04d', date('ymdH'), $i);
+                        $className = "M{$m}$modelName";
+                    } else {
+                        $m = sprintf('%s%04d', date('ymd_H'), $i);
+                        $className = "m{$m}_$modelName";
+                    }
+                    $i++;
+                } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
                 $tableName = $model['tableName'];
+                list($upCode, $downCode) = $dbDiff->diffTable($tableName, $model['attributes']);
+                if (empty($upCode) && empty($downCode)) {
+                    continue;
+                }
 
 
                 $files[] = new CodeFile(
@@ -1009,6 +1025,8 @@ class ApiGenerator extends Generator
                         'attributes' => $model['attributes'],
                         'relations' => $model['relations'],
                         'description' => 'Table for ' . $modelName,
+                        'upCode' => $upCode,
+                        'downCode' => $downCode,
                     ])
                 );
             }
