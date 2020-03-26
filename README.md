@@ -106,6 +106,24 @@ Specify the table name for a Schema that defines a model which is stored in the 
            type: string
 ```
 
+### `x-db-type`
+
+Explicitly specify the database type for a column.
+
+```yaml
+    Post:
+      x-table: posts
+      properties:
+        id:
+           type: integer
+           x-db-type: INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT
+        title:
+           type: string
+        metadata:
+           type: object
+           x-db-type: JSON NOT NULL DEFAULT '{}'
+```
+
 ## Screenshots
 
 Gii Generator Form:

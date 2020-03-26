@@ -182,11 +182,16 @@ class SchemaToDatabase extends Component
      * @param string $name
      * @param Schema $schema
      * @return string
+     * @link http://spec.openapis.org/oas/v3.0.3#data-types
      */
     protected function getDbType($name, $schema)
     {
-        if ($name === 'id') {
-            return 'pk';
+        if (isset($schema->{'x-db-type'})) {
+            return $schema->{'x-db-type'};
+        }
+
+        if ($name === 'id' && $schema->type === 'integer') {
+            return $schema->format === 'int64' ? 'bigpk' : 'pk';
         }
 
         switch ($schema->type) {
@@ -194,14 +199,28 @@ class SchemaToDatabase extends Component
                 if (isset($schema->maxLength)) {
                     return 'string(' . ((int) $schema->maxLength) . ')';
                 }
+                if ($schema->format === 'date') {
+                    return 'date';
+                }
+                if ($schema->format === 'date-time') {
+                    return 'datetime';
+                }
+                if ($schema->format === 'binary') {
+                    return 'blob';
+                }
+
                 return 'text';
             case 'integer':
+                if ($schema->format === 'int64') {
+                    return 'bigint';
+                }
+                // no break
             case 'boolean':
                 return $schema->type;
             case 'number': // can be double and float
                 return $schema->format ?? 'float';
 //            case 'array':
-            // TODO array might refer to has_many relation
+//            // TODO array might refer to has_many relation
 //                if (isset($schema->items) && $schema->items instanceof Reference) {
 //                    $ref = $schema->items->getJsonReference()->getJsonPointer()->getPointer();
 //                    if (strpos($ref, '/components/schemas/') === 0) {
