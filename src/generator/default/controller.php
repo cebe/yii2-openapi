@@ -50,7 +50,7 @@ $findModel = [];
 
 namespace <?= $namespace ?>;
 
-class <?= $className ?> extends \yii\rest\Controller
+abstract class <?= $className ?> extends \yii\rest\Controller
 {
     public function actions()
     {

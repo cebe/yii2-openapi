@@ -12,7 +12,7 @@ namespace <?= $namespace ?>;
 
 <?php endforeach; ?>
  */
-class <?= $className ?> extends \yii\db\ActiveRecord
+abstract class <?= $className ?> extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {

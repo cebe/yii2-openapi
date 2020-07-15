@@ -5,6 +5,9 @@ namespace <?= $namespace ?>;
 
 use Faker\Factory as FakerFactory;
 use Faker\UniqueGenerator;
+<?php if ($modelNamespace !== $namespace): ?>
+use <?= $modelNamespace ?>\<?= $modelClass ?>;
+<?php endif; ?>
 
 /**
  * Fake data generator for <?= $modelClass ?>

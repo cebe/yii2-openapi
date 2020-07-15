@@ -9,7 +9,7 @@ namespace app\mymodels\base;
  * @property string $name
  * @property string $tag
  */
-class Pet extends \yii\db\ActiveRecord
+abstract class Pet extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {

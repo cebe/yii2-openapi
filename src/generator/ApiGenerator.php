@@ -16,6 +16,7 @@ use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\generator\helpers\DatabaseDiff;
+use cebe\yii2openapi\generator\helpers\DbModel;
 use cebe\yii2openapi\generator\helpers\SchemaToDatabase;
 use Exception;
 use Laminas\Code\Generator\ClassGenerator;
@@ -24,6 +25,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RegexIterator;
 use Yii;
+use yii\db\ColumnSchema;
+use yii\di\Instance;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
 use yii\helpers\FileHelper;
@@ -80,6 +83,11 @@ class ApiGenerator extends Generator
      */
     public $modelNamespace = 'app\\models';
     /**
+     * @var bool namespace to create fake data generators in. This must be resolvable via Yii alias.
+     * Defaults to `app\models`.
+     */
+    public $fakerNamespace = 'app\\models';
+    /**
      * @var array List of model names to exclude.
      */
     public $excludeModels = [];
@@ -104,6 +112,9 @@ class ApiGenerator extends Generator
     public $migrationNamespace;
 
 
+    public $dbDiff = DatabaseDiff::class;
+
+
     /**
      * @return string name of the code generator
      */
@@ -126,7 +137,7 @@ class ApiGenerator extends Generator
     public function rules()
     {
         return array_merge(parent::rules(), [
-            [['openApiPath', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'migrationPath', 'migrationNamespace'], 'filter', 'filter' => 'trim'],
+            [['openApiPath', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'fakerNamespace', 'migrationPath', 'migrationNamespace'], 'filter', 'filter' => 'trim'],
 
             [['controllerNamespace', 'migrationNamespace'], 'default', 'value' => null],
 
@@ -140,6 +151,9 @@ class ApiGenerator extends Generator
             }],
             [['modelNamespace'], 'required', 'when' => function (ApiGenerator $model) {
                 return (bool) $model->generateModels;
+            }],
+            [['fakerNamespace'], 'required', 'when' => function (ApiGenerator $model) {
+                return (bool) $model->generateModelFaker;
             }],
             [['migrationPath'], 'required', 'when' => function (ApiGenerator $model) {
                 return (bool) $model->generateMigrations;
@@ -182,6 +196,7 @@ class ApiGenerator extends Generator
             'urlConfigFile' => 'UrlRules will be written to this file.',
             'controllerNamespace' => 'Namespace to create controllers in. This must be resolvable via Yii alias. Default is the application controller namespace: <code>Yii::$app->controllerNamespace</code>.',
             'modelNamespace' => 'Namespace to create models in. This must be resolvable via Yii alias.',
+            'fakerNamespace' => 'Namespace to create fake data generators in. This must be resolvable via Yii alias.',
             'migrationPath' => 'Path to create migration files in.',
             'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
             'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
@@ -252,6 +267,7 @@ class ApiGenerator extends Generator
             'openApiPath' => $paths,
             'controllerNamespace' => $namespaces,
             'modelNamespace' => $namespaces,
+            'fakerNamespace' => $namespaces,
             'migrationNamespace' => $namespaces,
 //            'urlConfigFile' => [
 //                '@app/config/urls.rest.php',
@@ -291,7 +307,7 @@ class ApiGenerator extends Generator
      */
     public function stickyAttributes()
     {
-        return array_merge(parent::stickyAttributes(), ['generateUrls', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'migrationPath', 'migrationNamespace']);
+        return array_merge(parent::stickyAttributes(), ['generateUrls', 'urlConfigFile', 'controllerNamespace', 'modelNamespace', 'fakerNamespace', 'migrationPath', 'migrationNamespace']);
     }
 
 
@@ -634,13 +650,29 @@ class ApiGenerator extends Generator
             foreach ($controllers as $controller => $actions) {
                 $className = \yii\helpers\Inflector::id2camel($controller) . 'Controller';
                 $files[] = new CodeFile(
-                    Yii::getAlias($controllerPath . "/$className.php"),
+                    Yii::getAlias($controllerPath . "/base/$className.php"),
                     $this->render('controller.php', [
                         'className' => $className,
-                        'namespace' => $controllerNamespace,
+                        'namespace' => $controllerNamespace . '\\base',
                         'actions' => $actions,
                     ])
                 );
+                // only generate custom classes if they do not exist, do not override
+                if (!file_exists(Yii::getAlias("$controllerPath/$className.php"))) {
+                    $classFileGenerator = new FileGenerator();
+                    $reflection = new ClassGenerator(
+                        $className,
+                        $controllerNamespace,
+                        null,
+                        $controllerNamespace . '\\base\\' . $className
+                    );
+                    $classFileGenerator->setClasses([$reflection]);
+                    $files[] = new CodeFile(
+                        Yii::getAlias("$controllerPath/$className.php"),
+                        $classFileGenerator->generate()
+                    );
+                }
+
             }
         }
 
@@ -649,26 +681,28 @@ class ApiGenerator extends Generator
             $modelPath = $this->getPathFromNamespace($this->modelNamespace);
             foreach ($models as $modelName => $model) {
                 $className = $modelName;
-                if ($model['isDbModel']) {
+                if ($model instanceof DbModel) {
                     $files[] = new CodeFile(
                         Yii::getAlias("$modelPath/base/$className.php"),
                         $this->render('dbmodel.php', [
                             'className' => $className,
-                            'tableName' => $model['tableName'],
+                            'tableName' => $model->tableName,
                             'namespace' => $this->modelNamespace . '\\base',
-                            'description' => $model['description'],
-                            'attributes' => $model['attributes'],
-                            'relations' => $model['relations'],
+                            'description' => $model->description,
+                            'attributes' => $model->attributes,
+                            'relations' => $model->relations,
                         ])
                     );
                     if ($this->generateModelFaker) {
+                        $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
                         $files[] = new CodeFile(
-                            Yii::getAlias("$modelPath/{$className}Faker.php"),
+                            Yii::getAlias("$fakerPath/{$className}Faker.php"),
                             $this->render('faker.php', [
                                 'className' => "{$className}Faker",
                                 'modelClass' => $className,
-                                'namespace' => $this->modelNamespace,
-                                'attributes' => $model['attributes'],
+                                'modelNamespace' => $this->modelNamespace,
+                                'namespace' => $this->fakerNamespace,
+                                'attributes' => $model->attributes,
 //                        'relations' => $model['relations'],
                             ])
                         );
@@ -710,10 +744,10 @@ class ApiGenerator extends Generator
             }
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
-            $dbDiff = new DatabaseDiff();
+            $dbDiff = Instance::ensure($this->dbDiff, DatabaseDiff::class);
             foreach ($models as $modelName => $model) {
 
-                if (!$model['isDbModel']) {
+                if (!($model instanceof DbModel)) {
                     continue;
                 }
 
@@ -733,8 +767,8 @@ class ApiGenerator extends Generator
                     }
                     $i++;
                 } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
-                $tableName = $model['tableName'];
-                list($upCode, $downCode) = $dbDiff->diffTable($tableName, $model['attributes']);
+                $tableName = $model->tableName;
+                list($upCode, $downCode) = $dbDiff->diffTable($tableName, $this->attributesToColumnSchemas($model->attributes));
                 if (empty($upCode) && empty($downCode)) {
                     continue;
                 }
@@ -746,8 +780,8 @@ class ApiGenerator extends Generator
                         'className' => $className,
                         'namespace' => $migrationNamespace,
                         'tableName' => $tableName,
-                        'attributes' => $model['attributes'],
-                        'relations' => $model['relations'],
+                        'attributes' => $model->attributes,
+                        'relations' => $model->relations,
                         'description' => 'Table for ' . $modelName,
                         'upCode' => $upCode,
                         'downCode' => $downCode,
@@ -762,5 +796,42 @@ class ApiGenerator extends Generator
     private function getPathFromNamespace($namespace)
     {
         return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
+    }
+
+    private function attributesToColumnSchemas($attributes)
+    {
+        $columns = [];
+        foreach($attributes as $name =>  $attribute) {
+            $columns[$name] = new ColumnSchema([
+                'dbType' => $attribute['dbType'],
+                'type' => $this->dbTypeToAbstractType($attribute['dbType']),
+                'allowNull' => !$attribute['required'],
+                // TODO add more fields
+            ]);
+            if ($columns[$name]->type === 'json') {
+                $columns[$name]->allowNull = false;
+            }
+        }
+        return $columns;
+    }
+
+    private function dbTypeToAbstractType($type)
+    {
+        if (stripos($type, 'int') === 0) {
+            return 'integer';
+        }
+        if (stripos($type, 'string') === 0) {
+            return 'string';
+        }
+        if (stripos($type, 'varchar') === 0) {
+            return 'string';
+        }
+        if (stripos($type, 'json') === 0) {
+            return 'json';
+        }
+        if (stripos($type, 'datetime') === 0) {
+            return 'timestamp';
+        }
+        return $type;
     }
 }

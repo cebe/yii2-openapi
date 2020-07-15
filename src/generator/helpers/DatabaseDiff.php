@@ -9,28 +9,38 @@ use yii\di\Instance;
 use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 
+/**
+ * This class aims to generate database migrations from difference between OpenAPI specification
+ * schema and the current database.
+ *
+ */
 class DatabaseDiff extends Component
 {
     /**
-     * @var string|array|Connection
+     * @var string|array|Connection the Yii database connection component for connecting to the database.
      */
     public $db = 'db';
+
 
     public function init()
     {
         parent::init();
         $this->db = Instance::ensure($this->db, Connection::class);
-
-
     }
 
+    /**
+     * Calculate the difference between a database table and the desired data schema.
+     * @param string $tableName name of the database table.
+     * @param ColumnSchema[] $columns
+     * @return array
+     */
     public function diffTable($tableName, $columns)
     {
         $schema = $this->db->getTableSchema($tableName, true);
         if ($schema === null) {
             // create table
-            $codeColumns = VarDumper::export(ArrayHelper::map($columns, 'dbName', function($c) {
-                return $this->columnToDbType($this->attributeToColumnSchema($c));
+            $codeColumns = VarDumper::export(ArrayHelper::map($columns, 'dbName', function ($c) {
+                return $this->columnToDbType($c);
             }));
             $upCode = str_replace("\n", "\n        ", "        \$this->createTable('$tableName', $codeColumns);");
             $downCode = "        \$this->dropTable('$tableName');";
@@ -47,37 +57,39 @@ class DatabaseDiff extends Component
         sort($haveNames);
         $missingDiff = array_diff($wantNames, $haveNames);
         $unknownDiff = array_diff($haveNames, $wantNames);
-        foreach($missingDiff as $missingColumn) {
-            $upCode[] = "\$this->addColumn('$tableName', '$missingColumn', '{$this->columnToDbType($this->attributeToColumnSchema($columns[$missingColumn]))}');";
+        foreach ($missingDiff as $missingColumn) {
+            $upCode[] = "\$this->addColumn('$tableName', '$missingColumn', '{$this->escapeQuote($this->columnToDbType($columns[$missingColumn]))}');";
             $downCode[] = "\$this->dropColumn('$tableName', '$missingColumn');";
         }
-        foreach($unknownDiff as $unknownColumn) {
+        foreach ($unknownDiff as $unknownColumn) {
             $upCode[] = "\$this->dropColumn('$tableName', '$unknownColumn');";
             $oldDbType = $this->columnToDbType($schema->columns[$unknownColumn]);
             $downCode[] = "\$this->addColumn('$tableName', '$unknownColumn', '$oldDbType');";
         }
 
         // compare desired type with existing type
-        foreach($schema->columns as $columnName => $currentColumnSchema) {
+        foreach ($schema->columns as $columnName => $currentColumnSchema) {
             if (!isset($columns[$columnName])) {
                 continue;
             }
-            $desiredColumnSchema = $this->attributeToColumnSchema($columns[$columnName]);
+            $desiredColumnSchema = $columns[$columnName];
             switch (true) {
                 case $desiredColumnSchema->dbType === 'pk':
                 case $desiredColumnSchema->dbType === 'bigpk':
                     // do not adjust existing primary keys
                     break;
-                case $desiredColumnSchema->dbType !== $currentColumnSchema->dbType:
+                case $desiredColumnSchema->type !== $currentColumnSchema->type:
                 case $desiredColumnSchema->allowNull != $currentColumnSchema->allowNull:
-                    $upCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->columnToDbType($desiredColumnSchema)}');";
-                    $downCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->columnToDbType($currentColumnSchema)}');";
+                    print_r($currentColumnSchema);
+                    print_r($desiredColumnSchema);
+                    $upCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->escapeQuote($this->columnToDbType($desiredColumnSchema))}');";
+                    $downCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->escapeQuote($this->columnToDbType($currentColumnSchema))}');";
             }
         }
 
 
         if (empty($upCode) && empty($downCode)) {
-            return ['',''];
+            return ['', ''];
         }
 
         return [
@@ -86,20 +98,16 @@ class DatabaseDiff extends Component
         ];
     }
 
+    private function escapeQuote($str)
+    {
+        return str_replace("'", "\\'", $str);
+    }
+
     private function columnToDbType(ColumnSchema $column)
     {
         if ($column->dbType === 'pk') {
             return $column->dbType;
         }
         return $column->dbType . ($column->allowNull ? '' : ' NOT NULL');
-    }
-
-    private function attributeToColumnSchema($attribute)
-    {
-        return new ColumnSchema([
-            'dbType' => $attribute['dbType'],
-            'allowNull' => !$attribute['required'],
-            // TODO add more fields
-        ]);
     }
 }

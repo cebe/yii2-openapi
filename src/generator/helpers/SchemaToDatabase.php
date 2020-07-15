@@ -58,21 +58,20 @@ class SchemaToDatabase extends Component
                 continue;
             }
 
+            if ($this->generateModelsOnlyXTable && empty($schema->{'x-table'})) {
+                continue;
+            }
+
             list($attributes, $relations) = $this->generateAttributesAndRelations($schemaName, $schema);
 
             $models[$schemaName] = new DbModel([
                 'name' => $schemaName,
                 'tableName' => '{{%' . ($schema->{'x-table'} ?? $this->generateTableName($schemaName)) . '}}',
-                'isDbModel' => true,
                 'description' => $schema->description,
                 'attributes' => $attributes,
                 'relations' => $relations,
             ]);
 
-            if ($this->generateModelsOnlyXTable && empty($schema->{'x-table'})) {
-                unset($models[$schemaName]['tableName']);
-                $models[$schemaName]['isDbModel'] = false;
-            }
         }
 
         // TODO generate hasMany relations and inverse relations
@@ -278,7 +277,6 @@ class SchemaToDatabase extends Component
                     '~uuid$~' => '$uniqueFaker->uuid',
                     '~firstname~i' => '$faker->firstName',
                     '~(last|sur)name~i' => '$faker->lastName',
-                    '~(username|login)~i' => '$faker->userName',
                     '~(company|employer)~i' => '$faker->company',
                     '~(city|town)~i' => '$faker->city',
                     '~(post|zip)code~i' => '$faker->postcode',
@@ -294,13 +292,15 @@ class SchemaToDatabase extends Component
                     '~hash~i' => '$faker->sha256',
                     '~e?mail~i' => '$faker->safeEmail',
                     '~timestamp~i' => '$faker->unixTime',
-                    '~.*ed_at$~i' => '$faker->dateTimeThisCentury(\'Y-m-d H:i:s\')', // created_at, updated_at, ...
+                    '~.*At$~' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')', // createdAt, updatedAt, ...
+                    '~.*ed_at$~i' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')', // created_at, updated_at, ...
                     '~(phone|fax|mobile|telnumber)~i' => '$faker->e164PhoneNumber',
                     '~(^lat|coord)~i' => '$faker->latitude',
                     '~^lon~i' => '$faker->longitude',
                     '~title~i' => '$faker->sentence',
                     '~(body|summary|article|content|descr|comment|detail)~i' => '$faker->paragraphs(6, true)',
                     '~(url|site|website)~i' => '$faker->url',
+                    '~(username|login)~i' => '$faker->userName',
                 ];
                 foreach ($patterns as $pattern => $faker) {
                     if (preg_match($pattern, $name)) {
@@ -321,16 +321,18 @@ class SchemaToDatabase extends Component
             case 'int':
                 $fakerVariable = preg_match('~_?id$~', $name) ? 'uniqueFaker' : 'faker';
 
+                $maxInt = 2147483647; // 2^31-1 PHP_MAX_INT may be 64bit and too big in some cases
                 if ($min !== null && $max !== null) {
                     return "\${$fakerVariable}->numberBetween($min, $max)";
                 } elseif ($min !== null) {
-                    return "\${$fakerVariable}->numberBetween($min, PHP_INT_MAX)";
+                    return "\${$fakerVariable}->numberBetween($min, $maxInt)";
                 } elseif ($max !== null) {
                     return "\${$fakerVariable}->numberBetween(0, $max)";
                 }
 
                 $patterns = [
                     '~timestamp~i' => '$faker->unixTime',
+                    '~.*At$~' => '$faker->unixTime', // createdAt, updatedAt, ...
                     '~.*ed_at$~i' => '$faker->unixTime', // created_at, updated_at, ...
                 ];
                 foreach ($patterns as $pattern => $faker) {
@@ -339,7 +341,7 @@ class SchemaToDatabase extends Component
                     }
                 }
 
-                return "\${$fakerVariable}->numberBetween(0, PHP_INT_MAX)";
+                return "\${$fakerVariable}->numberBetween(0, $maxInt)";
             case 'bool':
                 return '$faker->boolean';
             case 'float':
