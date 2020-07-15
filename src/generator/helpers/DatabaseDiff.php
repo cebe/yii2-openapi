@@ -39,9 +39,9 @@ class DatabaseDiff extends Component
         $schema = $this->db->getTableSchema($tableName, true);
         if ($schema === null) {
             // create table
-            $codeColumns = VarDumper::export(ArrayHelper::map($columns, 'dbName', function ($c) {
+            $codeColumns = VarDumper::export(array_map(function ($c) {
                 return $this->columnToDbType($c);
-            }));
+            }, $columns));
             $upCode = str_replace("\n", "\n        ", "        \$this->createTable('$tableName', $codeColumns);");
             $downCode = "        \$this->dropTable('$tableName');";
             return [$upCode, $downCode];
