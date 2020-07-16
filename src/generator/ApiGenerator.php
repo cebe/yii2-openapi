@@ -744,6 +744,7 @@ class ApiGenerator extends Generator
             }
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
+            /** @var $dbDiff DatabaseDiff */
             $dbDiff = Instance::ensure($this->dbDiff, DatabaseDiff::class);
             foreach ($models as $modelName => $model) {
 
@@ -802,10 +803,17 @@ class ApiGenerator extends Generator
     {
         $columns = [];
         foreach($attributes as $name =>  $attribute) {
+            $size = null;
+            if (isset($attribute['dbType']) && preg_match('~^string\((\d+)\)$~', $attribute['dbType'], $matches)) {
+                $size = $matches[1];
+                $attribute['dbType'] = 'string';
+            }
+
             $columns[$name] = new ColumnSchema([
                 'dbType' => $attribute['dbType'],
                 'type' => $this->dbTypeToAbstractType($attribute['dbType']),
                 'allowNull' => !$attribute['required'],
+                'size' => $size,
                 // TODO add more fields
             ]);
             if ($columns[$name]->type === 'json') {

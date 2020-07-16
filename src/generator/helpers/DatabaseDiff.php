@@ -80,6 +80,7 @@ class DatabaseDiff extends Component
                     break;
                 case $desiredColumnSchema->type !== $currentColumnSchema->type:
                 case $desiredColumnSchema->allowNull != $currentColumnSchema->allowNull:
+                case $desiredColumnSchema->type === 'string' && $desiredColumnSchema->size != $currentColumnSchema->size:
                     print_r($currentColumnSchema);
                     print_r($desiredColumnSchema);
                     $upCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->escapeQuote($this->columnToDbType($desiredColumnSchema))}');";
@@ -108,6 +109,6 @@ class DatabaseDiff extends Component
         if ($column->dbType === 'pk') {
             return $column->dbType;
         }
-        return $column->dbType . ($column->allowNull ? '' : ' NOT NULL');
+        return $column->dbType . ($column->size ? "({$column->size})" : '') . ($column->allowNull ? '' : ' NOT NULL');
     }
 }
