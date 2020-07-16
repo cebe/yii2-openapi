@@ -2,6 +2,7 @@
 
 namespace cebe\yii2openapi\generator\helpers;
 
+use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
@@ -39,6 +40,7 @@ class SchemaToDatabase extends Component
         $models = [];
         foreach ($openApi->components->schemas as $schemaName => $schema) {
             if ($schema instanceof Reference) {
+                $schema->getContext()->mode = ReferenceContext::RESOLVE_MODE_INLINE;
                 $schema = $schema->resolve();
             }
 
@@ -97,6 +99,7 @@ class SchemaToDatabase extends Component
 
             if ($property instanceof Reference) {
                 $refPointer = $property->getJsonReference()->getJsonPointer()->getPointer();
+                $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
                 $resolvedProperty = $property->resolve();
                 $dbName = "{$name}_id";
                 $dbType = 'integer'; // for a foreign key
@@ -107,6 +110,7 @@ class SchemaToDatabase extends Component
                         'class' => $type,
                         'method' => 'hasOne',
                         'link' => ['id' => $dbName], // TODO pk may not be 'id'
+                        'tableName' => '{{%' . ($resolvedProperty->{'x-table'} ?? $this->generateTableName($type)) . '}}',
                     ];
                 } else {
                     $type = $this->getSchemaType($resolvedProperty);
@@ -126,10 +130,11 @@ class SchemaToDatabase extends Component
                     'link' => [Inflector::camel2id($schemaName, '_') . '_id' => 'id'], // TODO pk may not be 'id'
                 ];
                 $type = $type[0];
+                continue;
             }
 
-            $attributes[$name] = [
-                'name' => $name,
+            $attributes[$dbName] = [
+                'name' => $dbName,
                 'type' => $type,
                 'dbType' => $dbType,
                 'dbName' => $dbName,

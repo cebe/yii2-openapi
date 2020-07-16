@@ -29,6 +29,7 @@ use yii\db\ColumnSchema;
 use yii\di\Instance;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
+use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Html;
 use yii\helpers\Inflector;
@@ -742,37 +743,58 @@ class ApiGenerator extends Generator
             if (!isset($models)) {
                 $models = $this->generateModels();
             }
-            $migrationPath = Yii::getAlias($this->migrationPath);
-            $migrationNamespace = $this->migrationNamespace;
             /** @var $dbDiff DatabaseDiff */
             $dbDiff = Instance::ensure($this->dbDiff, DatabaseDiff::class);
+            $migrationFiles = [];
             foreach ($models as $modelName => $model) {
 
                 if (!($model instanceof DbModel)) {
                     continue;
                 }
 
-                // TODO generate foreign keys
+                $tableName = $model->tableName;
+                list($upCode, $downCode, $dependencies, $migrationName) = $dbDiff->diffTable($tableName, $this->attributesToColumnSchemas($model->attributes), $model->relations);
+                if (empty($upCode) && empty($downCode)) {
+                    continue;
+                }
+
+                echo $tableName;
+                print_r($dependencies);
+                $migrationFiles[$tableName] = [
+                    'dependencies' => $dependencies,
+                    'upCode' => $upCode,
+                    'downCode' => $downCode,
+                    'model' => $model,
+                    'modelName' => $modelName,
+                    'migrationName' => $migrationName,
+                ];
+            }
+            print_r(array_keys($migrationFiles));
+
+            // sort files by dependecies of foreign keys
+            // TODO circular references could be solved by adding a separate migration which contains only foreign key changes
+            $migrationFiles = $this->sortByDependency($migrationFiles);
+
+            print_r(array_keys($migrationFiles));
+
+            $migrationPath = Yii::getAlias($this->migrationPath);
+            $migrationNamespace = $this->migrationNamespace;
+            $i = 0;
+            foreach($migrationFiles as $tableName => $migrationFile) {
 
                 // migration files get invalidated directly after generating
                 // if they contain a timestamp
                 // use fixed time here instead
-                $i = 0;
                 do {
                     if ($migrationNamespace) {
                         $m = sprintf('%s%04d', date('ymdH'), $i);
-                        $className = "M{$m}$modelName";
+                        $className = "M{$m}" . Inflector::id2camel($migrationFile['migrationName'], '_');
                     } else {
                         $m = sprintf('%s%04d', date('ymd_H'), $i);
-                        $className = "m{$m}_$modelName";
+                        $className = "m{$m}_" . $migrationFile['migrationName'];
                     }
                     $i++;
                 } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
-                $tableName = $model->tableName;
-                list($upCode, $downCode) = $dbDiff->diffTable($tableName, $this->attributesToColumnSchemas($model->attributes));
-                if (empty($upCode) && empty($downCode)) {
-                    continue;
-                }
 
 
                 $files[] = new CodeFile(
@@ -781,17 +803,53 @@ class ApiGenerator extends Generator
                         'className' => $className,
                         'namespace' => $migrationNamespace,
                         'tableName' => $tableName,
-                        'attributes' => $model->attributes,
-                        'relations' => $model->relations,
-                        'description' => 'Table for ' . $modelName,
-                        'upCode' => $upCode,
-                        'downCode' => $downCode,
+                        'attributes' => $migrationFile['model']->attributes,
+                        'relations' => $migrationFile['model']->relations,
+                        'description' => 'Table for ' . $migrationFile['modelName'],
+                        'upCode' => $migrationFile['upCode'],
+                        'downCode' => $migrationFile['downCode'],
                     ])
                 );
             }
         }
 
         return $files;
+    }
+
+    private $_sortResult = [];
+
+    private function sortByDependency($migrationFiles)
+    {
+        $this->_sortResult = [];
+
+        // sort alpabetically by name first
+        // to have consistent result in case no dependencies exist
+        ksort($migrationFiles);
+
+        foreach ($migrationFiles as $name => $migrationFile) {
+            echo "adding $name\n";
+            $this->sortByDependencyRecurse($name, $migrationFile, $migrationFiles);
+        }
+        return $this->_sortResult;
+    }
+
+    private function sortByDependencyRecurse($name, $migrationFile, $migrationFiles)
+    {
+        if (!isset($this->_sortResult[$name])) {
+            $this->_sortResult[$name] = false;
+            foreach($migrationFile['dependencies'] as $dependency) {
+                if (!isset($migrationFiles[$dependency])) {
+                    echo "skipping dep $dependency\n";
+                    continue;
+                }
+                echo "adding dep $dependency\n";
+                $this->sortByDependencyRecurse($dependency, $migrationFiles[$dependency], $migrationFiles);
+            }
+            unset($this->_sortResult[$name]);
+            $this->_sortResult[$name] = $migrationFile;
+        } elseif ($this->_sortResult[$name] === false) {
+            throw new \Exception("A circular dependency is detected for table '$name'.");
+        }
     }
 
     private function getPathFromNamespace($namespace)

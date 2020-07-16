@@ -32,19 +32,35 @@ class DatabaseDiff extends Component
      * Calculate the difference between a database table and the desired data schema.
      * @param string $tableName name of the database table.
      * @param ColumnSchema[] $columns
+     * @param array $relations
      * @return array
      */
-    public function diffTable($tableName, $columns)
+    public function diffTable($tableName, $columns, $relations)
     {
-        $schema = $this->db->getTableSchema($tableName, true);
-        if ($schema === null) {
+        $tableSchema = $this->db->getTableSchema($tableName, true);
+        if ($tableSchema === null) {
             // create table
             $codeColumns = VarDumper::export(array_map(function ($c) {
                 return $this->columnToDbType($c);
             }, $columns));
             $upCode = str_replace("\n", "\n        ", "        \$this->createTable('$tableName', $codeColumns);");
             $downCode = "        \$this->dropTable('$tableName');";
-            return [$upCode, $downCode];
+
+            $dependencies = [];
+            foreach($relations as $relation) {
+                if ($relation['method'] !== 'hasOne') {
+                    continue;
+                }
+                $fkCol = reset($relation['link']);
+                $fkRefCol = key($relation['link']);
+                $fkRefTable = $relation['tableName'];
+                $fkName = $this->foreignKeyName($tableName, $fkCol, $fkRefTable, $fkRefCol);
+                $upCode .= "\n        \$this->addForeignKey('$fkName', '$tableName', '$fkCol', '$fkRefTable', '$fkRefCol');";
+                $downCode = "        \$this->dropForeignKey('$fkName', '$tableName');\n$downCode";
+                $dependencies[] = $fkRefTable;
+            }
+
+            return [$upCode, $downCode, $dependencies, 'create_table_' . $this->normalizeTableName($tableName)];
         }
 
         $upCode = [];
@@ -52,7 +68,7 @@ class DatabaseDiff extends Component
 
         // compare existing columns with expected columns
         $wantNames = array_keys($columns);
-        $haveNames = $schema->columnNames;
+        $haveNames = $tableSchema->columnNames;
         sort($wantNames);
         sort($haveNames);
         $missingDiff = array_diff($wantNames, $haveNames);
@@ -63,12 +79,12 @@ class DatabaseDiff extends Component
         }
         foreach ($unknownDiff as $unknownColumn) {
             $upCode[] = "\$this->dropColumn('$tableName', '$unknownColumn');";
-            $oldDbType = $this->columnToDbType($schema->columns[$unknownColumn]);
+            $oldDbType = $this->columnToDbType($tableSchema->columns[$unknownColumn]);
             $downCode[] = "\$this->addColumn('$tableName', '$unknownColumn', '$oldDbType');";
         }
 
         // compare desired type with existing type
-        foreach ($schema->columns as $columnName => $currentColumnSchema) {
+        foreach ($tableSchema->columns as $columnName => $currentColumnSchema) {
             if (!isset($columns[$columnName])) {
                 continue;
             }
@@ -81,22 +97,55 @@ class DatabaseDiff extends Component
                 case $desiredColumnSchema->type !== $currentColumnSchema->type:
                 case $desiredColumnSchema->allowNull != $currentColumnSchema->allowNull:
                 case $desiredColumnSchema->type === 'string' && $desiredColumnSchema->size != $currentColumnSchema->size:
-                    print_r($currentColumnSchema);
-                    print_r($desiredColumnSchema);
                     $upCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->escapeQuote($this->columnToDbType($desiredColumnSchema))}');";
                     $downCode[] = "\$this->alterColumn('$tableName', '$columnName', '{$this->escapeQuote($this->columnToDbType($currentColumnSchema))}');";
             }
         }
 
+        // compare existing foreign keys with relations
+        $dependencies = [];
+        foreach($relations as $relation) {
+            if ($relation['method'] !== 'hasOne') {
+                continue;
+            }
+            $fkCol = reset($relation['link']);
+            $fkRefCol = key($relation['link']);
+            $fkRefTable = $relation['tableName'];
+            $fkName = $this->foreignKeyName($tableName, $fkCol, $fkRefTable, $fkRefCol);
+
+            if (isset($tableSchema->foreignKeys[$fkName])) {
+                continue;
+            }
+            $upCode[] = "\$this->addForeignKey('$fkName', '$tableName', '$fkCol', '$fkRefTable', '$fkRefCol');";
+            array_unshift($downCode, "\$this->dropForeignKey('$fkName', '$tableName');");
+            $dependencies[] = $fkRefTable;
+        }
 
         if (empty($upCode) && empty($downCode)) {
-            return ['', ''];
+            return ['', '', [], ''];
         }
 
         return [
             "        " . implode("\n        ", $upCode),
             "        " . implode("\n        ", $downCode),
+            [],
+            'change_table_' . $this->normalizeTableName($tableName),
         ];
+    }
+
+    private function foreignKeyName($table, $column, $foreignTable, $foreignColumn)
+    {
+        $table = $this->normalizeTableName($table);
+        $foreignTable = $this->normalizeTableName($foreignTable);
+        return "fk_{$table}_{$column}_{$foreignTable}_{$foreignColumn}";
+    }
+
+    private function normalizeTableName($tableName)
+    {
+        if (preg_match('~^{{%?(.*)}}$~', $tableName, $m)) {
+            return $m[1];
+        }
+        return $tableName;
     }
 
     private function escapeQuote($str)
