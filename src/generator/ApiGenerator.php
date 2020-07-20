@@ -758,8 +758,6 @@ class ApiGenerator extends Generator
                     continue;
                 }
 
-                echo $tableName;
-                print_r($dependencies);
                 $migrationFiles[$tableName] = [
                     'dependencies' => $dependencies,
                     'upCode' => $upCode,
@@ -769,16 +767,16 @@ class ApiGenerator extends Generator
                     'migrationName' => $migrationName,
                 ];
             }
-            print_r(array_keys($migrationFiles));
 
             // sort files by dependecies of foreign keys
             // TODO circular references could be solved by adding a separate migration which contains only foreign key changes
             $migrationFiles = $this->sortByDependency($migrationFiles);
 
-            print_r(array_keys($migrationFiles));
-
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
+
+            // TODO start $i by looking at all files, otherwise only one generation per hours causes correct order!!!
+
             $i = 0;
             foreach($migrationFiles as $tableName => $migrationFile) {
 
