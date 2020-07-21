@@ -8,6 +8,7 @@ namespace app\models\base;
  * @property int $id
  * @property string $name
  * @property string $tag
+ *
  */
 abstract class Pet extends \yii\db\ActiveRecord
 {

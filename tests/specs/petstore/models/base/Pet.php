@@ -7,7 +7,10 @@ namespace app\models\base;
  *
  * @property int $id
  * @property string $name
+ * @property int $store_id A store's description
  * @property string $tag
+ *
+ * @property \app\models\Store $store
  */
 abstract class Pet extends \yii\db\ActiveRecord
 {
@@ -23,6 +26,11 @@ abstract class Pet extends \yii\db\ActiveRecord
             [['name'], 'required'],
             [['name', 'tag'], 'string'],
         ];
+    }
+
+    public function getStore()
+    {
+        return $this->hasOne(\app\models\Store::class, ['id' => 'store_id']);
     }
 
 }

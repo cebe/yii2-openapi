@@ -63,7 +63,7 @@ class GeneratorTest extends \PHPUnit\Framework\TestCase
             $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
             $this->assertFileExists($expectedFile);
             $this->assertFileExists($actualFile);
-            $this->assertFileEquals($expectedFile, $actualFile);
+            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
         }
     }
 }

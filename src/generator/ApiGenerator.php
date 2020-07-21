@@ -692,6 +692,7 @@ class ApiGenerator extends Generator
                             'description' => $model->description,
                             'attributes' => $model->attributes,
                             'relations' => $model->relations,
+                            'relationNamespace' => $this->modelNamespace,
                         ])
                     );
                     if ($this->generateModelFaker) {

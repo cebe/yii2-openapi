@@ -7,8 +7,18 @@ namespace <?= $namespace ?>;
  * <?= str_replace("\n", "\n * ", trim($description)) ?>
 
  *
-<?php foreach ($attributes as $attribute): ?>
+<?php foreach ($attributes as $attribute):
+    if (\yii\helpers\StringHelper::endsWith($attribute['name'], '_id') && isset($relations[substr($attribute['name'], 0, -3)])) {
+        // TODO this change should be made in SchemaToDatabase class
+        $attribute['type'] = 'int';
+    }
+    ?>
  * @property <?= $attribute['type'] ?? 'mixed' ?> $<?= str_replace("\n", "\n * ", rtrim($attribute['name'] . ' ' . $attribute['description'])) ?>
+
+<?php endforeach; ?>
+ *
+<?php foreach ($relations as $relationName => $relation): ?>
+ * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation['class'] ?> $<?= $relationName ?>
 
 <?php endforeach; ?>
  */
@@ -30,6 +40,9 @@ abstract class <?= $className ?> extends \yii\db\ActiveRecord
 
     foreach ($attributes as $attribute) {
         if ($attribute['readOnly']) {
+            continue;
+        }
+        if (\yii\helpers\StringHelper::endsWith($attribute['name'], '_id') && isset($relations[substr($attribute['name'], 0, -3)])) {
             continue;
         }
         if ($attribute['required']) {
@@ -72,7 +85,7 @@ abstract class <?= $className ?> extends \yii\db\ActiveRecord
 <?php foreach ($relations as $relationName => $relation): ?>
     public function get<?= ucfirst($relationName) ?>()
     {
-        return $this-><?= $relation['method'] ?>(<?= $relation['class'] ?>::class, <?php
+        return $this-><?= $relation['method'] ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation['class'] ?>::class, <?php
             echo str_replace(
                     [',', '=>', ', ]'],
                     [', ', ' => ', ']'],

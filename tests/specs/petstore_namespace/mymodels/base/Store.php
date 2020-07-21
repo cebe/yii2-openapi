@@ -1,28 +1,27 @@
 <?php
 
-namespace app\models\base;
+namespace app\mymodels\base;
 
 /**
- * A Pet
+ * A store's description
  *
  * @property int $id
  * @property string $name
- * @property string $tag
  *
  */
-abstract class Pet extends \yii\db\ActiveRecord
+abstract class Store extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {
-        return '{{%pets}}';
+        return '{{%stores}}';
     }
 
     public function rules()
     {
         return [
-            [['name', 'tag'], 'trim'],
+            [['name'], 'trim'],
             [['name'], 'required'],
-            [['name', 'tag'], 'string'],
+            [['name'], 'string'],
         ];
     }
 
