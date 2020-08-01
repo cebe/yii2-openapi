@@ -11,6 +11,7 @@ use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 
 /**
+ * @deprecated
  * Convert OpenAPI description into a database schema.
  *
  * There are two options:
@@ -35,7 +36,10 @@ class SchemaToDatabase extends Component
     public $generateModelsOnlyXTable = false;
 
 
-    public function generateModels(OpenApi $openApi)
+    /**
+     * @return \cebe\yii2openapi\generator\helpers\DbModel[]|array
+    */
+    public function generateModels(OpenApi $openApi):array
     {
         $models = [];
         foreach ($openApi->components->schemas as $schemaName => $schema) {
@@ -64,7 +68,7 @@ class SchemaToDatabase extends Component
                 continue;
             }
 
-            list($attributes, $relations) = $this->generateAttributesAndRelations($schemaName, $schema);
+            [$attributes, $relations] = $this->generateAttributesAndRelations($schemaName, $schema);
 
             $models[$schemaName] = new DbModel([
                 'name' => $schemaName,

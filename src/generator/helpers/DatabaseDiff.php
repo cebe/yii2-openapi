@@ -6,10 +6,10 @@ use yii\base\Component;
 use yii\db\ColumnSchema;
 use yii\db\Connection;
 use yii\di\Instance;
-use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 
 /**
+ * @deprecated
  * This class aims to generate database migrations from difference between OpenAPI specification
  * schema and the current database.
  *

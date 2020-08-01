@@ -5,6 +5,7 @@ namespace cebe\yii2openapi\generator\helpers;
 use yii\base\BaseObject;
 
 /**
+ * @deprecated
  * Stores properties of a db model inferred from schema data.
  */
 class DbModel extends BaseObject
