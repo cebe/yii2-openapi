@@ -36,6 +36,11 @@
 			"cebe\\yii2openapi\\": "src/"
 		}
 	},
+	"autoload-dev": {
+		"psr-4": {
+			"tests\\": "tests/"
+		}
+	},
 	"config": {
 		"platform": {
 			"php": "7.1.3"

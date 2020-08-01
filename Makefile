@@ -24,6 +24,7 @@ clean_all:
 
 clean:
 	sudo rm -rf tests/tmp/app/*
+	sudo rm -rf tests/tmp/docker_app/*
 
 up:
 	docker-compose up -d
