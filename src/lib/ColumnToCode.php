@@ -24,6 +24,7 @@ use function strtolower;
 use function substr;
 use function trim;
 use function ucfirst;
+use const PHP_EOL;
 
 class ColumnToCode
 {
@@ -64,6 +65,7 @@ class ColumnToCode
      * @var bool
      */
     private $typeOnly = false;
+    private $defaultOnly = false;
 
     /**
      * ColumnToCode constructor.
@@ -83,6 +85,12 @@ class ColumnToCode
     public function resolveTypeOnly():string
     {
         $this->typeOnly = true;
+        return $this->resolve();
+    }
+
+    public function resolveDefaultOnly():string
+    {
+        $this->defaultOnly = true;
         return $this->resolve();
     }
 
@@ -122,11 +130,14 @@ class ColumnToCode
             return $this->$columnTypeMethod();
         }
 
-        return $categoryType ? $this->resolveCommon() : $this->resolveRaw();
+        return $categoryType && !$this->defaultOnly? $this->resolveCommon() : $this->resolveRaw();
     }
 
-    public static function buildRawDefaultValue($value, bool $nullable):string
+    public function buildRawDefaultValue():string
     {
+        $value = $this->column->defaultValue;
+        $nullable = $this->column->allowNull;
+        $isJson = in_array($this->column->dbType, ['json', 'jsonb']);
         if ($value === null) {
             return $nullable === true ? 'DEFAULT NULL' : '';
         }
@@ -135,19 +146,20 @@ class ColumnToCode
                 return 'DEFAULT ' . $value;
             case 'object':
                 if ($value instanceof JsonExpression) {
-                    return "DEFAULT '" . json_encode($value->getValue()) . "'";
+                    return 'DEFAULT '.self::defaultValueJson($value->getValue());
                 }
                 if ($value instanceof ArrayExpression) {
-                    return "DEFAULT '{" . implode(', ', $value->getValue()) . "}'";
+                    return 'DEFAULT '.self::defaultValueArray($value->getValue());
                 }
-                return 'DEFAULT ' . $value;
+                return 'DEFAULT ' .(string) $value;
             case 'double':
                 // ensure type cast always has . as decimal separator in all locales
                 return 'DEFAULT ' . str_replace(',', '.', (string)$value);
             case 'boolean':
                 return 'DEFAULT ' . ($value ? 'TRUE' : 'FALSE');
             case 'array':
-                return 'DEFAULT "' . json_encode($value) . '"';
+                return $isJson? 'DEFAULT '.self::defaultValueJson($value)
+                                :'DEFAULT '.self::defaultValueArray($value);
             default:
                 if (stripos($value, 'NULL::') !== false) {
                     return 'DEFAULT NULL';
@@ -156,6 +168,14 @@ class ColumnToCode
         }
     }
 
+    private static function defaultValueJson(array $value):string
+    {
+        return "'".\json_encode($value)."'";
+    }
+    private static function defaultValueArray(array $value):string
+    {
+        return "'{".trim(\json_encode($value), '[]')."}'";
+    }
     public static function escapeQuotes(string $str):string
     {
         return str_replace(["'", '"', '$'], ["\\'", "\\'", '\$'], $str);
@@ -204,9 +224,10 @@ class ColumnToCode
     {
         $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
         $type = $this->column->dbType;
-        $default = $this->isDefaultAllowed()
-            ? self::buildRawDefaultValue($this->column->defaultValue, $this->column->allowNull)
-            : '';
+        $default = $this->isDefaultAllowed() ? $this->buildRawDefaultValue(): '';
+        if ($this->defaultOnly) {
+            return $default;
+        }
 
         $size = $this->column->size ? '(' . $this->column->size . ')' : '';
         $type = strpos($type, '(') === false ? $type . $size : $type;
@@ -222,8 +243,11 @@ class ColumnToCode
         if (!$this->column->enumValues || !is_array($this->column->enumValues)) {
             return '';
         }
+        $default = $this->buildRawDefaultValue();
+        if ($this->defaultOnly) {
+            return $default;
+        }
         $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
-        $default = self::buildRawDefaultValue($this->column->defaultValue, $this->column->allowNull);
         if ($this->isPostgres()) {
             $type = 'enum_' . $this->column->name;
         } else {
@@ -244,9 +268,12 @@ class ColumnToCode
 
     private function resolveSetType():string
     {
+        $default = $this->buildRawDefaultValue();
+        if ($this->defaultOnly) {
+            return $default;
+        }
         $type = $this->column->dbType;
         $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
-        $default = self::buildRawDefaultValue($this->column->defaultValue, $this->column->allowNull);
         $columns = $nullable . ($default ? ' ' . trim($default) : '');
         return $type . ' ' . $columns;
     }
@@ -254,6 +281,9 @@ class ColumnToCode
     private function resolveArrayType():string
     {
         $default = $this->buildDefaultValue();
+        if ($this->defaultOnly) {
+            return $default;
+        }
         $nullable = $this->column->allowNull === true ? 'null()' : 'notNull()';
         $type = $this->column->dbType;
         return $this->buildString($type, $default, $nullable);
@@ -272,7 +302,7 @@ class ColumnToCode
             return '';
         }
         if ($value === null) {
-            return $this->column->allowNull === true ? 'defaultValue(null)' : '';
+            return ($this->column->allowNull === true)? 'defaultValue(null)' : '';
         }
 
         switch (gettype($value)) {

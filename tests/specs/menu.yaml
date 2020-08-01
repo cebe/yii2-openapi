@@ -52,6 +52,19 @@ components:
           type: array
           items:
              $ref: '#/components/schemas/Menu/properties/parent'
+        args:
+          type: array
+          x-db-type: text[]
+          default:
+            - foo
+            - bar
+            - baz
+        kwargs:
+          type: string
+          x-db-type: json
+          default:
+            - foo: bar
+            - buzz: fizz
     Error:
       required:
         - code

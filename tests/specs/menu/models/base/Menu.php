@@ -8,6 +8,8 @@ namespace app\models\base;
  * @property int $id
  * @property string $name
  * @property int $parent_id
+ * @property array $args
+ * @property array $kwargs
  *
  * @property \app\models\Menu $parent
  * @property array|\app\models\Menu[] $childes
@@ -27,6 +29,8 @@ abstract class Menu extends \yii\db\ActiveRecord
             [['parent_id'], 'integer'],
             [['parent_id'], 'exist', 'targetRelation'=>'Parent'],
             [['name'], 'string'],
+            // TODO define more concrete validation rules!
+            [['args','kwargs'], 'safe'],
         ];
     }
 

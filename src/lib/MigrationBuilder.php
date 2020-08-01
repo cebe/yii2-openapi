@@ -275,10 +275,10 @@ class MigrationBuilder
         }
         if (in_array('defaultValue', $changes, true)) {
             $upCodes[] = $desired->defaultValue !== null
-                ? 'SET ' . ColumnToCode::buildRawDefaultValue($desired->defaultValue, $desired->allowNull)
+                ? 'SET ' . (new ColumnToCode($this->dbSchema, $desired, false))->resolveDefaultOnly()
                 : 'DROP DEFAULT';
             $downCodes[] = $current->defaultValue !== null
-                ? 'SET ' . ColumnToCode::buildRawDefaultValue($current->defaultValue, $current->allowNull)
+                ? 'SET ' . (new ColumnToCode($this->dbSchema, $current, false))->resolveDefaultOnly()
                 : 'DROP DEFAULT';
         }
         foreach ($upCodes as $upCode) {
