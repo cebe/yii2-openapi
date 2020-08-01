@@ -223,7 +223,7 @@ class Attribute extends BaseObject
     public function toColumnSchema():ColumnSchema
     {
         $column = new ColumnSchema([
-            'name' => $this->propertyName,
+            'name' => $this->columnName,
             'phpType'=>$this->phpType,
             'dbType' => strtolower($this->dbType),
             'type' => $this->dbTypeAbstract($this->dbType),

@@ -7,7 +7,7 @@ class m200000_000003_change_table_v2_comments extends \yii\db\Migration
 {
     public function up()
     {
-        $this->addColumn('{{%v2_comments}}', 'user', $this->bigInteger()->null()->defaultValue(null));
+        $this->addColumn('{{%v2_comments}}', 'user_id', $this->bigInteger()->null()->defaultValue(null));
         $this->dropColumn('{{%v2_comments}}', 'author_id');
         $this->alterColumn('{{%v2_comments}}', 'created_at', $this->timestamp()->notNull());
         $this->alterColumn('{{%v2_comments}}', 'message', $this->text()->notNull());
@@ -24,6 +24,6 @@ class m200000_000003_change_table_v2_comments extends \yii\db\Migration
         $this->alterColumn('{{%v2_comments}}', 'message', "json NOT NULL");
         $this->alterColumn('{{%v2_comments}}', 'created_at', $this->integer(11)->notNull());
         $this->addColumn('{{%v2_comments}}', 'author_id', $this->integer(11)->notNull());
-        $this->dropColumn('{{%v2_comments}}', 'user');
+        $this->dropColumn('{{%v2_comments}}', 'user_id');
     }
 }
