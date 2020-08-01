@@ -133,7 +133,7 @@ class ColumnToCode
         return $categoryType && !$this->defaultOnly? $this->resolveCommon() : $this->resolveRaw();
     }
 
-    public function buildRawDefaultValue():string
+    private function buildRawDefaultValue():string
     {
         $value = $this->column->defaultValue;
         $nullable = $this->column->allowNull;
