@@ -6,7 +6,9 @@ php:
   - '7.3'
   - nightly
 
-install: make install
+install:
+  - travis_retry composer self-update && composer --version
+  - travis_retry composer install --prefer-dist --no-interaction
 script:
   - make test
   - if [[ $TRAVIS_PHP_VERSION = "7.3" || $TRAVIS_PHP_VERSION = "nightly" ]]; then true; else make check-style; fi
