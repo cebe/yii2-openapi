@@ -1,98 +1,88 @@
+<?php
+/**
+ * @var \cebe\yii2openapi\lib\items\DbModel $model
+ * @var string $namespace
+ * @var string $relationNamespace
+ **/
+?>
 <?= '<?php' ?>
 
 
 namespace <?= $namespace ?>;
 
 /**
- * <?= str_replace("\n", "\n * ", trim($description)) ?>
+ * <?= str_replace("\n", "\n * ", trim($model->description)) ?>
 
  *
-<?php foreach ($attributes as $attribute):
-    if (\yii\helpers\StringHelper::endsWith($attribute['name'], '_id') && isset($relations[substr($attribute['name'], 0, -3)])) {
-        // TODO this change should be made in SchemaToDatabase class
-        $attribute['type'] = 'int';
-    }
-    ?>
- * @property <?= $attribute['type'] ?? 'mixed' ?> $<?= str_replace("\n", "\n * ", rtrim($attribute['name'] . ' ' . $attribute['description'])) ?>
+<?php foreach ($model->attributes as $attribute): ?>
+ * @property <?= $attribute->getFormattedDescription() ?>
 
 <?php endforeach; ?>
  *
-<?php foreach ($relations as $relationName => $relation): ?>
- * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation['class'] ?> $<?= $relationName ?>
+<?php foreach ($model->relations as $relationName => $relation): ?>
+<?php if($relation->isHasOne()):?>
+ * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?> $<?= $relationName ?>
+<?php else:?>
+ * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>[] $<?= $relationName ?>
+<?php endif?>
 
 <?php endforeach; ?>
  */
-abstract class <?= $className ?> extends \yii\db\ActiveRecord
+abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {
-        return <?= var_export($tableName) ?>;
+        return <?= var_export($model->getTableAlias()) ?>;
     }
 
     public function rules()
     {
         return [
 <?php
-    $safeAttributes = [];
-    $requiredAttributes = [];
-    $integerAttributes = [];
-    $stringAttributes = [];
+    $attributesByType = $model->getAttributesByType();
+    if (!empty($attributesByType['string'])) {
+        echo "            [['" . implode("', '", $attributesByType['string']) . "'], 'trim'],\n";
+    }
+    if (!empty($attributesByType['required'])) {
+        echo "            [['" . implode("', '", $attributesByType['required']) . "'], 'required'],\n";
+    }
 
-    foreach ($attributes as $attribute) {
-        if ($attribute['readOnly']) {
-            continue;
-        }
-        if (\yii\helpers\StringHelper::endsWith($attribute['name'], '_id') && isset($relations[substr($attribute['name'], 0, -3)])) {
-            continue;
-        }
-        if ($attribute['required']) {
-            $requiredAttributes[$attribute['name']] = $attribute['name'];
-        }
-        switch ($attribute['type']) {
-            case 'integer':
-                $integerAttributes[$attribute['name']] = $attribute['name'];
-                break;
-            case 'string':
-                $stringAttributes[$attribute['name']] = $attribute['name'];
-                break;
-            default:
-            case 'array':
-                $safeAttributes[$attribute['name']] = $attribute['name'];
-                break;
-        }
+    if (!empty($attributesByType['int'])) {
+        echo "            [['" . implode("', '", $attributesByType['int']) . "'], 'integer'],\n";
     }
-    if (!empty($stringAttributes)) {
-        echo "            [['" . implode("', '", $stringAttributes) . "'], 'trim'],\n";
+    foreach ($attributesByType['ref'] as $relation){
+        echo "            [['" . $relation['attr'] . "'], 'exist', 'targetRelation'=>'".$relation['rel']."'],\n";
     }
-    if (!empty($requiredAttributes)) {
-        echo "            [['" . implode("', '", $requiredAttributes) . "'], 'required'],\n";
+
+    if (!empty($attributesByType['string'])) {
+        echo "            [['" . implode("', '", $attributesByType['string']) . "'], 'string'],\n";
     }
-    if (!empty($stringAttributes)) {
-        echo "            [['" . implode("', '", $stringAttributes) . "'], 'string'],\n";
+
+    if (!empty($attributesByType['float'])) {
+        echo "            [['" . implode("', '", $attributesByType['float']) . "'], 'double'],\n";
     }
-    if (!empty($integerAttributes)) {
-        echo "            [['" . implode("', '", $integerAttributes) . "'], 'integer'],\n";
+    if (!empty($attributesByType['bool'])) {
+        echo "            [['" . implode("', '", $attributesByType['bool']) . "'], 'boolean'],\n";
     }
-    if (!empty($safeAttributes)) {
-        echo "            // TODO define more concreate validation rules!\n";
-        echo "            [['" . implode("','", $safeAttributes) . "'], 'safe'],\n";
+    if (!empty($attributesByType['safe'])) {
+        echo "            // TODO define more concrete validation rules!\n";
+        echo "            [['" . implode("','", $attributesByType['safe']) . "'], 'safe'],\n";
     }
 
 ?>
         ];
     }
 
-<?php foreach ($relations as $relationName => $relation): ?>
-    public function get<?= ucfirst($relationName) ?>()
+<?php foreach ($model->relations as $relationName => $relation): ?>
+    public function get<?= $relation->getCamelName() ?>()
     {
-        return $this-><?= $relation['method'] ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation['class'] ?>::class, <?php
+        return $this-><?= $relation->getMethod() ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>::class,<?php
             echo str_replace(
                     [',', '=>', ', ]'],
                     [', ', ' => ', ']'],
-                    preg_replace('~\s+~', '', \yii\helpers\VarDumper::export($relation['link']))
+                    preg_replace('~\s+~', '', \yii\helpers\VarDumper::export($relation->getLink()))
             )
         ?>);
     }
-
 <?php endforeach; ?>
 }

@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var \cebe\yii2openapi\lib\items\DbModel $model
+ * @var string $namespace
+ * @var string $modelNamespace
+ **/
+?>
 <?= '<?php' ?>
 
 
@@ -6,27 +13,33 @@ namespace <?= $namespace ?>;
 use Faker\Factory as FakerFactory;
 use Faker\UniqueGenerator;
 <?php if ($modelNamespace !== $namespace): ?>
-use <?= $modelNamespace ?>\<?= $modelClass ?>;
+use <?= $modelNamespace ?>\<?= $model->name ?>;
 <?php endif; ?>
 
 /**
- * Fake data generator for <?= $modelClass ?>
+ * Fake data generator for <?= $model->name ?>
 
  */
-class <?= $className ?>
-
+class <?= $model->name ?>Faker
 {
     public function generateModel()
     {
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
-        $model = new <?= $modelClass ?>;
-<?php foreach ($attributes as $attribute):
-        if (!isset($attribute['faker'])) {
+        $model = new <?= $model->name ?>();
+<?php foreach ($model->attributes as $attribute):
+        if (!$attribute->fakerStub || $attribute->isReference()) {
             continue;
         } ?>
-        $model-><?= $attribute['name'] ?> = <?= $attribute['faker'] ?>;
+        $model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
+<?php endforeach; ?><?php /** For foreign referenced
+<?php foreach ($model->attributes as $attribute):
+        if (!$attribute->fakerStub || !$attribute->isReference()) {
+             continue;
+        } ?>
+        $model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
 <?php endforeach; ?>
+ **/?>
         return $model;
     }
 }

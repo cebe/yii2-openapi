@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var \cebe\yii2openapi\lib\items\MigrationModel $migration
+ * @var string $namespace
+ * @var bool $isTransactional
+ **/
+?>
 <?= '<?php' ?>
 
 <?php if (isset($namespace)) {
@@ -5,20 +12,20 @@
 } ?>
 
 /**
- * <?= $description ?>
+ * <?= $migration->getDescription() ?>
 
  */
-class <?= $className ?> extends \yii\db\Migration
+class <?= $migration->fileClassName ?> extends \yii\db\Migration
 {
-    public function up()
+    public function <?=$isTransactional? 'safeUp':'up'?>()
     {
-<?= $upCode ?>
+<?= str_replace(["'\$this", ")',"], ['$this', '),'], $migration->upCodeString) ?>
 
     }
 
-    public function down()
+    public function <?=$isTransactional? 'safeDown':'down'?>()
     {
-<?= $downCode ?>
+<?= str_replace(["'\$this", ")',"], ['$this', '),'], $migration->downCodeString) ?>
 
     }
 }
