@@ -170,7 +170,6 @@ class MigrationBuilder
                 $items = ColumnToCode::enumToString($column->enumValues);
                 $this->migration->addUpCode(sprintf(self::ADD_ENUM, $column->name, $items), true)
                                 ->addDownCode(sprintf(self::DROP_ENUM, $column->name));
-
             }
         }
     }

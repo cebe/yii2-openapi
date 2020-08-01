@@ -183,16 +183,6 @@ class ColumnToCode
     private function resolveCommon():string
     {
         $size = $this->column->size ? '(' . $this->column->size . ')' : '()';
-        /**  variant with precision
-         * if($this->column->size !== null && $this->column->precision !== null){
-         *     $size = "({$this->column->size},{$this->column->precision})";
-         * }elseif ($this->column->precision !== null){
-         *     $size = "({$this->column->precision})";
-         * }elseif ($this->column->size !== null){
-         *     $size = "({$this->column->size})";
-         * }else{
-         *     $size = '()';
-         * }**/
         $default = $this->buildDefaultValue();
         $nullable = $this->column->allowNull === true ? 'null()' : 'notNull()';
         if (array_key_exists($this->column->dbType, self::INT_TYPE_MAP)) {

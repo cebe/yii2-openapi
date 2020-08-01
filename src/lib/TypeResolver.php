@@ -10,15 +10,6 @@ use function strtolower;
 
 class TypeResolver
 {
-    public const ADDITIONAL_DB_TYPES = [
-        'jsonb',
-        'tsvector',
-        'enum',
-        'set',
-        'int[]',
-        'varchar[]',
-        'text[]',
-    ];
 
     public static function schemaToPhpType(Schema $property):string
     {
