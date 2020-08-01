@@ -1,0 +1,174 @@
+<?php
+
+namespace cebe\yii2openapi\lib;
+
+use cebe\openapi\SpecObjectInterface;
+use cebe\yii2openapi\lib\items\Attribute;
+
+/**
+ * Guess faker for attribute
+ * @link https://github.com/fzaninotto/Faker#formatters
+ **/
+class FakerStubResolver
+{
+    // 2^31-1 PHP_MAX_INT may be 64bit and too big in some cases
+    public const MAX_INT = 2147483647;
+    /**
+     * @var \cebe\yii2openapi\lib\items\Attribute
+     */
+    private $attribute;
+
+    /**
+     * @var \cebe\openapi\spec\Schema
+     */
+    private $property;
+
+    public function __construct(Attribute $attribute, SpecObjectInterface $property)
+    {
+
+        $this->attribute = $attribute;
+        $this->property = $property;
+    }
+
+    public function resolve():?string
+    {
+        if (isset($this->property->{CustomSpecAttr::FAKER})) {
+            return $this->property->{CustomSpecAttr::FAKER};
+        }
+        $limits = $this->attribute->limits;
+        switch ($this->attribute->phpType) {
+            case 'bool':
+                return '$faker->boolean';
+            case 'int':
+                return $this->fakeForInt($limits['min'], $limits['max']);
+            case 'string':
+                return $this->fakeForString();
+            case 'float':
+            case 'double':
+                return $this->fakeForFloat($limits['min'], $limits['max']);
+            case 'array':
+                return $this->fakeForArray($this->attribute);
+            default:
+                return null;
+        }
+    }
+
+    private function fakeForString():?string
+    {
+        $formats = [
+            'date' => '$faker->iso8601',
+            'date-time' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')',
+            'email' => '$faker->safeEmail',
+        ];
+        if ($this->property->format && isset($formats[$this->property->format])) {
+            return $formats[$this->property->format];
+        }
+        if (!empty($this->property->enum) && is_array($this->property->enum)) {
+            return '$faker->randomElement(' . var_export($this->property->enum, true) . ')';
+        }
+        if ($this->attribute->columnName === 'title'
+            && $this->attribute->size
+            && $this->attribute->size < 10) {
+            return '$faker->title';
+        }
+
+        $patterns = [
+            '~_id$~' => '$uniqueFaker->numberBetween(0, 1000000)',
+            '~uuid$~' => '$uniqueFaker->uuid',
+            '~slug$~' => '$uniqueFaker->slug',
+            '~firstname~i' => '$faker->firstName',
+            '~password~i' => '$faker->password',
+            '~(last|sur)name~i' => '$faker->lastName',
+            '~(company|employer)~i' => '$faker->company',
+            '~(city|town)~i' => '$faker->city',
+            '~(post|zip)code~i' => '$faker->postcode',
+            '~streetaddress~i' => '$faker->streetAddress',
+            '~address~i' => '$faker->address',
+            '~street~i' => '$faker->streetName',
+            '~state~i' => '$faker->state',
+            '~county~i' => 'sprintf("%s County", $faker->city)',
+            '~country~i' => '$faker->countryCode',
+            '~lang~i' => '$faker->languageCode',
+            '~locale~i' => '$faker->locale',
+            '~currency~i' => '$faker->currencyCode',
+            '~(hash|token)~i' => '$faker->sha256',
+            '~e?mail~i' => '$faker->safeEmail',
+            '~timestamp~i' => '$faker->unixTime',
+            '~.*At$~' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')', // createdAt, updatedAt, ...
+            '~.*ed_at$~i' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')', // created_at, updated_at, ...
+            '~(phone|fax|mobile|telnumber)~i' => '$faker->e164PhoneNumber',
+            '~(^lat|coord)~i' => '$faker->latitude',
+            '~^lon~i' => '$faker->longitude',
+            '~title~i' => '$faker->sentence',
+            '~(body|summary|article|content|descr|comment|detail)~i' => '$faker->paragraphs(6, true)',
+            '~(url|site|website|href)~i' => '$faker->url',
+            '~(username|login)~i' => '$faker->userName',
+        ];
+        $size = $this->attribute->size > 0 ? $this->attribute->size: null;
+        foreach ($patterns as $pattern => $fake) {
+            if (preg_match($pattern, $this->attribute->columnName)) {
+                if ($size) {
+                    return 'substr(' . $fake . ', 0, ' . $size . ')';
+                }
+                return $fake;
+            }
+        }
+
+        // TODO maybe also consider OpenAPI examples here
+
+        if ($size) {
+            return 'substr($faker->text(' . $size . '), 0, ' . $size . ')';
+        }
+        return '$faker->sentence';
+    }
+
+    private function fakeForInt(?int $min, ?int $max):?string
+    {
+        $fakerVariable = 'faker';
+        if(preg_match('~_?id$~', $this->attribute->columnName)){
+            $fakerVariable = 'uniqueFaker';
+        }
+        if ($min !== null && $max !== null) {
+            return "\${$fakerVariable}->numberBetween($min, $max)";
+        }
+
+        if ($min !== null) {
+            return "\${$fakerVariable}->numberBetween($min, ".self::MAX_INT.")";
+        }
+
+        if ($max !== null) {
+            return "\${$fakerVariable}->numberBetween(0, $max)";
+        }
+
+        $patterns = [
+            '~timestamp~i' => '$faker->unixTime',
+            '~.*At$~' => '$faker->unixTime', // createdAt, updatedAt, ...
+            '~.*ed_at$~i' => '$faker->unixTime', // created_at, updated_at, ...
+        ];
+        foreach ($patterns as $pattern => $fake) {
+            if (preg_match($pattern, $this->attribute->columnName)) {
+                return $fake;
+            }
+        }
+        return "\${$fakerVariable}->numberBetween(0, ".self::MAX_INT.")";
+    }
+
+    private function fakeForFloat(?int $min, ?int $max):?string
+    {
+        if ($min !== null && $max !== null) {
+            return "\$faker->randomFloat(null, $min, $max)";
+        }
+        if ($min !== null) {
+            return "\$faker->randomFloat(null, $min)";
+        }
+        if ($max !== null) {
+            return "\$faker->randomFloat(null, 0, $max)";
+        }
+        return '$faker->randomFloat()';
+    }
+
+    private function fakeForArray(Attribute $attribute)
+    {
+        return '[]';
+    }
+}
