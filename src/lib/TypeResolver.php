@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use cebe\openapi\spec\Schema;
@@ -10,7 +15,6 @@ use function strtolower;
 
 class TypeResolver
 {
-
     public static function schemaToPhpType(Schema $property):string
     {
         $customDbType = isset($property->{CustomSpecAttr::DB_TYPE})

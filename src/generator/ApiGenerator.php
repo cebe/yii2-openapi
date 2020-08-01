@@ -679,7 +679,6 @@ class ApiGenerator extends Generator
                         $classFileGenerator->generate()
                     );
                 }
-
             }
         }
 
@@ -736,7 +735,6 @@ class ApiGenerator extends Generator
                         $classFileGenerator->generate()
                     );
                 }
-
             }
         }
 
@@ -746,7 +744,7 @@ class ApiGenerator extends Generator
             }
             /** @var $migrationGenerator MigrationsGenerator */
             $migrationGenerator = Instance::ensure($this->migrationGenerator, MigrationsGenerator::class);
-            $migrationModels = $migrationGenerator->generate(array_filter($models, function($model){
+            $migrationModels = $migrationGenerator->generate(array_filter($models, function ($model) {
                 return $model instanceof DbModel;
             }));
 
@@ -757,7 +755,7 @@ class ApiGenerator extends Generator
             // TODO start $i by looking at all files, otherwise only one generation per hours causes correct order!!!
 
             $i = 0;
-            foreach($migrationModels as $tableName => $migration) {
+            foreach ($migrationModels as $tableName => $migration) {
                 // migration files get invalidated directly after generating,
                 // if they contain a timestamp use fixed time here instead
                 do {

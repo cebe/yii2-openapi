@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use cebe\yii2openapi\lib\items\MigrationModel;
@@ -57,7 +62,7 @@ class MigrationsGenerator extends Component
         ksort($this->migrations);
         foreach ($this->migrations as $migration) {
             //echo "adding {$migration->tableAlias}\n";
-             $this->sortByDependencyRecurse($migration);
+            $this->sortByDependencyRecurse($migration);
         }
         return $this->sorted;
     }

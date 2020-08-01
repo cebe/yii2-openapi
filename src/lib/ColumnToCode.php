@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use yii\db\ArrayExpression;
@@ -174,7 +179,7 @@ class ColumnToCode
 
     public static function enumToString(array $enum): string
     {
-        $items = implode(",", array_map(function($v){
+        $items = implode(",", array_map(function ($v) {
             return self::wrapQuotes($v);
         }, $enum));
         return self::escapeQuotes($items);
@@ -222,10 +227,12 @@ class ColumnToCode
         if ($this->isPostgres()) {
             $type = 'enum_' . $this->column->name;
         } else {
-            $values = array_map(function($v) {
-                return self::wrapQuotes($v);
-            },
-                $this->column->enumValues);
+            $values = array_map(
+                function ($v) {
+                    return self::wrapQuotes($v);
+                },
+                $this->column->enumValues
+            );
             $type = "enum(" . implode(', ', $values) . ")";
         }
         if ($this->typeOnly === true) {

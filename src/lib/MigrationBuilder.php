@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use cebe\yii2openapi\lib\items\DbModel;
@@ -92,11 +97,13 @@ class MigrationBuilder
         $this->uniqueColumns = $this->model->getUniqueColumnsList();
         $this->newColumns = $this->model->attributesToColumnSchema();
         $tableName = $this->model->getTableAlias();
-        $codeColumns = VarDumper::export(array_map(function(ColumnSchema $column) {
-            $isUnique = in_array($column->name, $this->uniqueColumns, true);
-            return $this->columnToCode($column, $isUnique, false);
-        },
-            $this->model->attributesToColumnSchema()));
+        $codeColumns = VarDumper::export(array_map(
+            function (ColumnSchema $column) {
+                $isUnique = in_array($column->name, $this->uniqueColumns, true);
+                return $this->columnToCode($column, $isUnique, false);
+            },
+            $this->model->attributesToColumnSchema()
+        ));
         $codeColumns = str_replace(PHP_EOL, PHP_EOL . self::INDENT, $codeColumns);
         $this->migration->addUpCode(sprintf(self::ADD_TABLE, $this->model->getTableAlias(), $codeColumns))
                         ->addDownCode(sprintf(self::DROP_TABLE, $this->model->getTableAlias()));
@@ -115,7 +122,7 @@ class MigrationBuilder
             $fkName = $this->foreignKeyName($this->model->tableName, $fkCol, $relation->getTableName(), $refCol);
             $this->migration->addUpCode(sprintf(self::ADD_FK, $fkName, $tableName, $fkCol, $refTable, $refCol))
                             ->addDownCode(sprintf(self::DROP_FK, $fkName, $tableName));
-            if($relation->getTableName() !== $this->model->tableName){
+            if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;
             }
         }
@@ -133,15 +140,19 @@ class MigrationBuilder
         $haveNames = $this->tableSchema->columnNames;
         sort($wantNames);
         sort($haveNames);
-        $columnsForCreate = array_map(function(string $missingColumn) {
-            return $this->newColumns[$missingColumn];
-        },
-            array_diff($wantNames, $haveNames));
+        $columnsForCreate = array_map(
+            function (string $missingColumn) {
+                return $this->newColumns[$missingColumn];
+            },
+            array_diff($wantNames, $haveNames)
+        );
 
-        $columnsForDrop = array_map(function(string $unknownColumn) {
-            return $this->tableSchema->columns[$unknownColumn];
-        },
-            array_diff($haveNames, $wantNames));
+        $columnsForDrop = array_map(
+            function (string $unknownColumn) {
+                return $this->tableSchema->columns[$unknownColumn];
+            },
+            array_diff($haveNames, $wantNames)
+        );
 
         $columnsForChange = array_intersect($wantNames, $haveNames);
 
@@ -226,7 +237,7 @@ class MigrationBuilder
         foreach ($changedAttributes as $attr) {
             $newColumn->$attr = $desired->$attr;
         }
-        if(!empty($newColumn->enumValues)){
+        if (!empty($newColumn->enumValues)) {
             $newColumn->dbType = 'enum';
         }
         $upCode = $this->columnToCode($newColumn, false, true); //unique marks solved in separated queries
@@ -243,12 +254,12 @@ class MigrationBuilder
         $columnName = $desired->name;
         $upCodes = $downCodes = [];
         if ($desired->enumValues !== $current->enumValues && $current->type !== $desired->type) {
-            if(!empty($desired->enumValues)){
+            if (!empty($desired->enumValues)) {
                 $items = ColumnToCode::enumToString($desired->enumValues);
                 $this->migration->addUpCode(sprintf(self::ADD_ENUM, $desired->name, $items), true)
                                 ->addDownCode(sprintf(self::DROP_ENUM, $desired->name), true);
             }
-            if(!empty($current->enumValues)){
+            if (!empty($current->enumValues)) {
                 $items = ColumnToCode::enumToString($current->enumValues);
                 $this->migration->addDownCode(sprintf(self::ADD_ENUM, $current->name, $items), true)
                                 ->addUpCode(sprintf(self::DROP_ENUM, $current->name), true);
@@ -292,7 +303,7 @@ class MigrationBuilder
                 $fkName = $this->foreignKeyName($this->model->tableName, $fkCol, $refTable, $refCol);
                 $this->migration->addUpCode(sprintf(self::DROP_FK, $fkName, $tableName))
                                 ->addDownCode(sprintf(self::ADD_FK, $fkName, $tableName, $fkCol, $refTable, $refCol));
-                if($refTable !== $this->model->tableName){
+                if ($refTable !== $this->model->tableName) {
                     $this->migration->dependencies[$refTable];
                 }
             }
@@ -307,7 +318,7 @@ class MigrationBuilder
             }
             $this->migration->addUpCode(sprintf(self::ADD_FK, $fkName, $tableName, $fkCol, $refTable, $refCol))
                             ->addDownCode(sprintf(self::DROP_FK, $fkName, $tableName));
-            if($relation->getTableName() !== $this->model->tableName){
+            if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;
             }
         }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use cebe\openapi\SpecObjectInterface;
@@ -25,7 +30,6 @@ class FakerStubResolver
 
     public function __construct(Attribute $attribute, SpecObjectInterface $property)
     {
-
         $this->attribute = $attribute;
         $this->property = $property;
     }
@@ -125,7 +129,7 @@ class FakerStubResolver
     private function fakeForInt(?int $min, ?int $max):?string
     {
         $fakerVariable = 'faker';
-        if(preg_match('~_?id$~', $this->attribute->columnName)){
+        if (preg_match('~_?id$~', $this->attribute->columnName)) {
             $fakerVariable = 'uniqueFaker';
         }
         if ($min !== null && $max !== null) {

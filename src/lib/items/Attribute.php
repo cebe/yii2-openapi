@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
@@ -93,7 +98,6 @@ class Attribute extends BaseObject
 
     public function __construct(string $propertyName, array $config = [])
     {
-
         $this->propertyName = $propertyName;
         $this->columnName = $propertyName; // force camel2id ?
         parent::__construct($config);

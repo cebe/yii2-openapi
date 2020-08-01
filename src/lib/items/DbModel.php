@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
@@ -98,31 +103,37 @@ class DbModel extends BaseObject
      */
     public function getHasOneRelations():array
     {
-        return array_filter($this->relations,
-            static function(AttributeRelation $relation) {
+        return array_filter(
+            $this->relations,
+            static function (AttributeRelation $relation) {
                 return $relation->isHasOne();
-            });
+            }
+        );
     }
     /**
      * @return ColumnSchema[]
      */
     public function attributesToColumnSchema():array
     {
-        return array_reduce($this->attributes,
-            static function($acc, Attribute $attribute) {
+        return array_reduce(
+            $this->attributes,
+            static function ($acc, Attribute $attribute) {
                 $acc[$attribute->columnName] = $attribute->toColumnSchema();
                 return $acc;
             },
-            []);
+            []
+        );
     }
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
     public function getEnumAttributes():array
     {
-        return array_filter($this->attributes,
-            function(Attribute $attribute) {
+        return array_filter(
+            $this->attributes,
+            function (Attribute $attribute) {
                 return StringHelper::startsWith($attribute->dbType, 'enum') && !empty($attribute->enumValues);
-            });
+            }
+        );
     }
 }

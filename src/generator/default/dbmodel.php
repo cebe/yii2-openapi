@@ -20,7 +20,7 @@ namespace <?= $namespace ?>;
 <?php endforeach; ?>
  *
 <?php foreach ($model->relations as $relationName => $relation): ?>
-<?php if($relation->isHasOne()):?>
+<?php if ($relation->isHasOne()):?>
  * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?> $<?= $relationName ?>
 <?php else:?>
  * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>[] $<?= $relationName ?>
@@ -50,7 +50,7 @@ abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
     if (!empty($attributesByType['int'])) {
         echo "            [['" . implode("', '", $attributesByType['int']) . "'], 'integer'],\n";
     }
-    foreach ($attributesByType['ref'] as $relation){
+    foreach ($attributesByType['ref'] as $relation) {
         echo "            [['" . $relation['attr'] . "'], 'exist', 'targetRelation'=>'".$relation['rel']."'],\n";
     }
 

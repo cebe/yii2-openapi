@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use cebe\openapi\ReferenceContext;
@@ -93,7 +98,7 @@ class AttributeResolver
             $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $relatedSchema = $property->resolve();
             if (strpos($refPointer, self::REFERENCE_PATH) === 0) {
-                if(strpos($refPointer, '/properties/')!==false){
+                if (strpos($refPointer, '/properties/')!==false) {
                     $attribute->asReference($this->schemaName);
                     $foreignPk = $this->componentSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
                     $foreignPkProperty = $this->componentSchema->properties[$foreignPk];
@@ -105,7 +110,7 @@ class AttributeResolver
                     $relation = (new AttributeRelation($propertyName, $relatedTableName, $this->schemaName))
                         ->asHasOne([$foreignPk => $attribute->columnName])->asSelfReference();
                     $this->relations[$propertyName] = $relation;
-                }else{
+                } else {
                     $relatedClassName = substr($refPointer, self::REFERENCE_PATH_LEN);
                     $relatedTableName =
                         $relatedSchema->{CustomSpecAttr::TABLE} ?? self::tableNameBySchema($relatedClassName);
@@ -151,7 +156,7 @@ class AttributeResolver
         // has Many relation
         $refPointer = $this->getHasManyReference($property);
         if ($refPointer !== null) {
-            if(strpos($refPointer, '/properties/')!==false){
+            if (strpos($refPointer, '/properties/')!==false) {
                 $relatedClassName = $this->schemaName;
                 $relatedTableName = $this->tableName;
                 $foreignAttr = str_replace(self::REFERENCE_PATH.$relatedClassName.'/properties/', '', $refPointer);
