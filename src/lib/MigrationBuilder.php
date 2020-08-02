@@ -172,7 +172,7 @@ class MigrationBuilder
     private function buildColumnsCreation(array $columns):void
     {
         foreach ($columns as $column) {
-            if($column->isPrimaryKey){
+            if ($column->isPrimaryKey) {
                 // TODO: Avoid pk changes, or previous pk should be dropped before
             }
             $isUnique = in_array($column->name, $this->uniqueColumns, true);
@@ -194,7 +194,7 @@ class MigrationBuilder
     private function buildColumnsDrop(array $columns):void
     {
         foreach ($columns as $column) {
-            if($column->isPrimaryKey){
+            if ($column->isPrimaryKey) {
                 // TODO: drop pk index and foreign keys before or avoid drop
             }
             $isUnique = in_array($column->name, $this->currentUniqueColumns, true);
@@ -261,11 +261,11 @@ class MigrationBuilder
         $upCodes = $downCodes = [];
         $isChangeToEnum = $current->type !== $desired->type && !empty($desired->enumValues);
         $isChangeFromEnum = $current->type !== $desired->type && !empty($current->enumValues);
-        if($isChangeToEnum){
+        if ($isChangeToEnum) {
             $items = ColumnToCode::enumToString($desired->enumValues);
             $this->migration->addUpCode(sprintf(self::ADD_ENUM, $desired->name, $items), true);
         }
-        if($isChangeFromEnum){
+        if ($isChangeFromEnum) {
             $this->migration->addUpCode(sprintf(self::DROP_ENUM, $current->name));
         }
         if (!empty(array_intersect(['type', 'size'], $changes))) {
@@ -292,11 +292,11 @@ class MigrationBuilder
             $downCode = ColumnToCode::wrapQuotesOnlyRaw($downCode);
             $this->migration->addDownCode(sprintf(self::ALTER_COLUMN, $tableName, $columnName, $downCode), true);
         }
-        if($isChangeFromEnum){
+        if ($isChangeFromEnum) {
             $items = ColumnToCode::enumToString($current->enumValues);
             $this->migration->addDownCode(sprintf(self::ADD_ENUM, $current->name, $items), true);
         }
-        if($isChangeToEnum){
+        if ($isChangeToEnum) {
             $this->migration->addDownCode(sprintf(self::DROP_ENUM, $desired->name), true);
         }
     }
