@@ -24,6 +24,6 @@ class m200000_000003_change_table_v2_comments extends \yii\db\Migration
         $this->dropColumn('{{%v2_comments}}', 'user_id');
         $this->alterColumn('{{%v2_comments}}', 'created_at', $this->integer());
         $this->alterColumn('{{%v2_comments}}', 'message', "jsonb");
-        $this->alterColumn('{{%v2_comments}}', 'message', "SET DEFAULT \'[]\'");
+        $this->alterColumn('{{%v2_comments}}', 'message', "SET DEFAULT '[]'");
     }
 }

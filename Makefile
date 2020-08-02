@@ -33,6 +33,8 @@ cli:
 	docker-compose exec php bash
 
 migrate:
+	mkdir -p "tests/tmp/app"
+	mkdir -p "tests/tmp/docker_app"
 	docker-compose run --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
 
 installdocker:

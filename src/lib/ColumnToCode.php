@@ -249,7 +249,9 @@ class ColumnToCode
         }
         $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
         if ($this->isPostgres()) {
-            $type = 'enum_' . $this->column->name;
+            $type = $this->typeOnly
+                ? \sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name)
+                : 'enum_'.$this->column->name;
         } else {
             $values = array_map(
                 function ($v) {
