@@ -32,8 +32,8 @@ abstract class Post extends \yii\db\ActiveRecord
             [['title', 'slug', 'lang', 'created_at'], 'trim'],
             [['title', 'category_id', 'active'], 'required'],
             [['category_id', 'created_by_id'], 'integer'],
-            [['category_id'], 'exist', 'targetRelation'=>'Category'],
-            [['created_by_id'], 'exist', 'targetRelation'=>'CreatedBy'],
+            [['category_id'], 'exist', 'targetRelation' => 'Category'],
+            [['created_by_id'], 'exist', 'targetRelation' => 'CreatedBy'],
             [['title', 'slug', 'lang', 'created_at'], 'string'],
             [['active'], 'boolean'],
         ];

@@ -27,10 +27,9 @@ abstract class Menu extends \yii\db\ActiveRecord
             [['name'], 'trim'],
             [['name'], 'required'],
             [['parent_id'], 'integer'],
-            [['parent_id'], 'exist', 'targetRelation'=>'Parent'],
+            [['parent_id'], 'exist', 'targetRelation' => 'Parent'],
             [['name'], 'string'],
-            // TODO define more concrete validation rules!
-            [['args','kwargs'], 'safe'],
+            [['args', 'kwargs'], 'safe'],
         ];
     }
 

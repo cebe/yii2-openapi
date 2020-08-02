@@ -24,8 +24,8 @@ abstract class PostTag extends \yii\db\ActiveRecord
         return [
             [['post_id', 'tag_id'], 'required'],
             [['post_id', 'tag_id'], 'integer'],
-            [['post_id'], 'exist', 'targetRelation'=>'Post'],
-            [['tag_id'], 'exist', 'targetRelation'=>'Tag'],
+            [['post_id'], 'exist', 'targetRelation' => 'Post'],
+            [['tag_id'], 'exist', 'targetRelation' => 'Tag'],
         ];
     }
 

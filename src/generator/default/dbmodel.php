@@ -38,38 +38,7 @@ abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-<?php
-    $attributesByType = $model->getAttributesByType();
-    if (!empty($attributesByType['string'])) {
-        echo "            [['" . implode("', '", $attributesByType['string']) . "'], 'trim'],\n";
-    }
-    if (!empty($attributesByType['required'])) {
-        echo "            [['" . implode("', '", $attributesByType['required']) . "'], 'required'],\n";
-    }
-
-    if (!empty($attributesByType['int'])) {
-        echo "            [['" . implode("', '", $attributesByType['int']) . "'], 'integer'],\n";
-    }
-    foreach ($attributesByType['ref'] as $relation) {
-        echo "            [['" . $relation['attr'] . "'], 'exist', 'targetRelation'=>'".$relation['rel']."'],\n";
-    }
-
-    if (!empty($attributesByType['string'])) {
-        echo "            [['" . implode("', '", $attributesByType['string']) . "'], 'string'],\n";
-    }
-
-    if (!empty($attributesByType['float'])) {
-        echo "            [['" . implode("', '", $attributesByType['float']) . "'], 'double'],\n";
-    }
-    if (!empty($attributesByType['bool'])) {
-        echo "            [['" . implode("', '", $attributesByType['bool']) . "'], 'boolean'],\n";
-    }
-    if (!empty($attributesByType['safe'])) {
-        echo "            // TODO define more concrete validation rules!\n";
-        echo "            [['" . implode("','", $attributesByType['safe']) . "'], 'safe'],\n";
-    }
-
-?>
+<?=implode(",\n", $model->getValidationRules()).",\n"?>
         ];
     }
 

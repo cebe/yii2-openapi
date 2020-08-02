@@ -26,9 +26,8 @@ abstract class Comment extends \yii\db\ActiveRecord
         return [
             [['post_id', 'author_id', 'message', 'created_at'], 'required'],
             [['post_id', 'author_id', 'created_at'], 'integer'],
-            [['post_id'], 'exist', 'targetRelation'=>'Post'],
-            [['author_id'], 'exist', 'targetRelation'=>'Author'],
-            // TODO define more concrete validation rules!
+            [['post_id'], 'exist', 'targetRelation' => 'Post'],
+            [['author_id'], 'exist', 'targetRelation' => 'Author'],
             [['message'], 'safe'],
         ];
     }

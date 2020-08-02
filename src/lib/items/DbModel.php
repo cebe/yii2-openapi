@@ -7,11 +7,11 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use cebe\yii2openapi\lib\ValidationRulesBuilder;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\StringHelper;
 use function array_filter;
-use function in_array;
 
 /**
  * @property-read string                                                $tableAlias
@@ -51,40 +51,9 @@ class DbModel extends BaseObject
         return '{{%' . $this->tableName . '}}';
     }
 
-    public function getAttributesByType():array
+    public function getValidationRules():array
     {
-        //Todo: may be more smarter validator resolver, include name patterns
-        $byType =
-            ['safe' => [], 'required' => [], 'int' => [], 'bool' => [], 'float' => [], 'string' => [], 'ref' => []];
-        foreach ($this->attributes as $attribute) {
-            if ($attribute->isReadOnly()) {
-                continue;
-            }
-            if ($attribute->isRequired()) {
-                $byType['required'][$attribute->columnName] = $attribute->columnName;
-            }
-
-            if ($attribute->isReference()) {
-                if (in_array($attribute->phpType, ['int', 'string'])) {
-                    $byType[$attribute->phpType][$attribute->columnName] = $attribute->columnName;
-                }
-                $byType['ref'][] = ['attr' => $attribute->columnName, 'rel' => $attribute->camelName()];
-                continue;
-            }
-
-            if (in_array($attribute->phpType, ['int', 'string', 'bool', 'float'])) {
-                $byType[$attribute->phpType][$attribute->columnName] = $attribute->columnName;
-                continue;
-            }
-
-            if ($attribute->phpType === 'double') {
-                $byType['float'][$attribute->columnName] = $attribute->columnName;
-                continue;
-            }
-
-            $byType['safe'][$attribute->columnName] = $attribute->columnName;
-        }
-        return $byType;
+        return (new ValidationRulesBuilder($this))->build();
     }
 
     public function getUniqueColumnsList():array
@@ -110,6 +79,7 @@ class DbModel extends BaseObject
             }
         );
     }
+
     /**
      * @return ColumnSchema[]
      */
@@ -124,6 +94,7 @@ class DbModel extends BaseObject
             []
         );
     }
+
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
