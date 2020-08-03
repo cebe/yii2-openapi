@@ -26,7 +26,8 @@ abstract class Pet extends \yii\db\ActiveRecord
             [['name'], 'required'],
             [['store_id'], 'integer'],
             [['store_id'], 'exist', 'targetRelation' => 'Store'],
-            [['name', 'tag'], 'string'],
+            [['name'], 'string'],
+            [['tag'], 'string'],
         ];
     }
 

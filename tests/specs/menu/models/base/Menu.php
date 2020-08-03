@@ -28,7 +28,7 @@ abstract class Menu extends \yii\db\ActiveRecord
             [['name'], 'required'],
             [['parent_id'], 'integer'],
             [['parent_id'], 'exist', 'targetRelation' => 'Parent'],
-            [['name'], 'string'],
+            [['name'], 'string', 'min' => 3, 'max' => 100],
             [['args', 'kwargs'], 'safe'],
         ];
     }

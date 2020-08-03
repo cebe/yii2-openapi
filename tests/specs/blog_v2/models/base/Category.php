@@ -24,7 +24,9 @@ abstract class Category extends \yii\db\ActiveRecord
         return [
             [['title', 'cover'], 'trim'],
             [['title', 'cover', 'active'], 'required'],
-            [['title', 'cover'], 'string'],
+            [['title'], 'unique'],
+            [['title'], 'string', 'max' => 100],
+            [['cover'], 'string'],
             [['active'], 'boolean'],
         ];
     }

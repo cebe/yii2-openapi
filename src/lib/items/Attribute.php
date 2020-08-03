@@ -17,6 +17,8 @@ use function strtolower;
  * @property-write mixed $default
  * @property-write bool  $isPrimary
  * @property-read string $formattedDescription
+ * @property-read null|int $maxLength
+ * @property-read null|int $minLength
  */
 class Attribute extends BaseObject
 {
@@ -27,7 +29,7 @@ class Attribute extends BaseObject
     public $propertyName;
 
     /**
-     * should be string/integer/boolean/float/double
+     * should be string/integer/boolean/float/double/array
      * @var string
      */
     public $phpType = 'string';
@@ -211,6 +213,16 @@ class Attribute extends BaseObject
     public function camelName():string
     {
         return Inflector::camelize($this->propertyName);
+    }
+
+    public function getMaxLength():?int
+    {
+        return $this->size;
+    }
+
+    public function getMinLength():?int
+    {
+        return $this->limits['minLength'];
     }
 
     public function getFormattedDescription():string

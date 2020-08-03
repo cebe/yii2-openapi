@@ -22,7 +22,8 @@ abstract class Pet extends \yii\db\ActiveRecord
         return [
             [['name', 'tag'], 'trim'],
             [['name'], 'required'],
-            [['name', 'tag'], 'string'],
+            [['name'], 'string'],
+            [['tag'], 'string'],
         ];
     }
 

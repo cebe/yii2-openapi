@@ -34,10 +34,21 @@ abstract class Fakerable extends \yii\db\ActiveRecord
     {
         return [
             [['uuid', 'str_text', 'str_varchar', 'str_date', 'str_datetime', 'str_country'], 'trim'],
-            [['int_min', 'int_max', 'int_minmax', 'int_created_at', 'int_simple'], 'integer'],
-            [['uuid', 'str_text', 'str_varchar', 'str_date', 'str_datetime', 'str_country'], 'string'],
-            [['floatval', 'floatval_lim', 'doubleval'], 'double'],
             [['active'], 'boolean'],
+            [['floatval'], 'double'],
+            [['floatval_lim'], 'double', 'min' => 0, 'max' => 1],
+            [['doubleval'], 'double'],
+            [['int_min'], 'integer', 'min' => 5],
+            [['int_max'], 'integer', 'max' => 5],
+            [['int_minmax'], 'integer', 'min' => 5, 'max' => 25],
+            [['int_created_at'], 'integer'],
+            [['int_simple'], 'integer'],
+            [['uuid'], 'string'],
+            [['str_text'], 'string'],
+            [['str_varchar'], 'string', 'max' => 100],
+            [['str_date'], 'date'],
+            [['str_datetime'], 'datetime'],
+            [['str_country'], 'string'],
         ];
     }
 

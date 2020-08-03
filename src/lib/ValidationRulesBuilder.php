@@ -7,8 +7,12 @@
 
 namespace cebe\yii2openapi\lib;
 
+use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
+use function in_array;
+use function preg_match;
+use function strtolower;
 
 class ValidationRulesBuilder
 {
@@ -19,11 +23,14 @@ class ValidationRulesBuilder
 
     /**
      * @var array|ValidationRule[]
-    **/
+     */
     private $rules = [];
 
     private $typeScope = [
-        'safe' => [], 'required' => [], 'int' => [], 'bool' => [], 'float' => [], 'string' => [], 'ref' => []
+        'required' => [],
+        'ref' => [],
+        'trim' => [],
+        'safe' => [],
     ];
 
     public function __construct(DbModel $model)
@@ -34,11 +41,122 @@ class ValidationRulesBuilder
     /**
      * @return array|\cebe\yii2openapi\lib\items\ValidationRule[]
      */
-    public function build(): array
+    public function build():array
     {
         $this->prepareTypeScope();
-        $this->rulesByType();
+
+        if (!empty($this->typeScope['trim'])) {
+            $this->rules[] = new ValidationRule($this->typeScope['trim'], 'trim');
+        }
+
+        if (!empty($this->typeScope['required'])) {
+            $this->rules[] = new ValidationRule($this->typeScope['required'], 'required');
+        }
+        if (!empty($this->typeScope['ref'])) {
+            $this->addExistRules($this->typeScope['ref']);
+        }
+        foreach ($this->model->attributes as $attribute) {
+            $this->resolveAttributeRules($attribute);
+        }
+        if (!empty($this->typeScope['safe'])) {
+            $this->rules[] = new ValidationRule($this->typeScope['safe'], 'safe');
+        }
         return $this->rules;
+    }
+
+    private function resolveAttributeRules(Attribute $attribute):void
+    {
+        if ($attribute->isReadOnly()) {
+            return;
+        }
+        if ($attribute->isUnique()) {
+            $this->rules[] = new ValidationRule([$attribute->columnName], 'unique');
+        }
+        if ($attribute->phpType === 'bool') {
+            $this->rules[] = new ValidationRule([$attribute->columnName], 'boolean');
+            return;
+        }
+
+        if (in_array($attribute->dbType, ['date', 'time', 'datetime'], true)) {
+            $this->rules[] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
+            return;
+        }
+        if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
+            $this->addNumericRule($attribute);
+            return;
+        }
+        if ($attribute->phpType === 'string' && !$attribute->isReference()) {
+            $this->addStringRule($attribute);
+        }
+        if (!empty($attribute->enumValues)) {
+            $this->rules[] = new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
+            return;
+        }
+        $this->addRulesByAttributeName($attribute);
+    }
+
+    private function addRulesByAttributeName(Attribute $attribute):void
+    {
+        //@TODO: probably also patterns for file, image
+        $patterns = [
+            '~e?mail~i' => 'email',
+            '~(url|site|website|href|link)~i' => 'url',
+            '~(ip|ipaddr)~i' => 'ip',
+        ];
+        foreach ($patterns as $pattern => $validator) {
+            if (preg_match($pattern, strtolower($attribute->columnName))) {
+                $this->rules[] = new ValidationRule([$attribute->columnName], $validator);
+                return;
+            }
+        }
+    }
+
+    /**
+     * @param array|Attribute[] $relations
+     */
+    private function addExistRules(array $relations):void
+    {
+        foreach ($relations as $attribute) {
+            if ($attribute->phpType === 'int') {
+                $this->addNumericRule($attribute);
+            } elseif ($attribute->phpType === 'string') {
+                $this->addStringRule($attribute);
+            }
+            $this->rules[] = new ValidationRule(
+                [$attribute->columnName],
+                'exist',
+                ['targetRelation' => $attribute->camelName()]
+            );
+        }
+    }
+
+    private function addStringRule(Attribute $attribute):void
+    {
+        $params = [];
+        if ($attribute->maxLength === $attribute->minLength && $attribute->minLength !== null) {
+            $params['length'] = $attribute->minLength;
+        } else {
+            if ($attribute->minLength !== null) {
+                $params['min'] = $attribute->minLength;
+            }
+            if ($attribute->maxLength !== null) {
+                $params['max'] = $attribute->maxLength;
+            }
+        }
+        $this->rules[] = new ValidationRule([$attribute->columnName], 'string', $params);
+    }
+
+    private function addNumericRule(Attribute $attribute):void
+    {
+        $params = [];
+        if ($attribute->limits['min'] !== null) {
+            $params['min'] = $attribute->limits['min'];
+        }
+        if ($attribute->limits['max'] !== null) {
+            $params['max'] = $attribute->limits['max'];
+        }
+        $validator = $attribute->phpType === 'int' ? 'integer' : 'double';
+        $this->rules[] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
 
     private function prepareTypeScope():void
@@ -51,57 +169,20 @@ class ValidationRulesBuilder
                 $this->typeScope['required'][$attribute->columnName] = $attribute->columnName;
             }
 
+            if ($attribute->phpType === 'string') {
+                $this->typeScope['trim'][$attribute->columnName] = $attribute->columnName;
+            }
+
             if ($attribute->isReference()) {
-                if (in_array($attribute->phpType, ['int', 'string'])) {
-                    $this->typeScope[$attribute->phpType][$attribute->columnName] = $attribute->columnName;
-                }
-                $this->typeScope['ref'][] = ['attr' => $attribute->columnName, 'rel' => $attribute->camelName()];
+                $this->typeScope['ref'][] = $attribute;
                 continue;
             }
 
-            if (in_array($attribute->phpType, ['int', 'string', 'bool', 'float'])) {
-                $this->typeScope[$attribute->phpType][$attribute->columnName] = $attribute->columnName;
-                continue;
-            }
-
-            if ($attribute->phpType === 'double') {
-                $this->typeScope['float'][$attribute->columnName] = $attribute->columnName;
+            if (in_array($attribute->phpType, ['int', 'string', 'bool', 'float', 'double'])) {
                 continue;
             }
 
             $this->typeScope['safe'][$attribute->columnName] = $attribute->columnName;
-        }
-    }
-
-    private function rulesByType():void
-    {
-        if (!empty($this->typeScope['string'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['string'], 'trim');
-        }
-        if (!empty($this->typeScope['required'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['required'], 'required');
-        }
-
-        if (!empty($this->typeScope['int'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['int'], 'integer');
-        }
-
-        foreach ($this->typeScope['ref'] as $relation) {
-            $this->rules[] = new ValidationRule([$relation['attr']], 'exist', ['targetRelation'=>$relation['rel']]);
-        }
-
-        if (!empty($this->typeScope['string'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['string'], 'string');
-        }
-
-        if (!empty($this->typeScope['float'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['float'], 'double');
-        }
-        if (!empty($this->typeScope['bool'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['bool'], 'boolean');
-        }
-        if (!empty($this->typeScope['safe'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['safe'], 'safe');
         }
     }
 }
