@@ -23,7 +23,7 @@ class ValidationRulesBuilder
 
     /**
      * @var array|ValidationRule[]
-     **/
+     */
     private $rules = [];
 
     private $typeScope = [
