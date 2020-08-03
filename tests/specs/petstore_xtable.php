@@ -6,5 +6,5 @@ return [
     'generateModels' => true,
     'generateModelsOnlyXTable' => true,
     'generateControllers' => false,
-    'generateMigrations' => false, // TODO add tests for migrations
+    'generateMigrations' => true,
 ];

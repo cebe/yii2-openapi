@@ -1,0 +1,68 @@
+version: "3.5"
+services:
+    php:
+        build:
+            dockerfile: tests/docker/Dockerfile
+            context: .
+        volumes:
+            - ./tests/tmp/.composer:/root/.composer:rw
+            - .:/app
+        environment:
+            - TZ=UTC
+            - TIMEZONE=UTC
+            - DB_USER=dbuser
+            - DB_PASSWORD=dbpass
+            - IN_DOCKER=docker
+        depends_on:
+            - mysql
+            - postgres
+            - maria
+        tty: true
+        networks:
+            net: {}
+    mysql:
+        image: mysql:5.7
+        ports:
+            - '13306:3306'
+        volumes:
+            - ./tests/tmp/mysql:/var/lib/mysql:rw
+        environment:
+            TZ: UTC
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_USER: dbuser
+            MYSQL_PASSWORD: dbpass
+            MYSQL_DATABASE: testdb
+        networks:
+            net: {}
+    maria:
+        image: mariadb
+        ports:
+            - '23306:3306'
+        volumes:
+            - ./tests/tmp/maria:/var/lib/mysql:rw
+        environment:
+            TZ: UTC
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_USER: dbuser
+            MYSQL_PASSWORD: dbpass
+            MYSQL_DATABASE: testdb
+            MYSQL_INITDB_SKIP_TZINFO: 1
+        networks:
+            net: {}
+    postgres:
+        image: postgres:12
+        ports:
+            - '15432:5432'
+        volumes:
+            - ./tests/tmp/postgres:/var/lib/postgresql/data:rw
+        environment:
+            TZ: UTC
+            PGTZ: UTC
+            POSTGRES_USER: dbuser
+            POSTGRES_PASSWORD: dbpass
+            POSTGRES_DB: testdb
+        networks:
+            net: {}
+
+networks:
+    net: {}

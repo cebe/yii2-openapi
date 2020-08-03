@@ -15,9 +15,9 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
-use cebe\yii2openapi\generator\helpers\DatabaseDiff;
-use cebe\yii2openapi\generator\helpers\DbModel;
-use cebe\yii2openapi\generator\helpers\SchemaToDatabase;
+use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\MigrationsGenerator;
+use cebe\yii2openapi\lib\SchemaToDatabase;
 use Exception;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
@@ -29,11 +29,12 @@ use yii\db\ColumnSchema;
 use yii\di\Instance;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
-use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 use yii\helpers\Html;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
+use function array_filter;
+use const YII_ENV_TEST;
 
 /**
  *
@@ -113,7 +114,7 @@ class ApiGenerator extends Generator
     public $migrationNamespace;
 
 
-    public $dbDiff = DatabaseDiff::class;
+    public $migrationGenerator = MigrationsGenerator::class;
 
 
     /**
@@ -454,7 +455,7 @@ class ApiGenerator extends Generator
                         $requestBody = $requestBody->resolve();
                     }
                     foreach ($requestBody->content as $contentType => $content) {
-                        list($modelClass, ) = $this->guessModelClassFromContent($content);
+                        [$modelClass, ] = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -478,7 +479,7 @@ class ApiGenerator extends Generator
                         $successResponse = $successResponse->resolve();
                     }
                     foreach ($successResponse->content as $contentType => $content) {
-                        list($modelClass, ) = $this->guessModelClassFromContent($content);
+                        [$modelClass, ] = $this->guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -569,7 +570,7 @@ class ApiGenerator extends Generator
                 $successResponse = $successResponse->resolve();
             }
             foreach ($successResponse->content as $contentType => $content) {
-                list($detectedModelClass, $itemWrapper, $itemsWrapper) = $this->guessModelClassFromContent($content);
+                [$detectedModelClass, $itemWrapper, $itemsWrapper] = $this->guessModelClassFromContent($content);
                 if (($itemWrapper !== null || $itemsWrapper !== null) && $detectedModelClass === $modelClass) {
                     return [$itemWrapper, $itemsWrapper];
                 }
@@ -606,12 +607,17 @@ class ApiGenerator extends Generator
         return $c;
     }
 
+    /**
+     * @return DbModel[]|array
+    */
     protected function generateModels()
     {
-        return (new SchemaToDatabase([
+        $converter = Yii::createObject([
+            'class'=>SchemaToDatabase::class,
             'excludeModels' => $this->excludeModels,
             'generateModelsOnlyXTable' => $this->generateModelsOnlyXTable,
-        ]))->generateModels($this->getOpenApi());
+        ]);
+        return $converter->generateModels($this->getOpenApi());
     }
 
     /**
@@ -673,7 +679,6 @@ class ApiGenerator extends Generator
                         $classFileGenerator->generate()
                     );
                 }
-
             }
         }
 
@@ -686,12 +691,8 @@ class ApiGenerator extends Generator
                     $files[] = new CodeFile(
                         Yii::getAlias("$modelPath/base/$className.php"),
                         $this->render('dbmodel.php', [
-                            'className' => $className,
-                            'tableName' => $model->tableName,
+                            'model' => $model,
                             'namespace' => $this->modelNamespace . '\\base',
-                            'description' => $model->description,
-                            'attributes' => $model->attributes,
-                            'relations' => $model->relations,
                             'relationNamespace' => $this->modelNamespace,
                         ])
                     );
@@ -700,16 +701,14 @@ class ApiGenerator extends Generator
                         $files[] = new CodeFile(
                             Yii::getAlias("$fakerPath/{$className}Faker.php"),
                             $this->render('faker.php', [
-                                'className' => "{$className}Faker",
-                                'modelClass' => $className,
+                                'model' => $model,
                                 'modelNamespace' => $this->modelNamespace,
-                                'namespace' => $this->fakerNamespace,
-                                'attributes' => $model->attributes,
-//                        'relations' => $model['relations'],
+                                'namespace' => $this->fakerNamespace
                             ])
                         );
                     }
                 } else {
+                    /** This case not implemented yet, just keep it **/
                     $files[] = new CodeFile(
                         Yii::getAlias("$modelPath/base/$className.php"),
                         $this->render('model.php', [
@@ -736,7 +735,6 @@ class ApiGenerator extends Generator
                         $classFileGenerator->generate()
                     );
                 }
-
             }
         }
 
@@ -744,54 +742,25 @@ class ApiGenerator extends Generator
             if (!isset($models)) {
                 $models = $this->generateModels();
             }
-            /** @var $dbDiff DatabaseDiff */
-            $dbDiff = Instance::ensure($this->dbDiff, DatabaseDiff::class);
-            $migrationFiles = [];
-            foreach ($models as $modelName => $model) {
-
-                if (!($model instanceof DbModel)) {
-                    continue;
-                }
-
-                $tableName = $model->tableName;
-                list($upCode, $downCode, $dependencies, $migrationName) = $dbDiff->diffTable($tableName, $this->attributesToColumnSchemas($model->attributes), $model->relations);
-                if (empty($upCode) && empty($downCode)) {
-                    continue;
-                }
-
-                $migrationFiles[$tableName] = [
-                    'dependencies' => $dependencies,
-                    'upCode' => $upCode,
-                    'downCode' => $downCode,
-                    'model' => $model,
-                    'modelName' => $modelName,
-                    'migrationName' => $migrationName,
-                ];
-            }
-
-            // sort files by dependecies of foreign keys
-            // TODO circular references could be solved by adding a separate migration which contains only foreign key changes
-            $migrationFiles = $this->sortByDependency($migrationFiles);
+            /** @var $migrationGenerator MigrationsGenerator */
+            $migrationGenerator = Instance::ensure($this->migrationGenerator, MigrationsGenerator::class);
+            $migrationModels = $migrationGenerator->generate(array_filter($models, function ($model) {
+                return $model instanceof DbModel;
+            }));
 
             $migrationPath = Yii::getAlias($this->migrationPath);
             $migrationNamespace = $this->migrationNamespace;
+            $isTransactional = Yii::$app->db->getDriverName() === 'pgsql';//Probably some another yet
 
             // TODO start $i by looking at all files, otherwise only one generation per hours causes correct order!!!
 
             $i = 0;
-            foreach($migrationFiles as $tableName => $migrationFile) {
-
-                // migration files get invalidated directly after generating
-                // if they contain a timestamp
-                // use fixed time here instead
+            foreach ($migrationModels as $tableName => $migration) {
+                // migration files get invalidated directly after generating,
+                // if they contain a timestamp use fixed time here instead
                 do {
-                    if ($migrationNamespace) {
-                        $m = sprintf('%s%04d', date('ymdH'), $i);
-                        $className = "M{$m}" . Inflector::id2camel($migrationFile['migrationName'], '_');
-                    } else {
-                        $m = sprintf('%s%04d', date('ymd_H'), $i);
-                        $className = "m{$m}_" . $migrationFile['migrationName'];
-                    }
+                    $date = YII_ENV_TEST ? '200000_00': '';
+                    $className = $migration->makeClassNameByTime($i, $migrationNamespace, $date);
                     $i++;
                 } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
 
@@ -799,14 +768,9 @@ class ApiGenerator extends Generator
                 $files[] = new CodeFile(
                     Yii::getAlias("$migrationPath/$className.php"),
                     $this->render('migration.php', [
-                        'className' => $className,
+                        'isTransactional' => $isTransactional,
                         'namespace' => $migrationNamespace,
-                        'tableName' => $tableName,
-                        'attributes' => $migrationFile['model']->attributes,
-                        'relations' => $migrationFile['model']->relations,
-                        'description' => 'Table for ' . $migrationFile['modelName'],
-                        'upCode' => $migrationFile['upCode'],
-                        'downCode' => $migrationFile['downCode'],
+                        'migration' => $migration
                     ])
                 );
             }
@@ -815,88 +779,8 @@ class ApiGenerator extends Generator
         return $files;
     }
 
-    private $_sortResult = [];
-
-    private function sortByDependency($migrationFiles)
-    {
-        $this->_sortResult = [];
-
-        // sort alpabetically by name first
-        // to have consistent result in case no dependencies exist
-        ksort($migrationFiles);
-
-        foreach ($migrationFiles as $name => $migrationFile) {
-            echo "adding $name\n";
-            $this->sortByDependencyRecurse($name, $migrationFile, $migrationFiles);
-        }
-        return $this->_sortResult;
-    }
-
-    private function sortByDependencyRecurse($name, $migrationFile, $migrationFiles)
-    {
-        if (!isset($this->_sortResult[$name])) {
-            $this->_sortResult[$name] = false;
-            foreach($migrationFile['dependencies'] as $dependency) {
-                if (!isset($migrationFiles[$dependency])) {
-                    echo "skipping dep $dependency\n";
-                    continue;
-                }
-                echo "adding dep $dependency\n";
-                $this->sortByDependencyRecurse($dependency, $migrationFiles[$dependency], $migrationFiles);
-            }
-            unset($this->_sortResult[$name]);
-            $this->_sortResult[$name] = $migrationFile;
-        } elseif ($this->_sortResult[$name] === false) {
-            throw new \Exception("A circular dependency is detected for table '$name'.");
-        }
-    }
-
     private function getPathFromNamespace($namespace)
     {
         return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
-    }
-
-    private function attributesToColumnSchemas($attributes)
-    {
-        $columns = [];
-        foreach($attributes as $name =>  $attribute) {
-            $size = null;
-            if (isset($attribute['dbType']) && preg_match('~^string\((\d+)\)$~', $attribute['dbType'], $matches)) {
-                $size = $matches[1];
-                $attribute['dbType'] = 'string';
-            }
-
-            $columns[$name] = new ColumnSchema([
-                'dbType' => $attribute['dbType'],
-                'type' => $this->dbTypeToAbstractType($attribute['dbType']),
-                'allowNull' => !$attribute['required'],
-                'size' => $size,
-                // TODO add more fields
-            ]);
-            if ($columns[$name]->type === 'json') {
-                $columns[$name]->allowNull = false;
-            }
-        }
-        return $columns;
-    }
-
-    private function dbTypeToAbstractType($type)
-    {
-        if (stripos($type, 'int') === 0) {
-            return 'integer';
-        }
-        if (stripos($type, 'string') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'varchar') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'json') === 0) {
-            return 'json';
-        }
-        if (stripos($type, 'datetime') === 0) {
-            return 'timestamp';
-        }
-        return $type;
     }
 }

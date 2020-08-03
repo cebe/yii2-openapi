@@ -24,13 +24,14 @@ abstract class Pet extends \yii\db\ActiveRecord
         return [
             [['name', 'tag'], 'trim'],
             [['name'], 'required'],
+            [['store_id'], 'integer'],
+            [['store_id'], 'exist', 'targetRelation' => 'Store'],
             [['name', 'tag'], 'string'],
         ];
     }
 
     public function getStore()
     {
-        return $this->hasOne(\app\mymodels\Store::class, ['id' => 'store_id']);
+        return $this->hasOne(\app\mymodels\Store::class,['id' => 'store_id']);
     }
-
 }

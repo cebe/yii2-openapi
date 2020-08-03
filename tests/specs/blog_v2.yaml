@@ -1,0 +1,244 @@
+openapi: "3.0.0"
+info:
+  version: 2.0.0
+  title: Blog prototype for test migrations. Modify columns, remove log_records table, added tags, post_tag tables
+  license:
+    name: MIT
+servers:
+  - url: http://blog.dummy.io/v2
+paths:
+  /posts:
+    get:
+      summary: List all posts
+      operationId: listPosts
+      tags:
+        - posts
+      parameters:
+        - name: limit
+          in: query
+          description: How many items to return at one time (max 100)
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: A paged array of posts
+          headers:
+            x-next:
+              description: A link to the next page of responses
+              schema:
+                type: string
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/Posts"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+components:
+  schemas:
+    User:
+      description: The User
+      x-table: v2_users
+      required:
+        - id
+        - login
+        - email
+        - password
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        login:
+          type: string
+          x-db-unique: 1
+        email:
+          type: string
+          x-db-unique: 1
+        password:
+          type: string
+          format: password
+        role:
+          type: string
+          x-db-type: enum
+          enum:
+            - admin
+            - editor
+            - reader
+          x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
+        created_at:
+          type: string
+          format: date-time
+    Users:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+    Category:
+      x-table: v2_categories
+      description: Category of posts
+      required:
+        - id
+        - title
+        - cover
+        - active
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+          x-db-unique: true
+          maxLength: 100
+        cover:
+          type: string
+        active:
+          type: boolean
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+    Categories:
+      type: array
+      items:
+        $ref: "#/components/schemas/Category"
+    Post:
+      x-table: v2_posts
+      description: A blog post (uid used as pk for test purposes)
+      required:
+        - id
+        - title
+        - category
+        - author
+        - active
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+          x-db-type: VARCHAR
+          x-db-unique: true
+          maxLength: 255
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 200
+        lang:
+          type: string
+          x-db-type: enum
+          enum:
+            - ru
+            - eng
+          default: ru
+        category:
+          $ref: "#/components/schemas/Category"
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date
+        created_by:
+          $ref: "#/components/schemas/User"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        post_tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostTag"
+    Posts:
+      type: array
+      items:
+        $ref: "#/components/schemas/Post"
+    Comment:
+      x-table: v2_comments
+      required:
+        - id
+        - post
+        - message
+        - created_at
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        post:
+          $ref: "#/components/schemas/Post"
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    Comments:
+      type: array
+      items:
+        $ref: "#/components/schemas/Comment"
+    Tag:
+      x-table: v2_tags
+      required:
+        - id
+        - name
+        - lang
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        name:
+          type: string
+          x-db-type: VARCHAR
+          x-db-unique: true
+          maxLength: 100
+        lang:
+          type: string
+          x-db-type: enum
+          enum:
+            - ru
+            - eng
+        post_tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/PostTag"
+    Tags:
+      type: array
+      items:
+        $ref: "#/components/schemas/Tag"
+    PostTag:
+      x-table: v2_post_tag
+      required:
+        - id
+        - post
+        - tag
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        post:
+          $ref: "#/components/schemas/Post"
+        tag:
+          $ref: "#/components/schemas/Tag"
+    PostTags:
+      type: array
+      items:
+        $ref: "#/components/schemas/PostTag"
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

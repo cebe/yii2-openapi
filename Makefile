@@ -18,5 +18,30 @@ install:
 test:
 	php $(PHPARGS) vendor/bin/phpunit
 
-.PHONY: all check-style fix-style install test
+clean_all:
+	docker-compose down
+	sudo rm -rf tests/tmp/*
+
+clean:
+	sudo rm -rf tests/tmp/app/*
+	sudo rm -rf tests/tmp/docker_app/*
+
+up:
+	docker-compose up -d
+
+cli:
+	docker-compose exec php bash
+
+migrate:
+	mkdir -p "tests/tmp/app"
+	mkdir -p "tests/tmp/docker_app"
+	docker-compose run --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
+
+installdocker:
+	docker-compose run --rm php composer install && chmod +x tests/yii
+
+testdocker:
+	docker-compose run --rm php sh -c 'vendor/bin/phpunit tests/unit'
+
+.PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker
 
