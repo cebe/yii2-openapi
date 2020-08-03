@@ -25,9 +25,11 @@ abstract class Comment extends \yii\db\ActiveRecord
     {
         return [
             [['post_id', 'author_id', 'message', 'created_at'], 'required'],
-            [['post_id', 'author_id', 'created_at'], 'integer'],
+            [['post_id'], 'integer'],
             [['post_id'], 'exist', 'targetRelation' => 'Post'],
+            [['author_id'], 'integer'],
             [['author_id'], 'exist', 'targetRelation' => 'Author'],
+            [['created_at'], 'integer'],
             [['message'], 'safe'],
         ];
     }

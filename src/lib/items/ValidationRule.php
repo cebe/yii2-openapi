@@ -7,7 +7,6 @@
 
 namespace cebe\yii2openapi\lib\items;
 
-use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
 use yii\helpers\VarDumper;
 use function gettype;
@@ -15,7 +14,7 @@ use function implode;
 use function is_string;
 use function sprintf;
 
-class ValidationRule extends BaseObject
+final class ValidationRule
 {
     /**@var array * */
     public $attributes = [];
@@ -26,29 +25,11 @@ class ValidationRule extends BaseObject
     /**@var array * */
     public $params = [];
 
-    public function __construct(array $attributes, string $validator, array $params = [], $config = [])
+    public function __construct(array $attributes, string $validator, array $params = [])
     {
         $this->attributes = array_values($attributes);
         $this->validator = $validator;
         $this->params = $params;
-        parent::__construct($config);
-    }
-
-    /**
-     * @param string           $key
-     * @param int|string|array $value
-     * @return $this
-     */
-    public function addParam(string $key, $value):ValidationRule
-    {
-        $this->params[$key] = $value;
-        return $this;
-    }
-
-    public function withParams(array $params):ValidationRule
-    {
-        $this->params = $params;
-        return $this;
     }
 
     public function __toString():string

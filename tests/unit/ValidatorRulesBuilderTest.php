@@ -27,16 +27,26 @@ class ValidatorRulesBuilderTest extends TestCase
                   (new Attribute('article'))->setPhpType('string')->setDbType('text')->setDefault(''),
                   (new Attribute('active'))->setPhpType('bool')->setDbType('boolean'),
                   (new Attribute('category'))->asReference('Category')
-                                             ->setRequired(true)->setPhpType('int')->setDbType('integer')
+                                             ->setRequired(true)->setPhpType('int')->setDbType('integer'),
+                  (new Attribute('state'))->setPhpType('string')->setDbType('string')->setEnumValues(['active', 'draft']),
+                  (new Attribute('created_at'))->setPhpType('string')->setDbType('datetime'),
+                  (new Attribute('contact_email'))->setPhpType('string')->setDbType('string')
               ],
           ]);
           $expected = [
-              new ValidationRule(['title', 'article'], 'trim'),
+              new ValidationRule(['title', 'article', 'state', 'created_at', 'contact_email'], 'trim'),
               new ValidationRule(['title', 'category_id'], 'required'),
               new ValidationRule(['category_id'], 'integer'),
               new ValidationRule(['category_id'], 'exist', ['targetRelation'=>'Category']),
-              new ValidationRule(['title', 'article'], 'string'),
+              new ValidationRule(['title'], 'unique'),
+              new ValidationRule(['title'], 'string', ['max'=>60]),
+              new ValidationRule(['article'], 'string'),
               new ValidationRule(['active'], 'boolean'),
+              new ValidationRule(['state'], 'string'),
+              new ValidationRule(['state'], 'in', ['range'=>['active', 'draft']]),
+              new ValidationRule(['created_at'], 'datetime'),
+              new ValidationRule(['contact_email'], 'string'),
+              new ValidationRule(['contact_email'], 'email'),
           ];
 
           $rules = (new ValidationRulesBuilder($model))->build();

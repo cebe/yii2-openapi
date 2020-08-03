@@ -25,7 +25,15 @@ abstract class User extends \yii\db\ActiveRecord
         return [
             [['login', 'email', 'password', 'role', 'created_at'], 'trim'],
             [['login', 'email', 'password'], 'required'],
-            [['login', 'email', 'password', 'role', 'created_at'], 'string'],
+            [['login'], 'unique'],
+            [['login'], 'string'],
+            [['email'], 'unique'],
+            [['email'], 'string'],
+            [['email'], 'email'],
+            [['password'], 'string'],
+            [['role'], 'string'],
+            [['role'], 'in', 'range' => ['admin', 'editor', 'reader']],
+            [['created_at'], 'datetime'],
         ];
     }
 
