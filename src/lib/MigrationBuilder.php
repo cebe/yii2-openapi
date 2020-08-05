@@ -52,6 +52,9 @@ class MigrationBuilder
     /**@var bool */
     private $isPostgres;
 
+    /**@var bool */
+    private $isMysql;
+
     /**
      * @var MigrationModel $migration
      **/
@@ -84,6 +87,7 @@ class MigrationBuilder
         $this->tableSchema = $db->getTableSchema($model->getTableAlias(), true);
         $this->dbSchema = $db->getSchema();
         $this->isPostgres = $this->db->getDriverName() === 'pgsql';
+        $this->isMysql = $this->db->getDriverName() === 'mysql';
     }
 
     public function build():MigrationModel
@@ -226,12 +230,7 @@ class MigrationBuilder
             $this->migration->addUpCode($isUniqueDesired === true ? $addUnique : $dropUnique)
                             ->addDownCode($isUniqueDesired === true ? $dropUnique : $addUnique);
         }
-        $changedAttributes = [];
-        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
-            if ($current->$attr !== $desired->$attr) {
-                $changedAttributes[] = $attr;
-            }
-        }
+        $changedAttributes = $this->compareColumns($current, $desired);
         if (empty($changedAttributes)) {
             return;
         }
@@ -361,5 +360,32 @@ class MigrationBuilder
             return $m[1];
         }
         return $tableName;
+    }
+
+    private function compareColumns(ColumnSchema $current, ColumnSchema $desired)
+    {
+        $changedAttributes = [];
+        $isMysqlBoolean = $this->isMysql && $current->dbType === 'tinyint(1)' && $desired->type === 'boolean';
+        if ($isMysqlBoolean) {
+            if (\is_bool($desired->defaultValue) || \is_string($desired->defaultValue)) {
+                $desired->defaultValue = (int) $desired->defaultValue;
+            }
+            if ($current->defaultValue !== $desired->defaultValue) {
+                $changedAttributes[] = 'defaultValue';
+            }
+            if ($current->allowNull !== $desired->allowNull) {
+                $changedAttributes[] = 'allowNull';
+            }
+            return $changedAttributes;
+        }
+        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
+            $current->defaultValue = (int) $current->defaultValue;
+        }
+        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
+            if ($current->$attr !== $desired->$attr) {
+                $changedAttributes[] = $attr;
+            }
+        }
+        return $changedAttributes;
     }
 }

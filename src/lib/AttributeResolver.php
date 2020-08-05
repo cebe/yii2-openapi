@@ -16,8 +16,10 @@ use cebe\yii2openapi\lib\items\AttributeRelation;
 use cebe\yii2openapi\lib\items\DbModel;
 use Yii;
 use yii\helpers\Inflector;
+use yii\helpers\Json;
 use yii\helpers\StringHelper;
 use function in_array;
+use function is_string;
 use function str_replace;
 use function strpos;
 use function substr;
@@ -130,11 +132,6 @@ class AttributeResolver
                         ->asHasOne([$foreignPk => $attribute->columnName]);
                     $this->relations[$propertyName] = $relation;
                 }
-            } else {
-                //TODO: This case for self-table relations, should be covered later
-//                $attribute->setPhpType(
-//                    TypeResolver::schemaToPhpType($relatedSchema->type,  $relatedSchema->format)
-//                );
             }
         }
 
@@ -144,8 +141,8 @@ class AttributeResolver
             $attribute->setPhpType($phpType)
                       ->setDbType($this->guessDbType($property, ($propertyName === $this->primaryKey)))
                       ->setUnique($property->{CustomSpecAttr::UNIQUE} ?? false)
-                      ->setSize($property->maxLength ?? null)
-                      ->setDefault($property->default ?? null);
+                      ->setSize($property->maxLength ?? null);
+            $attribute->setDefault($this->guessDefault($property, $attribute));
             [$min, $max] = $this->guessMinMax($property);
             $attribute->setLimits($min, $max, $property->minLength ?? null);
             if (isset($property->enum) && is_array($property->enum)) {
@@ -221,5 +218,31 @@ class AttributeResolver
             return TypeResolver::referenceToDbType($property);
         }
         return TypeResolver::schemaToDbType($property, $isPk);
+    }
+
+    protected function guessDefault(Schema $property, Attribute $attribute)
+    {
+        if (!isset($property->default)) {
+            return null;
+        }
+
+        if ($attribute->phpType === 'array' && in_array($property->default, ['{}', '[]'])) {
+            return [];
+        }
+        if (is_string($property->default)
+            && $attribute->phpType === 'array'
+            && StringHelper::startsWith($attribute->dbType, 'json')) {
+            try {
+                return Json::decode($property->default);
+            } catch (\Throwable $e) {
+                return [];
+            }
+        }
+
+        if ($attribute->phpType === 'integer' && $property->default !== null) {
+            return (int) $property->default;
+        }
+
+        return $property->default;
     }
 }
