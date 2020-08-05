@@ -165,7 +165,7 @@ class ValidationRulesBuilder
             if ($attribute->isReadOnly()) {
                 continue;
             }
-            if ($attribute->isRequired()) {
+            if ($attribute->defaultValue===null && $attribute->isRequired()) {
                 $this->typeScope['required'][$attribute->columnName] = $attribute->columnName;
             }
 
