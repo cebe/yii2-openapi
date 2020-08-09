@@ -13,13 +13,14 @@ services:
             - DB_USER=dbuser
             - DB_PASSWORD=dbpass
             - IN_DOCKER=docker
+            - PHP_XDEBUG_ENABLED=1
+            - XDEBUG_CONFIG="remote_host=host.docker.internal"
+            - PHP_IDE_CONFIG="serverName=Docker"
         depends_on:
             - mysql
             - postgres
             - maria
         tty: true
-        networks:
-            net: {}
     mysql:
         image: mysql:5.7
         ports:
@@ -32,8 +33,6 @@ services:
             MYSQL_USER: dbuser
             MYSQL_PASSWORD: dbpass
             MYSQL_DATABASE: testdb
-        networks:
-            net: {}
     maria:
         image: mariadb
         ports:
@@ -47,8 +46,6 @@ services:
             MYSQL_PASSWORD: dbpass
             MYSQL_DATABASE: testdb
             MYSQL_INITDB_SKIP_TZINFO: 1
-        networks:
-            net: {}
     postgres:
         image: postgres:12
         ports:
@@ -61,8 +58,11 @@ services:
             POSTGRES_USER: dbuser
             POSTGRES_PASSWORD: dbpass
             POSTGRES_DB: testdb
-        networks:
-            net: {}
 
 networks:
-    net: {}
+    default:
+        driver: bridge
+        ipam:
+          config:
+              - subnet: 172.14.0.0/24
+
