@@ -30,11 +30,13 @@ class ValidatorRulesBuilderTest extends TestCase
                                              ->setRequired(true)->setPhpType('int')->setDbType('integer'),
                   (new Attribute('state'))->setPhpType('string')->setDbType('string')->setEnumValues(['active', 'draft']),
                   (new Attribute('created_at'))->setPhpType('string')->setDbType('datetime'),
-                  (new Attribute('contact_email'))->setPhpType('string')->setDbType('string')
+                  (new Attribute('contact_email'))->setPhpType('string')->setDbType('string'),
+                  (new Attribute('required_with_def'))->setPhpType('string')
+                                                      ->setDbType('string')->setRequired()->setDefault('xxx')
               ],
           ]);
           $expected = [
-              new ValidationRule(['title', 'article', 'state', 'created_at', 'contact_email'], 'trim'),
+              new ValidationRule(['title', 'article', 'state', 'created_at', 'contact_email', 'required_with_def'], 'trim'),
               new ValidationRule(['title', 'category_id'], 'required'),
               new ValidationRule(['category_id'], 'integer'),
               new ValidationRule(['category_id'], 'exist', ['targetRelation'=>'Category']),
@@ -47,6 +49,7 @@ class ValidatorRulesBuilderTest extends TestCase
               new ValidationRule(['created_at'], 'datetime'),
               new ValidationRule(['contact_email'], 'string'),
               new ValidationRule(['contact_email'], 'email'),
+              new ValidationRule(['required_with_def'], 'string'),
           ];
 
           $rules = (new ValidationRulesBuilder($model))->build();

@@ -9,6 +9,8 @@ namespace cebe\yii2openapi\lib;
 
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\Attribute;
+use yii\helpers\VarDumper;
+use const PHP_EOL;
 
 /**
  * Guess faker for attribute
@@ -68,7 +70,8 @@ class FakerStubResolver
             return $formats[$this->property->format];
         }
         if (!empty($this->property->enum) && is_array($this->property->enum)) {
-            return '$faker->randomElement(' . var_export($this->property->enum, true) . ')';
+            $items = \str_replace([PHP_EOL, '  ',',]'], ['', '', ']'], VarDumper::export($this->property->enum));
+            return '$faker->randomElement(' . $items . ')';
         }
         if ($this->attribute->columnName === 'title'
             && $this->attribute->size
