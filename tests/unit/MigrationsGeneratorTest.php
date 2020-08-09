@@ -5,10 +5,9 @@ namespace tests\unit;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\MigrationModel;
-use cebe\yii2openapi\lib\MigrationBuilder;
+use cebe\yii2openapi\lib\MigrationRecordBuilder;
 use cebe\yii2openapi\lib\MigrationsGenerator;
 use tests\TestCase;
-use yii\db\Connection;
 use yii\db\Schema;
 use yii\db\TableSchema;
 use yii\helpers\VarDumper;
@@ -62,7 +61,7 @@ class MigrationsGeneratorTest extends TestCase
             ],
         ]);
         $codes = str_replace(PHP_EOL,
-            PHP_EOL . MigrationBuilder::INDENT,
+            PHP_EOL . MigrationRecordBuilder::INDENT,
             VarDumper::export([
                 'id' => '$this->primaryKey()',
                 'title' => '$this->string(60)->notNull()->unique()',
