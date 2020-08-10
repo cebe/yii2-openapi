@@ -29,6 +29,8 @@ RUN apt-get update && \
         --no-install-recommends && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+        && pecl install xdebug-2.9.6 \
+        && docker-php-ext-enable xdebug \
         && docker-php-ext-install \
                 zip \
                 curl \
@@ -45,7 +47,7 @@ RUN apt-get update && \
 # Install composer
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     PHP_USER_ID=33 \
-    PHP_ENABLE_XDEBUG=0 \
+    PHP_ENABLE_XDEBUG=1 \
     COMPOSER_HOME=/root/.composer/ \
     PATH=/app:/app/vendor/bin:/root/.composer/vendor/bin:$PATH
 
@@ -55,5 +57,16 @@ RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
 && php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" \
 && php /tmp/composer-setup.php --no-ansi --install-dir=/usr/local/bin --filename=composer \
 && rm -f /tmp/composer-setup.*
+
+# Enable Xdebug
+ENV XDEBUGINI_PATH=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+
+RUN echo "xdebug.idekey=PHPSTORM" >> $XDEBUGINI_PATH && \
+    echo "xdebug.default_enable=1" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_enable=1" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_connect_back=0" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_log=1" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_port=9000" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_autostart=0" >> $XDEBUGINI_PATH
 
 WORKDIR /app

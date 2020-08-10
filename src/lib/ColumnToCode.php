@@ -10,21 +10,21 @@ namespace cebe\yii2openapi\lib;
 use yii\db\ArrayExpression;
 use yii\db\ColumnSchema;
 use yii\db\ColumnSchemaBuilder;
+use yii\db\Expression;
 use yii\db\JsonExpression;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\db\Schema;
+use yii\helpers\Json;
 use yii\helpers\StringHelper;
-use function array_key_exists;
 use function in_array;
-use function is_array;
-use function method_exists;
+use function is_string;
+use function preg_replace;
+use function sprintf;
+use function stripos;
 use function strpos;
 use function strtolower;
-use function substr;
 use function trim;
-use function ucfirst;
-use const PHP_EOL;
 
 class ColumnToCode
 {
@@ -64,8 +64,16 @@ class ColumnToCode
     /**
      * @var bool
      */
-    private $typeOnly = false;
-    private $defaultOnly = false;
+    private $isBuiltinType = false;
+
+    /**
+     * @var bool
+     */
+    private $isPk = false;
+
+    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null];
+
+    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null];
 
     /**
      * ColumnToCode constructor.
@@ -80,113 +88,63 @@ class ColumnToCode
         $this->column = $column;
         $this->columnUnique = $columnUnique;
         $this->fromDb = $fromDb;
+        $this->resolve();
     }
 
-    public function resolveTypeOnly():string
+    public function getCode(bool $quoted = false):string
     {
-        $this->typeOnly = true;
-        return $this->resolve();
-    }
-
-    public function resolveDefaultOnly():string
-    {
-        $this->defaultOnly = true;
-        return $this->resolve();
-    }
-
-    public function resolve():string
-    {
-        $dbType = $this->column->dbType;
-        $type = $this->column->type;
-        //Primary Keys
-        if (array_key_exists($type, self::PK_TYPE_MAP)) {
-            return '$this->' . self::PK_TYPE_MAP[$type];
+        if ($this->isPk) {
+            return '$this->' . $this->fluentParts['type'];
         }
-        if (array_key_exists($dbType, self::PK_TYPE_MAP)) {
-            return '$this->' . self::PK_TYPE_MAP[$dbType];
+        if ($this->isBuiltinType) {
+            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default']];
+            if ($this->columnUnique) {
+                $parts[] = 'unique()';
+            }
+            array_unshift($parts, '$this');
+            return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
-        if ($this->fromDb === true) {
-            $categoryType = (new ColumnSchemaBuilder(''))->categoryMap[$type] ?? '';
+        if (!$this->rawParts['default']) {
+            $default = '';
+        } elseif ($this->isPostgres() && $this->isEnum()) {
+            $default = $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
-            $categoryType = (new ColumnSchemaBuilder(''))->categoryMap[$dbType] ?? '';
+            $default = $this->rawParts['default'] ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
         }
 
-        $columnTypeMethod = 'resolve' . ucfirst($categoryType) . 'Type';
-
-        if (StringHelper::startsWith($dbType, 'enum')) {
-            $columnTypeMethod = 'resolveEnumType';
+        $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
+        if ($this->isMysql() && $this->isEnum()) {
+            return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
         }
-        if (StringHelper::startsWith($dbType, 'set')) {
-            $columnTypeMethod = 'resolveSetType';
-        }
-        if (StringHelper::startsWith($dbType, 'tsvector')) {
-            $columnTypeMethod = 'resolveTsvectorType';
-        }
-        if (isset($column->dimension) && $column->dimension > 0) {
-            $columnTypeMethod = 'resolveArrayType';
-        }
-
-        if (method_exists($this, $columnTypeMethod)) {
-            return $this->$columnTypeMethod();
-        }
-
-        return $categoryType && !$this->defaultOnly? $this->resolveCommon() : $this->resolveRaw();
+        return $quoted ? "'" . $code . "'" : $code;
     }
 
-    private function buildRawDefaultValue():string
+    public function getType():string
     {
-        $value = $this->column->defaultValue;
-        $nullable = $this->column->allowNull;
-        $isJson = in_array($this->column->dbType, ['json', 'jsonb']);
-        if ($value === null) {
-            return $nullable === true ? 'DEFAULT NULL' : '';
+        if ($this->isEnum() && $this->isPostgres()) {
+            return "'".sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name)."'";
         }
-        switch (gettype($value)) {
-            case 'integer':
-                return 'DEFAULT ' . $value;
-            case 'object':
-                if ($value instanceof JsonExpression) {
-                    return 'DEFAULT '.self::defaultValueJson($value->getValue());
-                }
-                if ($value instanceof ArrayExpression) {
-                    return 'DEFAULT '.self::defaultValueArray($value->getValue());
-                }
-                return 'DEFAULT ' .(string) $value;
-            case 'double':
-                // ensure type cast always has . as decimal separator in all locales
-                return 'DEFAULT ' . str_replace(',', '.', (string)$value);
-            case 'boolean':
-                return 'DEFAULT ' . ($value ? 'TRUE' : 'FALSE');
-            case 'array':
-                return $isJson? 'DEFAULT '.self::defaultValueJson($value)
-                                :'DEFAULT '.self::defaultValueArray($value);
-            default:
-                if (stripos($value, 'NULL::') !== false) {
-                    return 'DEFAULT NULL';
-                }
-                return 'DEFAULT '.self::wrapQuotes($value);
-        }
+        return $this->isBuiltinType ? '$this->' . $this->fluentParts['type'] : "'".$this->rawParts['type']."'";
     }
 
-    private static function defaultValueJson(array $value):string
+    public function getDefaultValue():?string
     {
-        return "'".\json_encode($value)."'";
+        return $this->rawParts['default'];
     }
-    private static function defaultValueArray(array $value):string
+
+    public function isJson():bool
     {
-        return "'{".trim(\json_encode($value), '[]')."}'";
+        return in_array(strtolower($this->column->dbType), ['json', 'jsonb'], true);
     }
+
+    public function isEnum():bool
+    {
+        return StringHelper::startsWith($this->column->dbType, 'enum');
+    }
+
     public static function escapeQuotes(string $str):string
     {
         return str_replace(["'", '"', '$'], ["\\'", "\\'", '\$'], $str);
-    }
-
-    public static function wrapQuotesOnlyRaw(string $code, bool $escapeQuotes = false):string
-    {
-        if (strpos($code, '$this->') === false) {
-            return $escapeQuotes ? '"' . self::escapeQuotes($code) . '"' : '"' . $code . '"';
-        }
-        return $code;
     }
 
     public static function wrapQuotes(string $str, string $quotes = "'", bool $escape = true):string
@@ -197,175 +155,167 @@ class ColumnToCode
         return $quotes . $str . $quotes;
     }
 
-    public static function enumToString(array $enum): string
+    public static function enumToString(array $enum):string
     {
-        $items = implode(",", array_map(function ($v) {
-            return self::wrapQuotes($v);
-        }, $enum));
+        $items = implode(", ", array_map('self::wrapQuotes', $enum));
         return self::escapeQuotes($items);
     }
 
-    private function resolveCommon():string
+    public static function mysqlEnumToString(array $enum):string
     {
-        $size = $this->column->size ? '(' . $this->column->size . ')' : '()';
-        $default = $this->buildDefaultValue();
-        $nullable = $this->column->allowNull === true ? 'null()' : 'notNull()';
-        if (array_key_exists($this->column->dbType, self::INT_TYPE_MAP)) {
-            $type = self::INT_TYPE_MAP[$this->column->dbType] . $size;
-        } elseif (array_key_exists($this->column->type, self::INT_TYPE_MAP)) {
-            $type = self::INT_TYPE_MAP[$this->column->type] . $size;
+        return implode(', ', array_map('self::wrapQuotes', $enum));
+    }
+
+    private static function defaultValueJson(array $value):string
+    {
+        return "\\'" . new Expression(Json::encode($value)) . "\\'";
+    }
+
+    private static function defaultValueArray(array $value):string
+    {
+        return "'{" . str_replace('"', "\"", trim(Json::encode($value), '[]')) . "}'";
+    }
+
+    private function resolve():void
+    {
+        $dbType = strtolower($this->column->dbType);
+        $dbType = preg_replace('~(.+)\(\d+\)~', '$1', $dbType);
+        $type = $this->column->type;
+        //Primary Keys
+        if (array_key_exists($type, self::PK_TYPE_MAP)) {
+            $this->rawParts['type'] = $type;
+            $this->fluentParts['type'] = self::PK_TYPE_MAP[$type];
+            $this->isPk = true;
+            return;
+        }
+        if (array_key_exists($dbType, self::PK_TYPE_MAP)) {
+            $this->rawParts['type'] = $dbType;
+            $this->fluentParts['type'] = self::PK_TYPE_MAP[$dbType];
+            $this->isPk = true;
+            return;
+        }
+
+        if ($dbType === 'varchar') {
+            $type = $dbType = 'string';
+        }
+        if ($this->fromDb === true) {
+            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
         } else {
-            $type = $this->column->type . $size;
+            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
         }
-        return $this->buildString($type, $default, $nullable);
+        $fluentSize = $this->column->size ? '(' . $this->column->size . ')' : '()';
+        $rawSize = $this->column->size ? '(' . $this->column->size . ')' : '';
+        $this->rawParts['nullable'] = $this->column->allowNull ? 'NULL' : 'NOT NULL';
+        $this->fluentParts['nullable'] = $this->column->allowNull === true ? 'null()' : 'notNull()';
+        if (array_key_exists($dbType, self::INT_TYPE_MAP)) {
+            $this->fluentParts['type'] = self::INT_TYPE_MAP[$dbType] . $fluentSize;
+            $this->rawParts['type'] =
+                $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
+        } elseif (array_key_exists($type, self::INT_TYPE_MAP)) {
+            $this->fluentParts['type'] = self::INT_TYPE_MAP[$type] . $fluentSize;
+            $this->rawParts['type'] =
+                $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
+        } elseif ($this->isEnum()) {
+            $this->resolveEnumType();
+        } else {
+            $this->fluentParts['type'] = $type . $fluentSize;
+            $this->rawParts['type'] =
+                $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
+        }
+        $this->resolveDefaultValue();
     }
 
-    private function resolveRaw():string
+    private function resolveEnumType():void
     {
-        $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
-        $type = $this->column->dbType;
-        $default = $this->isDefaultAllowed() ? $this->buildRawDefaultValue(): '';
-        if ($this->defaultOnly) {
-            return $default;
-        }
-
-        $size = $this->column->size ? '(' . $this->column->size . ')' : '';
-        $type = strpos($type, '(') === false ? $type . $size : $type;
-        if ($this->typeOnly === true) {
-            return $type;
-        }
-        $columns = $nullable . ($default ? ' ' . trim($default) : '');
-        return $type . ' ' . $columns;
-    }
-
-    private function resolveEnumType():string
-    {
-        if (!$this->column->enumValues || !is_array($this->column->enumValues)) {
-            return '';
-        }
-        $default = $this->buildRawDefaultValue();
-        if ($this->defaultOnly) {
-            return $default;
-        }
-        $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
         if ($this->isPostgres()) {
-            $type = $this->typeOnly
-                ? \sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name)
-                : 'enum_'.$this->column->name;
-        } else {
-            $values = array_map(
-                function ($v) {
-                    return self::wrapQuotes($v);
-                },
-                $this->column->enumValues
-            );
-            $type = "enum(" . implode(', ', $values) . ")";
+            $this->rawParts['type'] = 'enum_' . $this->column->name;
+            return;
         }
-        if ($this->typeOnly === true) {
-            return $type;
-        }
-        $columns = $nullable . ($default ? ' ' . trim($default) : '');
-        return $type . ' ' . $columns;
+        $this->rawParts['type'] = 'enum(' . self::mysqlEnumToString($this->column->enumValues) . ')';
     }
 
-    private function resolveSetType():string
+    private function resolveDefaultValue():void
     {
-        $default = $this->buildRawDefaultValue();
-        if ($this->defaultOnly) {
-            return $default;
-        }
-        $type = $this->column->dbType;
-        $nullable = $this->column->allowNull ? 'NULL' : 'NOT NULL';
-        $columns = $nullable . ($default ? ' ' . trim($default) : '');
-        return $type . ' ' . $columns;
-    }
-
-    private function resolveArrayType():string
-    {
-        $default = $this->buildDefaultValue();
-        if ($this->defaultOnly) {
-            return $default;
-        }
-        $nullable = $this->column->allowNull === true ? 'null()' : 'notNull()';
-        $type = $this->column->dbType;
-        return $this->buildString($type, $default, $nullable);
-    }
-
-    private function resolveTsvectorType():string
-    {
-        //\var_dump($this->column);
-        return $this->resolveRaw();
-    }
-
-    private function buildDefaultValue():string
-    {
-        $value = $this->column->defaultValue;
         if (!$this->isDefaultAllowed()) {
-            return '';
+            return;
         }
-        if ($value === null) {
-            return ($this->column->allowNull === true)? 'defaultValue(null)' : '';
+        $value = $this->column->defaultValue;
+        if ($value === null || (is_string($value) && (stripos($value, 'null::') !== false))) {
+            $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : '';
+            $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : '';
+            return;
         }
-
         switch (gettype($value)) {
             case 'integer':
-                return 'defaultValue(' . (int)$value . ')';
+                $this->fluentParts['default'] = 'defaultValue(' . $value . ')';
+                $this->rawParts['default'] = $value;
+                break;
             case 'double':
             case 'float':
                 // ensure type cast always has . as decimal separator in all locales
-                return 'defaultValue("' . str_replace(',', '.', (string)$value) . '")';
+                $value = str_replace(',', '.', (string)$value);
+                $this->fluentParts['default'] = 'defaultValue("' . $value . '")';
+                $this->rawParts['default'] = $value;
+                break;
             case 'boolean':
-                return $value === true ? 'defaultValue(true)' : 'defaultValue(false)';
+                $this->fluentParts['default'] = (bool)$value === true ? 'defaultValue(true)' : 'defaultValue(false)';
+                if ($this->isPostgres()) {
+                    $this->rawParts['default'] = ((bool)$value === true ? "'t'" : "'f'");
+                } else {
+                    $this->rawParts['default'] = ((bool)$value === true ? '1' : '0');
+                }
+                break;
             case 'object':
                 if ($value instanceof JsonExpression) {
-                    return 'defaultValue(' . json_encode($value->getValue()) . ')';
+                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
+                    $this->rawParts['default'] = self::defaultValueJson($value->getValue());
+                } elseif ($value instanceof ArrayExpression) {
+                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
+                    $this->rawParts['default'] = self::defaultValueArray($value->getValue());
+                } else {
+                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                 }
-                return 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                break;
             case 'array':
-                return (string)'defaultValue(' . json_encode($value) . ')';
+                $this->fluentParts['default'] = "defaultValue('" . Json::encode($value) . "')";
+                $this->rawParts['default'] = $this->isJson()
+                    ? self::defaultValueJson($value)
+                    : self::defaultValueArray($value);
+                break;
             default:
-            {
-                if (stripos($value, 'NULL::') !== false) {
-                    return '';
-                }
-                if (
-                    StringHelper::startsWith($value, 'CURRENT')
+                $isExpression = StringHelper::startsWith($value, 'CURRENT')
                     || StringHelper::startsWith($value, 'LOCAL')
-                    || substr($value, -1, 1) === ')') {
-                    //TIMESTAMP MARKER OR DATABASE FUNCTION
-                    return 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                    || substr($value, -1, 1) === ')';
+                if ($isExpression) {
+                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                } else {
+                    $this->fluentParts['default'] = 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                 }
-                return 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
-            }
+                $this->rawParts['default'] = self::wrapQuotes($value);
+                if ($this->isMysql() && $this->isEnum()) {
+                    $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
+                }
         }
-    }
-
-    private function buildString(string $type, $default = '', $nullable = ''):string
-    {
-        if ($this->typeOnly === true) {
-            $columnParts = [$type];
-        } else {
-            $columnParts = [$type, $nullable, $default];
-            if ($this->columnUnique) {
-                $columnParts[] = 'unique()';
-            }
-        }
-        array_unshift($columnParts, '$this');
-        return implode('->', array_filter(array_map('trim', $columnParts), 'trim'));
     }
 
     private function isDefaultAllowed():bool
     {
         $type = strtolower($this->column->dbType);
-        if ($this->dbSchema instanceof MySqlSchema && in_array($type, ['blob', 'geometry', 'text', 'json'])) {
-            //Only mysql specific restriction, mariadb can it
-            return strpos($this->dbSchema->getServerVersion(), 'MariaDB') !== false;
-        }
-        return true;
+        return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
     }
 
     private function isPostgres():bool
     {
         return $this->dbSchema instanceof PgSqlSchema;
+    }
+
+    private function isMysql():bool
+    {
+        return $this->dbSchema instanceof MySqlSchema;
+    }
+
+    private function isMariaDb():bool
+    {
+        return strpos($this->dbSchema->getServerVersion(), 'MariaDB') !== false;
     }
 }

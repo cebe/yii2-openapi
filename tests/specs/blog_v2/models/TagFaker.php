@@ -17,10 +17,7 @@ class TagFaker
         $model = new Tag();
         $model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->name = substr($faker->text(100), 0, 100);
-        $model->lang = $faker->randomElement(array (
-  0 => 'ru',
-  1 => 'eng',
-));
+        $model->lang = $faker->randomElement(['ru','eng']);
         return $model;
     }
 }

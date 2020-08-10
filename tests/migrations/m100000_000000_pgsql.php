@@ -1,5 +1,7 @@
 <?php
+use yii\db\Expression;
 use yii\db\Migration;
+use yii\helpers\Json;
 
 /**
  * Initial migration for blog_v2 (based on blog.yaml), so result for blog_v2 should be as secondary mogration
@@ -39,12 +41,12 @@ class m100000_000000_pgsql extends Migration
                 'created_at' => $this->date()->null()->defaultValue(null),
                 'created_by_id' => $this->integer()->null()->defaultValue(null),
             ]);
-        $this->addForeignKey('fk_v2_posts_category_id_categories_id',
+        $this->addForeignKey('fk_v2_posts_category_id_v2_categories_id',
             '{{%v2_posts}}',
             'category_id',
             '{{%v2_categories}}',
             'id');
-        $this->addForeignKey('fk_v2_posts_created_by_id_users_id',
+        $this->addForeignKey('fk_v2_posts_created_by_id_v2_users_id',
             '{{%v2_posts}}',
             'created_by_id',
             '{{%v2_users}}',
@@ -85,6 +87,17 @@ class m100000_000000_pgsql extends Migration
             'str_datetime' => $this->timestamp()->null()->defaultValue(null),
             'str_country' => $this->text()->null()->defaultValue(null),
         ]);
+
+        $this->execute('CREATE TYPE status_enum AS ENUM(\'active\', \'draft\')');
+        $this->createTable('{{%v3_pgcustom}}', [
+            'id' => $this->bigPrimaryKey(),
+            'num'=>$this->integer()->defaultValue(0),
+            'json1'=>$this->json(),
+            'json2'=>$this->json()->null()->defaultValue(null),
+            'json3'=>$this->json()->defaultValue(Json::encode(['foo'=>'bar', 'bar'=>'baz'])),
+            'json4'=>"json DEFAULT '".new Expression(Json::encode(['ffo'=>'bar']))."'",
+            'status'=> 'status_enum'
+        ]);
     }
 
     public function safeDown()
@@ -93,10 +106,12 @@ class m100000_000000_pgsql extends Migration
         $this->dropForeignKey('fk_v2_comments_author_id_v2_users_id', '{{%v2_comments}}');
         $this->dropForeignKey('fk_v2_comments_post_id_v2_posts_uid', '{{%v2_comments}}');
         $this->dropTable('{{%v2_comments}}');
-        $this->dropForeignKey('fk_v2_posts_created_by_id_users_id', '{{%v2_posts}}');
-        $this->dropForeignKey('fk_v2_posts_category_id_categories_id', '{{%v2_posts}}');
+        $this->dropForeignKey('fk_v2_posts_created_by_id_v2_users_id', '{{%v2_posts}}');
+        $this->dropForeignKey('fk_v2_posts_category_id_v2_categories_id', '{{%v2_posts}}');
         $this->dropTable('{{%v2_posts}}');
         $this->dropTable('{{%v2_users}}');
         $this->dropTable('{{%v2_categories}}');
+        $this->dropTable('{{%v3_pgcustom}}');
+        $this->execute('DROP TYPE status_enum');
     }
 }

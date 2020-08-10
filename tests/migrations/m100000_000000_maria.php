@@ -45,12 +45,12 @@ class m100000_000000_maria extends Migration
                 'created_at' => $this->date()->null()->defaultValue(null),
                 'created_by_id' => $this->integer()->null()->defaultValue(null),
             ]);
-        $this->addForeignKey('fk_v2_posts_category_id_categories_id',
+        $this->addForeignKey('fk_v2_posts_category_id_v2_categories_id',
             '{{%v2_posts}}',
             'category_id',
             '{{%v2_categories}}',
             'id');
-        $this->addForeignKey('fk_v2_posts_created_by_id_users_id',
+        $this->addForeignKey('fk_v2_posts_created_by_id_v2_users_id',
             '{{%v2_posts}}',
             'created_by_id',
             '{{%v2_users}}',
@@ -98,8 +98,8 @@ class m100000_000000_maria extends Migration
         $this->dropForeignKey('fk_v2_comments_author_id_v2_users_id', '{{%v2_comments}}');
         $this->dropForeignKey('fk_v2_comments_post_id_v2_posts_uid', '{{%v2_comments}}');
         $this->dropTable('{{%v2_comments}}');
-        $this->dropForeignKey('fk_v2_posts_created_by_id_users_id', '{{%v2_posts}}');
-        $this->dropForeignKey('fk_v2_posts_category_id_categories_id', '{{%v2_posts}}');
+        $this->dropForeignKey('fk_v2_posts_created_by_id_v2_users_id', '{{%v2_posts}}');
+        $this->dropForeignKey('fk_v2_posts_category_id_v2_categories_id', '{{%v2_posts}}');
         $this->dropTable('{{%v2_posts}}');
         $this->dropTable('{{%v2_users}}');
         $this->dropTable('{{%v2_categories}}');
