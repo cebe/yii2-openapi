@@ -100,8 +100,7 @@ class ValidationRulesBuilder
         //@TODO: probably also patterns for file, image
         $patterns = [
             '~e?mail~i' => 'email',
-            '~(url|site|website|href|link)~i' => 'url',
-            '~(ip|ipaddr)~i' => 'ip',
+            '~(url|site|website|href|link)~i' => 'url'
         ];
         foreach ($patterns as $pattern => $validator) {
             if (preg_match($pattern, strtolower($attribute->columnName))) {
