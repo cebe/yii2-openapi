@@ -21,11 +21,11 @@ abstract class Category extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['title'], 'trim'],
-            [['title'], 'required'],
-            [['title'], 'unique'],
-            [['title'], 'string', 'max' => 255],
-            [['active'], 'boolean'],
+            'trim' => [['title'], 'trim'],
+            'required' => [['title'], 'required'],
+            'title_unique' => [['title'], 'unique'],
+            'title_string' => [['title'], 'string', 'max' => 255],
+            'active_boolean' => [['active'], 'boolean'],
         ];
     }
 

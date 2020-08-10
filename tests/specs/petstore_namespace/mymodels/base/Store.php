@@ -19,9 +19,9 @@ abstract class Store extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'trim'],
-            [['name'], 'required'],
-            [['name'], 'string'],
+            'trim' => [['name'], 'trim'],
+            'required' => [['name'], 'required'],
+            'name_string' => [['name'], 'string'],
         ];
     }
 

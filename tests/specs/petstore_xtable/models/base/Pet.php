@@ -20,10 +20,10 @@ abstract class Pet extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'tag'], 'trim'],
-            [['name'], 'required'],
-            [['name'], 'string'],
-            [['tag'], 'string'],
+            'trim' => [['name', 'tag'], 'trim'],
+            'required' => [['name'], 'required'],
+            'name_string' => [['name'], 'string'],
+            'tag_string' => [['tag'], 'string'],
         ];
     }
 

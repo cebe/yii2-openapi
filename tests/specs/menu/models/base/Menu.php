@@ -24,12 +24,12 @@ abstract class Menu extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name'], 'trim'],
-            [['name'], 'required'],
-            [['parent_id'], 'integer'],
-            [['parent_id'], 'exist', 'targetRelation' => 'Parent'],
-            [['name'], 'string', 'min' => 3, 'max' => 100],
-            [['args', 'kwargs'], 'safe'],
+            'trim' => [['name'], 'trim'],
+            'required' => [['name'], 'required'],
+            'parent_id_integer' => [['parent_id'], 'integer'],
+            'parent_id_exist' => [['parent_id'], 'exist', 'targetRelation' => 'Parent'],
+            'name_string' => [['name'], 'string', 'min' => 3, 'max' => 100],
+            'safe' => [['args', 'kwargs'], 'safe'],
         ];
     }
 
