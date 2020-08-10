@@ -4,6 +4,8 @@
  * @var string $namespace
  * @var string $relationNamespace
  **/
+use yii\helpers\VarDumper;
+
 ?>
 <?= '<?php' ?>
 
@@ -37,9 +39,7 @@ abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
 
     public function rules()
     {
-        return [
-<?=implode(",\n", $model->getValidationRules()).",\n"?>
-        ];
+        return <?=$model->getValidationRules()?>;
     }
 
 <?php foreach ($model->relations as $relationName => $relation): ?>
@@ -49,7 +49,7 @@ abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
             echo str_replace(
                     [',', '=>', ', ]'],
                     [', ', ' => ', ']'],
-                    preg_replace('~\s+~', '', \yii\helpers\VarDumper::export($relation->getLink()))
+                    preg_replace('~\s+~', '', VarDumper::export($relation->getLink()))
             )
         ?>);
     }

@@ -46,11 +46,11 @@ class ValidationRulesBuilder
         $this->prepareTypeScope();
 
         if (!empty($this->typeScope['trim'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['trim'], 'trim');
+            $this->rules['trim'] = new ValidationRule($this->typeScope['trim'], 'trim');
         }
 
         if (!empty($this->typeScope['required'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['required'], 'required');
+            $this->rules['required'] = new ValidationRule($this->typeScope['required'], 'required');
         }
         if (!empty($this->typeScope['ref'])) {
             $this->addExistRules($this->typeScope['ref']);
@@ -59,7 +59,7 @@ class ValidationRulesBuilder
             $this->resolveAttributeRules($attribute);
         }
         if (!empty($this->typeScope['safe'])) {
-            $this->rules[] = new ValidationRule($this->typeScope['safe'], 'safe');
+            $this->rules['safe'] = new ValidationRule($this->typeScope['safe'], 'safe');
         }
         return $this->rules;
     }
@@ -70,15 +70,16 @@ class ValidationRulesBuilder
             return;
         }
         if ($attribute->isUnique()) {
-            $this->rules[] = new ValidationRule([$attribute->columnName], 'unique');
+            $this->rules[$attribute->columnName.'_unique'] = new ValidationRule([$attribute->columnName], 'unique');
         }
         if ($attribute->phpType === 'bool') {
-            $this->rules[] = new ValidationRule([$attribute->columnName], 'boolean');
+            $this->rules[$attribute->columnName.'_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
             return;
         }
 
         if (in_array($attribute->dbType, ['date', 'time', 'datetime'], true)) {
-            $this->rules[] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
+            $key = $attribute->columnName.'_'.$attribute->dbType;
+            $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
             return;
         }
         if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
@@ -89,7 +90,8 @@ class ValidationRulesBuilder
             $this->addStringRule($attribute);
         }
         if (!empty($attribute->enumValues)) {
-            $this->rules[] = new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
+            $key = $attribute->columnName.'_in';
+            $this->rules[$key] = new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
             return;
         }
         $this->addRulesByAttributeName($attribute);
@@ -104,7 +106,8 @@ class ValidationRulesBuilder
         ];
         foreach ($patterns as $pattern => $validator) {
             if (preg_match($pattern, strtolower($attribute->columnName))) {
-                $this->rules[] = new ValidationRule([$attribute->columnName], $validator);
+                $key = $attribute->columnName.'_'.$validator;
+                $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator);
                 return;
             }
         }
@@ -121,7 +124,7 @@ class ValidationRulesBuilder
             } elseif ($attribute->phpType === 'string') {
                 $this->addStringRule($attribute);
             }
-            $this->rules[] = new ValidationRule(
+            $this->rules[$attribute->columnName.'_exist'] = new ValidationRule(
                 [$attribute->columnName],
                 'exist',
                 ['targetRelation' => $attribute->camelName()]
@@ -142,7 +145,8 @@ class ValidationRulesBuilder
                 $params['max'] = $attribute->maxLength;
             }
         }
-        $this->rules[] = new ValidationRule([$attribute->columnName], 'string', $params);
+        $key = $attribute->columnName.'_string';
+        $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
     }
 
     private function addNumericRule(Attribute $attribute):void
@@ -155,7 +159,8 @@ class ValidationRulesBuilder
             $params['max'] = $attribute->limits['max'];
         }
         $validator = $attribute->phpType === 'int' ? 'integer' : 'double';
-        $this->rules[] = new ValidationRule([$attribute->columnName], $validator, $params);
+        $key = $attribute->columnName.'_'.$validator;
+        $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
 
     private function prepareTypeScope():void

@@ -27,7 +27,7 @@ class ValidationRuleTest extends TestCase
             new ValidationRule(['foo', 'bar'], 'trim'),
         ];
         $result = implode(",\n", $rules);
-        $this->assertEquals($result, "            [['foo'], 'required'],\n            [['foo', 'bar'], 'trim']");
+        $this->assertEquals($result, "[['foo'], 'required'],\n[['foo', 'bar'], 'trim']");
     }
 
     public function dataProvider():array
@@ -35,31 +35,31 @@ class ValidationRuleTest extends TestCase
         return [
             [
                 new ValidationRule(['foo'], 'required'),
-                "            [['foo'], 'required']",
+                "[['foo'], 'required']",
             ],
             [
                 new ValidationRule(['foo', 'bar'], 'trim'),
-                "            [['foo', 'bar'], 'trim']",
+                "[['foo', 'bar'], 'trim']",
             ],
             [
                 new ValidationRule(['foo'], 'string', ['min' => 1, 'max' => 500]),
-                "            [['foo'], 'string', 'min' => 1, 'max' => 500]",
+                "[['foo'], 'string', 'min' => 1, 'max' => 500]",
             ],
             [
                 new ValidationRule(['foo'], 'default', ['value' => null]),
-                "            [['foo'], 'default', 'value' => null]",
+                "[['foo'], 'default', 'value' => null]",
             ],
             [
                 new ValidationRule(['foo'], 'filter', ['filter' => 'intval', 'skipOnEmpty' => true]),
-                "            [['foo'], 'filter', 'filter' => 'intval', 'skipOnEmpty' => true]",
+                "[['foo'], 'filter', 'filter' => 'intval', 'skipOnEmpty' => true]",
             ],
             [
                 new ValidationRule(['foo'], 'in', ['range' => ['one', 'two', 'three']]),
-                "            [['foo'], 'in', 'range' => ['one', 'two', 'three']]",
+                "[['foo'], 'in', 'range' => ['one', 'two', 'three']]",
             ],
             [
                 new ValidationRule(['foo'], 'exist', ['targetAttribute' => ['a2', 'a1' => 'a3']]),
-                "            [['foo'], 'exist', 'targetAttribute' => ['a2', 'a1' => 'a3']]",
+                "[['foo'], 'exist', 'targetAttribute' => ['a2', 'a1' => 'a3']]",
             ],
             [
                 new ValidationRule(['foo'], 'filter', [
@@ -67,7 +67,7 @@ class ValidationRuleTest extends TestCase
                         return strtolower($v);
                     },
                 ]),
-                "            [['foo'], 'filter', 'filter' => '']",
+                "[['foo'], 'filter', 'filter' => '']",
             ],
         ];
     }
