@@ -6,21 +6,22 @@ use Faker\Factory as FakerFactory;
 use Faker\UniqueGenerator;
 
 /**
- * Fake data generator for Post
+ * Fake data generator for Custom
  */
-class PostFaker
+class CustomFaker
 {
     public function generateModel()
     {
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
-        $model = new Post();
+        $model = new Custom();
         $model->id = $uniqueFaker->numberBetween(0, 2147483647);
-        $model->title = substr($faker->sentence, 0, 255);
-        $model->slug = substr($uniqueFaker->slug, 0, 200);
-        $model->lang = $faker->randomElement(['ru','eng']);
-        $model->active = $faker->boolean;
-        $model->created_at = $faker->iso8601;
+        $model->num = $faker->numberBetween(0, 2147483647);
+        $model->json1 = [];
+        $model->json2 = [];
+        $model->json3 = [];
+        $model->json4 = [];
+        $model->status = $faker->randomElement(['draft','pending','active']);
         return $model;
     }
 }
