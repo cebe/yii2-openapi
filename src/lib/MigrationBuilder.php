@@ -132,14 +132,14 @@ class MigrationBuilder
         sort($wantNames);
         sort($haveNames);
         $columnsForCreate = array_map(
-            function(string $missingColumn) {
+            function (string $missingColumn) {
                 return $this->newColumns[$missingColumn];
             },
             array_diff($wantNames, $haveNames)
         );
 
         $columnsForDrop = array_map(
-            function(string $unknownColumn) {
+            function (string $unknownColumn) {
                 return $this->tableSchema->columns[$unknownColumn];
             },
             array_diff($haveNames, $wantNames)
