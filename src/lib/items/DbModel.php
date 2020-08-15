@@ -11,7 +11,11 @@ use cebe\yii2openapi\lib\ValidationRulesBuilder;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function array_filter;
+use function array_map;
+use function str_replace;
+use const PHP_EOL;
 
 /**
  * @property-read string                                                $tableAlias
@@ -51,9 +55,14 @@ class DbModel extends BaseObject
         return '{{%' . $this->tableName . '}}';
     }
 
-    public function getValidationRules():array
+    public function getValidationRules():string
     {
-        return (new ValidationRulesBuilder($this))->build();
+        $rules = (new ValidationRulesBuilder($this))->build();
+        $rules = array_map(function ($rule) {
+            return (string) $rule;
+        }, $rules);
+        $rules = VarDumper::export($rules);
+        return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL.'        ', "'", '[[', '],'], $rules);
     }
 
     public function getUniqueColumnsList():array

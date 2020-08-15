@@ -23,17 +23,17 @@ abstract class User extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['login', 'email', 'password', 'role', 'created_at'], 'trim'],
-            [['login', 'email', 'password'], 'required'],
-            [['login'], 'unique'],
-            [['login'], 'string'],
-            [['email'], 'unique'],
-            [['email'], 'string'],
-            [['email'], 'email'],
-            [['password'], 'string'],
-            [['role'], 'string'],
-            [['role'], 'in', 'range' => ['admin', 'editor', 'reader']],
-            [['created_at'], 'datetime'],
+            'trim' => [['login', 'email', 'password', 'role', 'created_at'], 'trim'],
+            'required' => [['login', 'email', 'password'], 'required'],
+            'login_unique' => [['login'], 'unique'],
+            'login_string' => [['login'], 'string'],
+            'email_unique' => [['email'], 'unique'],
+            'email_string' => [['email'], 'string'],
+            'email_email' => [['email'], 'email'],
+            'password_string' => [['password'], 'string'],
+            'role_string' => [['role'], 'string'],
+            'role_in' => [['role'], 'in', 'range' => ['admin', 'editor', 'reader']],
+            'created_at_datetime' => [['created_at'], 'datetime'],
         ];
     }
 

@@ -36,7 +36,7 @@ final class ValidationRule
     {
         $attrs = implode("', '", $this->attributes);
         $params = empty($this->params) ? '' : ', ' . $this->arrayToString($this->params);
-        return sprintf("            [['%s'], '%s'%s]", $attrs, $this->validator, $params);
+        return sprintf("[['%s'], '%s'%s]", $attrs, $this->validator, $params);
     }
 
     private function arrayToString(array $data):string

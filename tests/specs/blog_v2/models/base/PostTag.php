@@ -22,11 +22,11 @@ abstract class PostTag extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['post_id', 'tag_id'], 'required'],
-            [['post_id'], 'integer'],
-            [['post_id'], 'exist', 'targetRelation' => 'Post'],
-            [['tag_id'], 'integer'],
-            [['tag_id'], 'exist', 'targetRelation' => 'Tag'],
+            'required' => [['post_id', 'tag_id'], 'required'],
+            'post_id_integer' => [['post_id'], 'integer'],
+            'post_id_exist' => [['post_id'], 'exist', 'targetRelation' => 'Post'],
+            'tag_id_integer' => [['tag_id'], 'integer'],
+            'tag_id_exist' => [['tag_id'], 'exist', 'targetRelation' => 'Tag'],
         ];
     }
 

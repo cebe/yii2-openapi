@@ -24,13 +24,13 @@ abstract class Comment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['post_id', 'author_id', 'created_at'], 'required'],
-            [['post_id'], 'integer'],
-            [['post_id'], 'exist', 'targetRelation' => 'Post'],
-            [['author_id'], 'integer'],
-            [['author_id'], 'exist', 'targetRelation' => 'Author'],
-            [['created_at'], 'integer'],
-            [['message'], 'safe'],
+            'required' => [['post_id', 'author_id', 'created_at'], 'required'],
+            'post_id_integer' => [['post_id'], 'integer'],
+            'post_id_exist' => [['post_id'], 'exist', 'targetRelation' => 'Post'],
+            'author_id_integer' => [['author_id'], 'integer'],
+            'author_id_exist' => [['author_id'], 'exist', 'targetRelation' => 'Author'],
+            'created_at_integer' => [['created_at'], 'integer'],
+            'safe' => [['message'], 'safe'],
         ];
     }
 
