@@ -89,7 +89,7 @@ class MigrationModel extends BaseObject
 
     public function getDescription():string
     {
-        return 'Table for '.$this->model->name;
+        return 'Table for '.$this->model->getClassName();
     }
 
     public function makeClassNameByTime(int $index, ?string $nameSpace = null, ?string $date = null):string

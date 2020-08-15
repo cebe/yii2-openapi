@@ -101,7 +101,8 @@ class AttributeResolver
             $relatedSchema = $property->resolve();
             if (strpos($refPointer, self::REFERENCE_PATH) === 0) {
                 if (strpos($refPointer, '/properties/')!==false) {
-                    $attribute->asReference($this->schemaName);
+                    $relatedClassName = Inflector::id2camel($this->schemaName, '_');
+                    $attribute->asReference($relatedClassName);
                     $foreignPk = $this->componentSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
                     $foreignPkProperty = $this->componentSchema->properties[$foreignPk];
                     $relatedTableName = $this->tableName;
@@ -109,11 +110,12 @@ class AttributeResolver
                     $attribute->setPhpType($phpType)
                               ->setDbType($this->guessDbType($foreignPkProperty, true, true));
 
-                    $relation = (new AttributeRelation($propertyName, $relatedTableName, $this->schemaName))
+                    $relation = (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
                         ->asHasOne([$foreignPk => $attribute->columnName])->asSelfReference();
                     $this->relations[$propertyName] = $relation;
                 } else {
                     $relatedClassName = substr($refPointer, self::REFERENCE_PATH_LEN);
+                    $relatedClassName = Inflector::id2camel($relatedClassName, '_');
                     $relatedTableName =
                         $relatedSchema->{CustomSpecAttr::TABLE} ?? self::tableNameBySchema($relatedClassName);
                     $attribute->asReference($relatedClassName)->setDescription($relatedSchema->description ?? '');
@@ -154,7 +156,7 @@ class AttributeResolver
         $refPointer = $this->getHasManyReference($property);
         if ($refPointer !== null) {
             if (strpos($refPointer, '/properties/')!==false) {
-                $relatedClassName = $this->schemaName;
+                $relatedClassName = Inflector::id2camel($this->schemaName, '_');
                 $relatedTableName = $this->tableName;
                 $foreignAttr = str_replace(self::REFERENCE_PATH.$relatedClassName.'/properties/', '', $refPointer);
                 $foreignPk = Inflector::camel2id($foreignAttr, '_') . '_id';
@@ -165,6 +167,7 @@ class AttributeResolver
                 return;
             }
             $relatedClassName = substr($refPointer, self::REFERENCE_PATH_LEN);
+            $relatedClassName = Inflector::id2camel($relatedClassName, '_');
             $property->items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $relatedSchema = $property->items->resolve();
             $relatedTableName =

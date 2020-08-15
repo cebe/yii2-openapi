@@ -686,7 +686,7 @@ class ApiGenerator extends Generator
             $models = $this->generateModels();
             $modelPath = $this->getPathFromNamespace($this->modelNamespace);
             foreach ($models as $modelName => $model) {
-                $className = $modelName;
+                $className = $model->getClassName();
                 if ($model instanceof DbModel) {
                     $files[] = new CodeFile(
                         Yii::getAlias("$modelPath/base/$className.php"),

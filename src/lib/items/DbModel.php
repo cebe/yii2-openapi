@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib\items;
 use cebe\yii2openapi\lib\ValidationRulesBuilder;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
+use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function array_filter;
@@ -53,6 +54,11 @@ class DbModel extends BaseObject
     public function getTableAlias():string
     {
         return '{{%' . $this->tableName . '}}';
+    }
+
+    public function getClassName()
+    {
+        return Inflector::id2camel($this->name, '_');
     }
 
     public function getValidationRules():string
