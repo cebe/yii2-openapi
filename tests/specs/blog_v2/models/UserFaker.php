@@ -20,6 +20,7 @@ class UserFaker
         $model->email = $faker->safeEmail;
         $model->password = $faker->password;
         $model->role = $faker->randomElement(['admin', 'editor', 'reader']);
+        $model->flags = $faker->numberBetween(0, 2147483647);
         $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d H:i:s');
         return $model;
     }

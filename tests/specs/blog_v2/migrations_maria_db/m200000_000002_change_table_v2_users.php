@@ -12,14 +12,12 @@ class m200000_000002_change_table_v2_users extends \yii\db\Migration
         $this->alterColumn('{{%v2_users}}', 'created_at', $this->timestamp()->null()->defaultValue(null));
         $this->alterColumn('{{%v2_users}}', 'email', $this->string()->notNull());
         $this->createIndex('unique_email', '{{%v2_users}}', 'email', true);
-        $this->alterColumn('{{%v2_users}}', 'password', $this->string()->notNull());
         $this->alterColumn('{{%v2_users}}', 'role', "enum('admin', 'editor', 'reader') NULL DEFAULT NULL");
     }
 
     public function down()
     {
         $this->alterColumn('{{%v2_users}}', 'role', $this->string(20)->null()->defaultValue("reader"));
-        $this->alterColumn('{{%v2_users}}', 'password', $this->string(255)->notNull());
         $this->dropIndex('unique_email', '{{%v2_users}}');
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(200)->notNull());
         $this->alterColumn('{{%v2_users}}', 'created_at', $this->timestamp()->null()->defaultExpression("CURRENT_TIMESTAMP"));

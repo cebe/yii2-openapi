@@ -10,6 +10,7 @@ namespace app\models\base;
  * @property string $email
  * @property string $password
  * @property string $role
+ * @property int $flags
  * @property string $created_at
  *
  */
@@ -33,6 +34,7 @@ abstract class User extends \yii\db\ActiveRecord
             'password_string' => [['password'], 'string'],
             'role_string' => [['role'], 'string'],
             'role_in' => [['role'], 'in', 'range' => ['admin', 'editor', 'reader']],
+            'flags_integer' => [['flags'], 'integer'],
             'created_at_datetime' => [['created_at'], 'datetime'],
         ];
     }

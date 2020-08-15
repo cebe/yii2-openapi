@@ -22,6 +22,8 @@ return [
                 ->setSize(20)
                 ->setDefault('reader')
                 ->setFakerStub('$faker->randomElement([\'admin\', \'editor\', \'reader\'])'),
+            'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
+            ('$faker->numberBetween(0, 2147483647)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
                 ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')'),
         ],

@@ -13,6 +13,7 @@ class m200000_000001_create_table_v2_users extends \yii\db\Migration
             'email' => $this->text()->notNull()->unique(),
             'password' => $this->string()->notNull(),
             'role' => 'enum(\'admin\', \'editor\', \'reader\') NULL DEFAULT NULL',
+            'flags' => $this->integer()->null()->defaultValue(0),
             'created_at' => $this->timestamp()->null()->defaultValue(null),
         ]);
     }
