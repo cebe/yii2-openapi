@@ -12,12 +12,12 @@ use cebe\yii2openapi\lib\items\MigrationModel;
 use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
 use yii\db\Connection;
+use yii\db\Schema;
 use function array_intersect;
 use function array_map;
 use function in_array;
 use function is_bool;
 use function is_string;
-use function sprintf;
 use function str_replace;
 
 class MigrationBuilder
@@ -360,6 +360,12 @@ class MigrationBuilder
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
         }
+        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
+            $desired->defaultValue = (int)$desired->defaultValue;
+        }
+        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
+            $desired->size = $current->size;
+        }
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
             if ($current->$attr !== $desired->$attr) {
                 $changedAttributes[] = $attr;
@@ -386,5 +392,28 @@ class MigrationBuilder
             $this->migration->addUpCode($isUniqueDesired === true ? $addUnique : $dropUnique)
                             ->addDownCode($isUniqueDesired === true ? $dropUnique : $addUnique);
         }
+    }
+
+    private function isDbDefaultSize(ColumnSchema $current)
+    {
+        $defaults = [];
+        if ($this->isPostgres) {
+            $defaults = ['char' => 1, 'string' => 255];
+        } elseif ($this->isMysql) {
+            $defaults = [
+                Schema::TYPE_PK => 11,
+                Schema::TYPE_BIGPK => 20,
+                Schema::TYPE_CHAR => 1,
+                Schema::TYPE_STRING => 255,
+                Schema::TYPE_TINYINT => 3,
+                Schema::TYPE_SMALLINT => 6,
+                Schema::TYPE_INTEGER => 11,
+                Schema::TYPE_BIGINT => 20,
+                Schema::TYPE_DECIMAL => 10,
+                Schema::TYPE_BOOLEAN => 1,
+                Schema::TYPE_MONEY => 19,
+            ];
+        }
+        return isset($defaults[$current->type]);
     }
 }

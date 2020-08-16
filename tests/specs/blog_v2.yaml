@@ -71,6 +71,9 @@ components:
             - editor
             - reader
           x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
+        flags:
+          type: integer
+          default: "0"
         created_at:
           type: string
           format: date-time
@@ -153,7 +156,7 @@ components:
         post_tags:
           type: array
           items:
-            $ref: "#/components/schemas/PostTag"
+            $ref: "#/components/schemas/Post_tag"
     Posts:
       type: array
       items:
@@ -208,12 +211,12 @@ components:
         post_tags:
           type: array
           items:
-            $ref: "#/components/schemas/PostTag"
+            $ref: "#/components/schemas/Post_tag"
     Tags:
       type: array
       items:
         $ref: "#/components/schemas/Tag"
-    PostTag:
+    Post_tag:
       x-table: v2_post_tag
       required:
         - id
@@ -231,7 +234,7 @@ components:
     PostTags:
       type: array
       items:
-        $ref: "#/components/schemas/PostTag"
+        $ref: "#/components/schemas/Post_tag"
     Error:
       required:
         - code

@@ -13,7 +13,6 @@ class m200000_000002_change_table_v2_users extends \yii\db\Migration
         $this->alterColumn('{{%v2_users}}', 'created_at', "DROP DEFAULT");
         $this->alterColumn('{{%v2_users}}', 'email', $this->text());
         $this->createIndex('unique_email', '{{%v2_users}}', 'email', true);
-        $this->alterColumn('{{%v2_users}}', 'password', $this->string());
         $this->alterColumn('{{%v2_users}}', 'role', 'enum_role USING role::enum_role');
         $this->alterColumn('{{%v2_users}}', 'role', "DROP DEFAULT");
     }
@@ -21,7 +20,6 @@ class m200000_000002_change_table_v2_users extends \yii\db\Migration
     public function safeDown()
     {
         $this->alterColumn('{{%v2_users}}', 'role', $this->string(20));
-        $this->alterColumn('{{%v2_users}}', 'password', $this->string(255));
         $this->dropIndex('unique_email', '{{%v2_users}}');
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(200));
         $this->addColumn('{{%v2_users}}', 'username', $this->string(200)->notNull());

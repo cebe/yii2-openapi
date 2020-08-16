@@ -30,7 +30,7 @@ namespace <?= $namespace ?>;
 
 <?php endforeach; ?>
  */
-abstract class <?= $model->name ?> extends \yii\db\ActiveRecord
+abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 {
     public static function tableName()
     {

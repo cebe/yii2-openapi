@@ -107,7 +107,8 @@ class ColumnToCode
         if (!$this->rawParts['default']) {
             $default = '';
         } elseif ($this->isPostgres() && $this->isEnum()) {
-            $default = $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
+            $default =
+                $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
             $default = $this->rawParts['default'] ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
         }
@@ -122,9 +123,9 @@ class ColumnToCode
     public function getType():string
     {
         if ($this->isEnum() && $this->isPostgres()) {
-            return "'".sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name)."'";
+            return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
         }
-        return $this->isBuiltinType ? '$this->' . $this->fluentParts['type'] : "'".$this->rawParts['type']."'";
+        return $this->isBuiltinType ? '$this->' . $this->fluentParts['type'] : "'" . $this->rawParts['type'] . "'";
     }
 
     public function getDefaultValue():?string
@@ -245,6 +246,7 @@ class ColumnToCode
             $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : '';
             return;
         }
+        $expectInteger = is_numeric($value) && stripos($this->column->dbType, 'int') !== false;
         switch (gettype($value)) {
             case 'integer':
                 $this->fluentParts['default'] = 'defaultValue(' . $value . ')';
@@ -289,9 +291,10 @@ class ColumnToCode
                 if ($isExpression) {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                 } else {
-                    $this->fluentParts['default'] = 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
+                    $this->fluentParts['default'] = $expectInteger
+                        ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                 }
-                $this->rawParts['default'] = self::wrapQuotes($value);
+                $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
                 if ($this->isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }

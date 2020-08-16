@@ -13,20 +13,20 @@ namespace <?= $namespace ?>;
 use Faker\Factory as FakerFactory;
 use Faker\UniqueGenerator;
 <?php if ($modelNamespace !== $namespace): ?>
-use <?= $modelNamespace ?>\<?= $model->name ?>;
+use <?= $modelNamespace ?>\<?= $model->getClassName() ?>;
 <?php endif; ?>
 
 /**
- * Fake data generator for <?= $model->name ?>
+ * Fake data generator for <?= $model->getClassName() ?>
 
  */
-class <?= $model->name ?>Faker
+class <?= $model->getClassName() ?>Faker
 {
     public function generateModel()
     {
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
-        $model = new <?= $model->name ?>();
+        $model = new <?= $model->getClassName() ?>();
 <?php foreach ($model->attributes as $attribute):
         if (!$attribute->fakerStub || $attribute->isReference()) {
             continue;

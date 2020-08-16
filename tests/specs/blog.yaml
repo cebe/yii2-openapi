@@ -70,6 +70,9 @@ components:
           maxLength: 20
           x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
           default: reader
+        flags:
+          type: integer
+          default: 0
         created_at:
           type: string
           format: date-time
