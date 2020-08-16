@@ -68,23 +68,24 @@ class UrlGenerator
         $parts = explode('/', trim($path, '/'));
         $controller = [];
         $action = [];
-        $params = false;
+        $hasParams = false;
         $actionParams = [];
         $idParam = null;
         foreach ($parts as $p => $part) {
             if (preg_match('/\{(.*)\}/', $part, $m)) {
-                $params = true;
-                $parts[$p] = '<' . $m[1] . '>';
-                if (isset($pathItem->parameters[$m[1]])) {
-                    $actionParams[$m[1]] = $pathItem->parameters[$m[1]];
+                $hasParams = true;
+                $paramName = $m[1];
+                $parts[$p] = '<' . $paramName . '>';
+                if (isset($pathItem->parameters[$paramName])) {
+                    $actionParams[$paramName] = $pathItem->parameters[$paramName];
                 } else {
-                    $actionParams[$m[1]] = null;
+                    $actionParams[$paramName] = null;
                 }
-                if ($idParam === null && preg_match('/\bid\b/i', Inflector::camel2id($m[1]))) {
-                    $idParam = $m[1];
+                if ($idParam === null && preg_match('/\bid\b/i', Inflector::camel2id($paramName))) {
+                    $idParam = $paramName;
                 }
                 // TODO add regex to param based on openAPI type
-            } elseif ($params) {
+            } elseif ($hasParams) {
                 $action[] = $part;
             } else {
                 $controller[] = Inflector::camel2id(Inflector::singularize($part));
@@ -99,24 +100,24 @@ class UrlGenerator
         foreach ($pathItem->getOperations() as $method => $operation) {
             switch ($method) {
                 case 'get':
-                    $a = $params ? 'view' : 'index';
+                    $actionName = $hasParams ? 'view' : 'index';
                     break;
                 case 'post':
-                    $a = 'create';
+                    $actionName = 'create';
                     break;
                 case 'patch':
                 case 'put':
-                    $a = 'update';
+                    $actionName = 'update';
                     break;
                 case 'delete':
-                    $a = 'delete';
+                    $actionName = 'delete';
                     break;
                 default:
-                    $a = "http-$method";
+                    $actionName = "http-$method";
                     break;
             }
-            $modelClass = $this->guessModelClass($operation, $a);
-            $responseWrapper = $this->findResponseWrapper($operation, $a, $modelClass);
+            $modelClass = self::guessModelClass($operation, $actionName);
+            $responseWrapper = self::findResponseWrapper($operation, $actionName, $modelClass);
             // fallback to known model class on same URL
             if ($modelClass === null && isset($this->knownModelClasses[$path])) {
                 $modelClass = $this->knownModelClasses[$path];
@@ -127,7 +128,7 @@ class UrlGenerator
                 'path' => $path,
                 'method' => strtoupper($method),
                 'pattern' => $pattern,
-                'route' => "$controller/$a$action",
+                'route' => "$controller/$actionName$action",
                 'actionParams' => $actionParams,
                 'idParam' => $idParam,
                 'openApiOperation' => $operation,
@@ -137,7 +138,7 @@ class UrlGenerator
         }
     }
 
-    private function guessModelClass(Operation $operation, $actionName)
+    public static function guessModelClass(Operation $operation, $actionName)
     {
         switch ($actionName) {
             case 'create':
@@ -152,7 +153,7 @@ class UrlGenerator
                         $requestBody = $requestBody->resolve();
                     }
                     foreach ($requestBody->content as $contentType => $content) {
-                        [$modelClass,] = $this->guessModelClassFromContent($content);
+                        [$modelClass,] = self::guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -176,7 +177,7 @@ class UrlGenerator
                         $successResponse = $successResponse->resolve();
                     }
                     foreach ($successResponse->content as $contentType => $content) {
-                        [$modelClass,] = $this->guessModelClassFromContent($content);
+                        [$modelClass,] = self::guessModelClassFromContent($content);
                         if ($modelClass !== null) {
                             return $modelClass;
                         }
@@ -187,7 +188,7 @@ class UrlGenerator
         }
     }
 
-    private function guessModelClassFromContent(MediaType $content):array
+    private static function guessModelClassFromContent(MediaType $content):array
     {
         /** @var $referencedSchema Schema */
         if ($content->schema instanceof Reference) {
@@ -255,7 +256,7 @@ class UrlGenerator
      * @param           $modelClass
      * @return null|array
      */
-    private function findResponseWrapper(Operation $operation, $actionName, $modelClass):?array
+    private static function findResponseWrapper(Operation $operation, $actionName, $modelClass):?array
     {
         if (!isset($operation->responses)) {
             return null;
@@ -268,7 +269,7 @@ class UrlGenerator
                 $successResponse = $successResponse->resolve();
             }
             foreach ($successResponse->content as $contentType => $content) {
-                [$detectedModelClass, $itemWrapper, $itemsWrapper] = $this->guessModelClassFromContent($content);
+                [$detectedModelClass, $itemWrapper, $itemsWrapper] = self::guessModelClassFromContent($content);
                 if (($itemWrapper !== null || $itemsWrapper !== null) && $detectedModelClass === $modelClass) {
                     return [$itemWrapper, $itemsWrapper];
                 }
