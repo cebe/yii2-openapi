@@ -95,8 +95,12 @@ class MigrationBuilder
         $this->migration = new MigrationModel($this->model, true);
         $this->uniqueColumns = $this->model->getUniqueColumnsList();
         $this->newColumns = $this->model->attributesToColumnSchema();
+        if (empty($this->newColumns)) {
+            return $this->migration;
+        }
         $builder = $this->recordBuilder;
         $tableName = $this->model->getTableAlias();
+
         $this->migration->addUpCode($builder->createTable($tableName, $this->newColumns, $this->uniqueColumns))
                         ->addDownCode($builder->dropTable($tableName));
         if ($this->isPostgres) {

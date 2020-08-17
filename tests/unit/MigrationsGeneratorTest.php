@@ -16,6 +16,15 @@ use function count;
 class MigrationsGeneratorTest extends TestCase
 {
 
+    public function testNoMigrations()
+    {
+        $this->prepareTempDir();
+        $this->mockApplication($this->mockDbSchemaAsEmpty());
+        $model = new DbModel(['name' => 'dummy', 'tableName' => 'dummy', 'attributes' => []]);
+        $generator = new MigrationsGenerator();
+        $migrations = $generator->generate([$model]);
+        self::assertEmpty($migrations);
+    }
     /**
      * @dataProvider simpleDbModelsProvider
      * @param array|DbModel[]        $dbModels
