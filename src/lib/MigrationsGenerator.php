@@ -49,7 +49,7 @@ class MigrationsGenerator extends Component
                 $this->migrations[$model->tableAlias] = $migration;
             }
         }
-        return $this->sortMigrationsByDeps();
+        return !empty($this->migrations) ? $this->sortMigrationsByDeps() : [];
     }
 
     /**
