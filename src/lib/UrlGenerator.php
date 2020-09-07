@@ -226,7 +226,7 @@ class UrlGenerator
      * @param           $modelClass
      * @return null|array
      */
-    private static function findResponseWrapper(Operation $operation, $modelClass):?array
+    public static function findResponseWrapper(Operation $operation, $modelClass):?array
     {
         if (!isset($operation->responses)) {
             return null;
