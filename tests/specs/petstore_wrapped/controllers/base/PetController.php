@@ -7,7 +7,7 @@ abstract class PetController extends \yii\rest\Controller
     public function actions()
     {
         return [
-            'index' => [
+            'list' => [
                 'class' => \yii\rest\IndexAction::class,
                 'modelClass' => \app\models\Pet::class,
                 'checkAccess' => [$this, 'checkAccess'],
@@ -31,7 +31,7 @@ abstract class PetController extends \yii\rest\Controller
         $result = parent::afterAction($action, $result);
         /** @var $serializer \yii\rest\Serializer */
         $serializer = \Yii::createObject($this->serializer);
-        if ($action->id === 'index') {
+        if ($action->id === 'list') {
             $serializer->collectionEnvelope = 'items';
             return $serializer->serialize($result);
         }

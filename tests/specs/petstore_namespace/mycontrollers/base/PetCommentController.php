@@ -30,8 +30,8 @@ abstract class PetCommentController extends \yii\rest\Controller
         // TODO implement checkAccess
     }
 
-    public function actionIndex()
+    public function actionList()
     {
-        // TODO implement actionIndex
+        // TODO implement actionList
     }
 }

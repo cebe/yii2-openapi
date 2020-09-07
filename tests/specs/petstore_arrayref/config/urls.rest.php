@@ -5,11 +5,11 @@
  * This file is auto generated.
  */
 return [
-    'GET pets' => 'pet/index',
+    'GET pets' => 'pet/list',
     'POST pets' => 'pet/create',
-    'GET pets/<petId>' => 'pet/view',
-    'DELETE pets/<petId>' => 'pet/delete',
-    'PATCH pets/<petId>' => 'pet/update',
+    'GET pets/<petId:[\w-]+>' => 'pet/view',
+    'DELETE pets/<petId:[\w-]+>' => 'pet/delete',
+    'PATCH pets/<petId:[\w-]+>' => 'pet/update',
     'pets' => 'pet/options',
-    'pets/<petId>' => 'pet/options',
+    'pets/<petId:[\w-]+>' => 'pet/options',
 ];

@@ -2,15 +2,39 @@
 
 namespace app\controllers\base;
 
-abstract class PetDetailController extends \yii\rest\Controller
+abstract class PostController extends \yii\rest\Controller
 {
     public function actions()
     {
         return [
+            'list' => [
+                'class' => \yii\rest\IndexAction::class,
+                'modelClass' => \app\models\Post::class,
+                'checkAccess' => [$this, 'checkAccess'],
+            ],
+            'view' => [
+                'class' => \yii\rest\ViewAction::class,
+                'modelClass' => \app\models\Post::class,
+                'checkAccess' => [$this, 'checkAccess'],
+            ],
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
             ],
         ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function afterAction($action, $result)
+    {
+        $result = parent::afterAction($action, $result);
+        /** @var $serializer \yii\rest\Serializer */
+        $serializer = \Yii::createObject($this->serializer);
+        if ($action->id === 'view') {
+            return ['post' => $serializer->serialize($result)];
+        }
+        return $serializer->serialize($result);
     }
 
     /**
@@ -28,10 +52,5 @@ abstract class PetDetailController extends \yii\rest\Controller
     public function checkAccess($action, $model = null, $params = [])
     {
         // TODO implement checkAccess
-    }
-
-    public function actionList()
-    {
-        // TODO implement actionList
     }
 }

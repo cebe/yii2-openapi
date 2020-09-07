@@ -22,6 +22,7 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
     </div>
     <div class="panel-body card-body">
         <?= $form->field($generator, 'controllerNamespace') ?>
+        <?= $form->field($generator, 'useJsonApi')->checkbox() ?>
     </div>
 </div>
 
