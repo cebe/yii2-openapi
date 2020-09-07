@@ -114,7 +114,9 @@ class UrlGenerator
                 'actionId'=>"$actionName$action",
                 'actionParams' => $actionParams,
                 'idParam' => $idParam,
-                'modelClass' => $modelClass !== null ? $this->modelNamespace . '\\' . $modelClass : null,
+                'modelClass' => $modelClass !== null
+                    ? $this->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
+                    : null,
                 'responseWrapper' => $responseWrapper,
             ]);
         }
