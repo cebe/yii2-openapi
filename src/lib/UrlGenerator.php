@@ -81,7 +81,7 @@ class UrlGenerator
         foreach ($pathItem->getOperations() as $method => $operation) {
             switch ($method) {
                 case 'get':
-                    $actionName = ($hasParams ? ( $lastPartIsParam? 'view': 'list') : 'list');
+                    $actionName = ($hasParams ? ($lastPartIsParam? 'view': 'list') : 'list');
                     break;
                 case 'post':
                     $actionName = 'create';
@@ -283,7 +283,7 @@ class UrlGenerator
                 } else {
                     $patternParts[$p] = '<' . $paramName . '>';
                 }
-            } elseif(!$hasParams) {
+            } elseif (!$hasParams) {
                 $controllerParts[] = Inflector::camel2id(Inflector::singularize($part));
                 $action = Inflector::camel2id(Inflector::singularize($part));
             }
