@@ -2,7 +2,7 @@
 
 namespace app\controllers\base;
 
-abstract class PetDetailController extends \yii\rest\Controller
+abstract class CommentController extends \yii\rest\Controller
 {
     public function actions()
     {
@@ -30,8 +30,28 @@ abstract class PetDetailController extends \yii\rest\Controller
         // TODO implement checkAccess
     }
 
-    public function actionList()
+    public function actionListForPost($postId)
     {
-        // TODO implement actionList
+        // TODO implement actionListForPost
+    }
+
+    public function actionCreateForPost($postId)
+    {
+        // TODO implement actionCreateForPost
+    }
+
+    public function actionViewForPost($postSlug, $id)
+    {
+        // TODO implement actionViewForPost
+    }
+
+    public function actionDeleteForPost($postSlug, $id)
+    {
+        // TODO implement actionDeleteForPost
+    }
+
+    public function actionUpdateForPost($postSlug, $id)
+    {
+        // TODO implement actionUpdateForPost
     }
 }

@@ -39,6 +39,120 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /posts/{id}:
+    parameters:
+      -   name: id
+          in: path
+          required: true
+          description: The id of the post to retrieve
+          schema:
+            type: integer
+    get:
+      summary: Info for a specific post
+      operationId: showPostById
+      tags:
+        - posts
+      responses:
+        '200':
+          $ref: "#/components/responses/Post"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /posts/{postId}/comments:
+    parameters:
+      -   name: postId
+          in: path
+          required: true
+          description: The id of the post to retrieve
+          schema:
+            type: integer
+    get:
+      summary: Info for a specific post
+      operationId: showPostComments
+      tags:
+        - comments
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comments"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      summary: Create a comment for post
+      operationId: createPostComment
+      tags:
+        - comments
+      responses:
+        '201':
+          description: Null response
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /posts/{postSlug}/comment/{id}:
+    parameters:
+      -   name: postSlug
+          in: path
+          required: true
+          description: The slug of the post to retrieve
+          schema:
+            type: string
+      -   name: id
+          in: path
+          required: true
+          description: The id of the comment to retrieve
+          schema:
+            type: integer
+    get:
+      summary: Info for a specific comment
+      operationId: showPostComment
+      tags:
+        - comments
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      summary: update a specific pet
+      operationId: updatePostCommentById
+      tags:
+        - comments
+      responses:
+        '200':
+          description: The updated comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+    delete:
+      summary: delete a specific comment
+      operationId: deletePostCommentById
+      tags:
+        - comments
+      responses:
+        '204':
+          description: successfully deleted comment
 components:
   schemas:
     User:
@@ -245,3 +359,13 @@ components:
           format: int32
         message:
           type: string
+  responses:
+    Post:
+      description: Expected response to a valid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              post:
+                $ref: "#/components/schemas/Post"

@@ -8,7 +8,7 @@
 echo '<?php';
 
 $modelActions = [
-    'list' => [
+    'index' => [
         'class' => yii\rest\IndexAction::class,
     ],
     'view' => [

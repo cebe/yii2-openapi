@@ -7,7 +7,7 @@ abstract class PetController extends \yii\rest\Controller
     public function actions()
     {
         return [
-            'index' => [
+            'list' => [
                 'class' => \yii\rest\IndexAction::class,
                 'modelClass' => \app\mymodels\Pet::class,
                 'checkAccess' => [$this, 'checkAccess'],

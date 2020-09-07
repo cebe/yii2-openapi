@@ -1,8 +1,8 @@
 <?php
 return [
     'openApiPath' => '@specs/blog_v2.yaml',
-    'generateUrls' => false,
-    'generateControllers' => false,
+    'generateUrls' => true,
+    'generateControllers' => true,
     'generateModels' => true,
     'generateMigrations' => true,
     'excludeModels' => [

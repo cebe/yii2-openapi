@@ -10,7 +10,7 @@ namespace cebe\yii2openapi\generator;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\items\DbModel;
-use cebe\yii2openapi\lib\items\UrlRule;
+use cebe\yii2openapi\lib\items\RouteData;
 use cebe\yii2openapi\lib\MigrationsGenerator;
 use cebe\yii2openapi\lib\PathAutoCompletion;
 use cebe\yii2openapi\lib\SchemaToDatabase;
@@ -55,6 +55,11 @@ class ApiGenerator extends Generator
      * @var bool whether to generate Controllers from the spec.
      */
     public $generateControllers = true;
+
+    /**
+     * @var bool use actions that return responses by JsonApi spec instead of default yii rest
+    */
+    public $useJsonApi = false;
 
     /**
      * @var string namespace to create controllers in. This must be resolvable via Yii alias.
@@ -129,7 +134,7 @@ class ApiGenerator extends Generator
     private $preparedModels;
 
     /**
-     * @var UrlRule[]
+     * @var RouteData[]
     **/
     private $preparedUrls;
 
@@ -181,6 +186,7 @@ class ApiGenerator extends Generator
                         'generateModelFaker',
                         'generateControllers',
                         'generateModelsOnlyXTable',
+                        'useJsonApi'
                     ],
                     'boolean',
                 ],
@@ -270,6 +276,7 @@ class ApiGenerator extends Generator
                 'migrationPath' => 'Path to create migration files in.',
                 'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
                 'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
+                'useJsonApi' => 'use actions that return responses followed JsonApi specification'
             ]
         );
     }
@@ -292,7 +299,7 @@ class ApiGenerator extends Generator
             $required[] = 'urls.php';
         }
         if ($this->generateControllers) {
-            $required[] = 'controller.php';
+            $required[] = $this->useJsonApi?'controller_json.php' :'controller.php';
         }
         if ($this->generateModels) {
             $required[] = 'dbmodel.php';
@@ -359,10 +366,7 @@ class ApiGenerator extends Generator
         $optionsUrls = [];
         foreach ($this->prepareUrls() as $urlRule) {
             $urls["{$urlRule->method} {$urlRule->pattern}"] = $urlRule->route;
-            // add options action
-            $parts = explode('/', $urlRule->route);
-            unset($parts[count($parts) - 1]);
-            $optionsUrls[$urlRule->pattern] = implode('/', $parts) . '/options';
+            $optionsUrls[$urlRule->pattern] = $urlRule->getOptionsRoute();
         }
         $urls = array_merge($urls, $optionsUrls);
         $file = new CodeFile(Yii::getAlias($this->urlConfigFile), $this->render('urls.php', ['urls' => $urls]));
@@ -382,12 +386,13 @@ class ApiGenerator extends Generator
         $controllers = $this->prepareControllers();
         $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
         $controllerPath = $this->getPathFromNamespace($controllerNamespace);
+        $templateName = $this->useJsonApi? 'controller_json.php': 'controller.php';
         foreach ($controllers as $controller => $actions) {
             $className = Inflector::id2camel($controller) . 'Controller';
             $files[] = new CodeFile(
                 Yii::getAlias($controllerPath . "/base/$className.php"),
                 $this->render(
-                    'controller.php',
+                    $templateName,
                     [
                         'className' => $className,
                         'namespace' => $controllerNamespace . '\\base',
@@ -581,7 +586,7 @@ class ApiGenerator extends Generator
     }
 
     /**
-     * @return array|\cebe\yii2openapi\lib\items\UrlRule[]
+     * @return array|\cebe\yii2openapi\lib\items\RouteData[]
      * @throws \yii\base\InvalidConfigException
      * @throws \Exception
      */
@@ -604,9 +609,8 @@ class ApiGenerator extends Generator
 
         $controllers = [];
         foreach ($urls as $url) {
-            [$controllerName, $id] = explode('/', $url->route, 2);
-            $controllers[$controllerName][] = [
-                'id' => $id,
+            $controllers[$url->controllerId][] = [
+                'id' => $url->actionId,
                 'params' => array_keys($url->actionParams),
                 'idParam' => $url->idParam ?? null,
                 'modelClass' => $url->modelClass,

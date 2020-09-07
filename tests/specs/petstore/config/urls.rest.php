@@ -5,13 +5,13 @@
  * This file is auto generated.
  */
 return [
-    'GET pets' => 'pet/index',
+    'GET pets' => 'pet/list',
     'POST pets' => 'pet/create',
     'GET pets/<id>' => 'pet/view',
     'DELETE pets/<id>' => 'pet/delete',
     'PATCH pets/<id>' => 'pet/update',
-    'GET petComments' => 'pet-comment/index',
-    'GET pet-details' => 'pet-detail/index',
+    'GET petComments' => 'pet-comment/list',
+    'GET pet-details' => 'pet-detail/list',
     'pets' => 'pet/options',
     'pets/<id>' => 'pet/options',
     'petComments' => 'pet-comment/options',
