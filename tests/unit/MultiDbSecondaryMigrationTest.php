@@ -102,6 +102,9 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
             return '@app' . substr($file, strlen(Yii::getAlias('@app')));
         },
             FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]));
+        $actualFiles = array_filter($actualFiles, function($file){
+            return strpos($file, 'migrations') !== false;
+        });
         \sort($actualFiles);
         return $actualFiles;
     }
