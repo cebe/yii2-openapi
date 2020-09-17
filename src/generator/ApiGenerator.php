@@ -90,6 +90,12 @@ class ApiGenerator extends Generator
     public $fakerNamespace = 'app\\models';
 
     /**
+     * @var string namespace to create fractal transformers in. (Only when generatedControllers and useJsonApi checked)
+     * Defaults to `app\transformers`.
+     */
+    public $transformerNamespace = 'app\\transformers';
+
+    /**
      * @var array List of model names to exclude.
      */
     public $excludeModels = [];
@@ -171,6 +177,7 @@ class ApiGenerator extends Generator
                         'fakerNamespace',
                         'migrationPath',
                         'migrationNamespace',
+                        'transformerNamespace',
                     ],
                     'filter',
                     'filter' => 'trim',
@@ -222,7 +229,13 @@ class ApiGenerator extends Generator
                         return (bool)$model->generateMigrations;
                     },
                 ],
-
+                [
+                    ['transformersNamespace'],
+                    'required',
+                    'when' => function (ApiGenerator $model) {
+                        return (bool)$model->generateControllers && (bool) $model->useJsonApi;
+                    },
+                ],
             ]
         );
     }
@@ -276,7 +289,8 @@ class ApiGenerator extends Generator
                 'migrationPath' => 'Path to create migration files in.',
                 'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
                 'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
-                'useJsonApi' => 'use actions that return responses followed JsonApi specification'
+                'useJsonApi' => 'use actions that return responses followed JsonApi specification',
+                'transformerNamespace' => 'Namespace to create fractal transformers'
             ]
         );
     }

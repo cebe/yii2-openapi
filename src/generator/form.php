@@ -22,7 +22,10 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
     </div>
     <div class="panel-body card-body">
         <?= $form->field($generator, 'controllerNamespace') ?>
-        <?= $form->field($generator, 'useJsonApi')->checkbox() ?>
+        <?= $form->field($generator, 'useJsonApi')->checkbox(['checked' => false]) ?>
+        <div id="json_api_opts" class="hidden">
+            <?= $form->field($generator, 'transformerNamespace') ?>
+        </div>
     </div>
 </div>
 
@@ -60,13 +63,16 @@ $this->registerCss(
     .panel-heading .form-group label,
     .panel-heading .form-group .help-block {
         margin-bottom: 0;
-    } 
+    }
+    .hidden {
+       display: none;
+    }
 CSS
 );
 
 $this->registerJs(
     <<<JS
-    
+
     togglePanel = function() {
         $(this).parents('.panel').find('.panel-body input').prop('disabled', !this.checked);
         $(this).parents('.panel').find('.panel-body label').prop('disabled', !this.checked);
@@ -76,8 +82,15 @@ $this->registerJs(
             $(this).parents('.panel').find('.panel-body').slideUp();
         }
     };
+    toggleJsonApiOpts = function () {
+        if(this.checked){
+            $('#json_api_opts').removeClass('hidden');
+        }else{
+             $('#json_api_opts').addClass('hidden');
+        }
+    }
     $('.panel-heading .form-group input[type=checkbox]').each(togglePanel);
     $('.panel-heading .form-group input[type=checkbox]').on('click', togglePanel);
-    
+    $('#apigenerator-usejsonapi').on('click', toggleJsonApiOpts);
 JS
 );
