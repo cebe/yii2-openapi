@@ -149,7 +149,7 @@ final class FractalAction extends BaseObject
 
     public function getResourceKey():string
     {
-        if($this->type === RouteData::TYPE_RELATIONSHIP){
+        if ($this->type === RouteData::TYPE_RELATIONSHIP) {
             return Inflector::pluralize(Inflector::camel2id($this->relatedModel));
         }
         if ($this->modelName) {
