@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
+use yii\helpers\Inflector;
 
 /**
  * @property-read string                                                $name
@@ -21,7 +22,10 @@ class Transformer extends BaseObject
 {
     /**@var \cebe\yii2openapi\lib\items\DbModel**/
     public $dbModel;
-
+    /**
+     * @var bool
+     */
+    private $singularResourceKey;
     /**
      * @var string
      */
@@ -32,11 +36,16 @@ class Transformer extends BaseObject
      */
     private $modelNamespace;
 
-    public function __construct(DbModel $dbModel, string $namespace, string $modelNamespace)
-    {
+    public function __construct(
+        DbModel $dbModel,
+        string $namespace,
+        string $modelNamespace,
+        bool $singularResourceKey = false
+    ) {
         $this->dbModel = $dbModel;
         $this->namespace = $namespace;
         $this->modelNamespace = $modelNamespace;
+        $this->singularResourceKey = $singularResourceKey;
         parent::__construct([]);
     }
 
@@ -76,5 +85,10 @@ class Transformer extends BaseObject
     public function getAvailableRelations(): array
     {
         return \array_keys($this->dbModel->relations);
+    }
+
+    public function makeResourceKey(string $value): string
+    {
+        return $this->singularResourceKey ? Inflector::singularize($value): Inflector::pluralize($value);
     }
 }

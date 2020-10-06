@@ -38,9 +38,9 @@ class <?=$transformer->name?> extends TransformerAbstract
          $relation = $model-><?=Inflector::variablize($relation->getName())?>;
          $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
 <?php if ($relation->isHasOne()):?>
-         return $this->item($relation, $transformer, '<?=$relation->getClassKey()?>');
+         return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php else:?>
-         return $this->collection($relation, $transformer, '<?=$relation->getClassKey()?>');
+         return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php endif;?>
     }
 <?php endforeach;?>

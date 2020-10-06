@@ -147,7 +147,7 @@ class AttributeRelation
 
     public function getClassKey():string
     {
-        return Inflector::pluralize(Inflector::camel2id($this->getClassName()));
+        return Inflector::camel2id($this->getClassName());
     }
 
     /**

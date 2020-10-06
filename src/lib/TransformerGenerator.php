@@ -32,16 +32,23 @@ class TransformerGenerator
      */
     private $usedTransformers;
 
+    /**
+     * @var bool
+     */
+    private $singularResourceKeys;
+
     public function __construct(
         array $models,
         array $usedTransformers,
         string $transformerNamespace,
-        string $modelNamespace
+        string $modelNamespace,
+        bool $singularResourceKeys
     ) {
         $this->models = $models;
         $this->transformerNamespace = $transformerNamespace;
         $this->modelNamespace = $modelNamespace;
         $this->usedTransformers = $usedTransformers;
+        $this->singularResourceKeys = $singularResourceKeys;
     }
 
     /**
@@ -50,7 +57,7 @@ class TransformerGenerator
     public function generate():array
     {
         $transformers = \array_map(function (DbModel $model) {
-            return new Transformer($model, $this->transformerNamespace, $this->modelNamespace);
+            return new Transformer($model, $this->transformerNamespace, $this->modelNamespace, $this->singularResourceKeys);
         }, $this->models);
         return \array_filter($transformers, function (Transformer $transformer) {
             return \in_array($transformer->getFQN(), $this->usedTransformers);

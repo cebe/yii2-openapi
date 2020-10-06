@@ -68,6 +68,11 @@ class ApiGenerator extends Generator
     public $useJsonApi = false;
 
     /**
+     * @var bool if true singular resource keys will be used /post/{id}, plural by default
+     */
+    public $singularResourceKeys = false;
+
+    /**
      * @var string namespace to create controllers in. This must be resolvable via Yii alias.
      * Defaults to `null` which means to use the application controller namespace: `Yii::$app->controllerNamespace`.
      */
@@ -205,7 +210,8 @@ class ApiGenerator extends Generator
                         'generateControllers',
                         'generateModelsOnlyXTable',
                         'skipUnderscoredSchemas',
-                        'useJsonApi'
+                        'useJsonApi',
+                        'singularResourceKeys'
                     ],
                     'boolean',
                 ],
@@ -303,6 +309,7 @@ class ApiGenerator extends Generator
                 'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
                 'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
                 'useJsonApi' => 'use actions that return responses followed JsonApi specification',
+                'singularResourceKeys' => 'Use singular resource keys (/post/{id}) (Plural by defaut : /posts/{id})',
                 'transformerNamespace' => 'Namespace to create fractal transformers'
             ]
         );
@@ -648,7 +655,12 @@ PHP;
     {
         if (!$this->preparedActions) {
             $generator = $this->useJsonApi
-                ? new FractalGenerator($this->getOpenApi(), $this->modelNamespace, $this->transformerNamespace)
+                ? new FractalGenerator(
+                    $this->getOpenApi(),
+                    $this->modelNamespace,
+                    $this->transformerNamespace,
+                    $this->singularResourceKeys
+                )
                 : new UrlGenerator($this->getOpenApi(), $this->modelNamespace);
             $this->preparedActions = $generator->generate();
         }
@@ -702,7 +714,8 @@ PHP;
             $models,
             $usedTransformers,
             $this->transformerNamespace,
-            $this->modelNamespace
+            $this->modelNamespace,
+            $this->singularResourceKeys
         );
         return $generator->generate();
     }

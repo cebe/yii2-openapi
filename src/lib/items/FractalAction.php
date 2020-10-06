@@ -64,6 +64,8 @@ final class FractalAction extends BaseObject
     /**@var string|null */
     public $parentIdParam;
 
+    /**@var bool */
+    public $singularResourceKey = false;
     /**
      * For relationships only - name of related model
      * @var string
@@ -149,13 +151,16 @@ final class FractalAction extends BaseObject
 
     public function getResourceKey():string
     {
+        $wrapper = function ($val) {
+            return $this->singularResourceKey ? Inflector::singularize($val): Inflector::pluralize($val);
+        };
         if ($this->type === RouteData::TYPE_RELATIONSHIP) {
-            return Inflector::pluralize(Inflector::camel2id($this->relatedModel));
+            return $wrapper(Inflector::camel2id($this->relatedModel));
         }
         if ($this->modelName) {
-            return Inflector::pluralize(Inflector::camel2id($this->modelName));
+            return $wrapper(Inflector::camel2id($this->modelName));
         }
-        return Inflector::pluralize(Inflector::camel2id($this->controllerId));
+        return $wrapper(Inflector::camel2id($this->controllerId));
     }
 
     public function getRelationName(): string

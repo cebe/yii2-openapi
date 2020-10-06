@@ -21,10 +21,20 @@ class FractalGenerator extends UrlGenerator
      */
     private $transformerNamespace;
 
-    public function __construct(OpenApi $openApi, string $modelNamespace, string $transformerNamespace)
-    {
+    /**
+     * @var bool
+     */
+    private $singularResourceKeys;
+
+    public function __construct(
+        OpenApi $openApi,
+        string $modelNamespace,
+        string $transformerNamespace,
+        bool $singularResourceKeys = false
+    ) {
         parent::__construct($openApi, $modelNamespace);
         $this->transformerNamespace = $transformerNamespace;
+        $this->singularResourceKeys = $singularResourceKeys;
     }
 
     /**
@@ -68,6 +78,7 @@ class FractalGenerator extends UrlGenerator
         }
 
         return new FractalAction([
+            'singularResourceKey'=> $this->singularResourceKeys,
             'type' => $routeData->type,
             'id' => $routeData->isNonCrudAction()?"{$actionType}-{$routeData->action}":"$actionType{$routeData->action}",
             'controllerId' => $controllerId,

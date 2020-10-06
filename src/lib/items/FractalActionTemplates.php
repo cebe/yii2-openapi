@@ -12,7 +12,6 @@ use insolita\fractal\actions\CreateRelationshipAction;
 use insolita\fractal\actions\DeleteAction;
 use insolita\fractal\actions\DeleteRelationshipAction;
 use insolita\fractal\actions\ListAction;
-use insolita\fractal\actions\ListRelationshipAction;
 use insolita\fractal\actions\UpdateAction;
 use insolita\fractal\actions\UpdateRelationshipAction;
 use insolita\fractal\actions\ViewAction;
