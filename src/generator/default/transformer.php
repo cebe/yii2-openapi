@@ -28,7 +28,7 @@ class <?=$transformer->name?> extends TransformerAbstract
 
      public function transform(<?=$transformer->dbModel->getClassName()?> $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
 <?php if ($transformer->shouldIncludeRelations()):?>
