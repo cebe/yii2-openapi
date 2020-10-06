@@ -67,7 +67,7 @@ class SchemaResponseResolver
                     $content->schema instanceof Reference ? $content->schema->resolve() : $content->schema;
                 if (self::isObjectSchema($responseSchema) && isset($responseSchema->properties['data'])) {
                     $dataSchema = $responseSchema->properties['data'];
-                    if($dataSchema instanceof Reference){
+                    if ($dataSchema instanceof Reference) {
                         $dataSchema = $dataSchema->resolve();
                     }
                     if (self::isArraySchemaWithRefItems($dataSchema)) {
