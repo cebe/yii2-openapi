@@ -28,7 +28,7 @@ class SchemaResponseResolver
 
     protected static function isObjectSchema($schema): bool
     {
-        return $schema->type === null || $schema->type === 'object';
+        return !isset($schema->type) || $schema->type === null || $schema->type === 'object';
     }
 
     protected static function isArraySchemaWithRefItems($schema): bool
@@ -67,6 +67,9 @@ class SchemaResponseResolver
                     $content->schema instanceof Reference ? $content->schema->resolve() : $content->schema;
                 if (self::isObjectSchema($responseSchema) && isset($responseSchema->properties['data'])) {
                     $dataSchema = $responseSchema->properties['data'];
+                    if($dataSchema instanceof Reference){
+                        $dataSchema = $dataSchema->resolve();
+                    }
                     if (self::isArraySchemaWithRefItems($dataSchema)) {
                         $ref = $dataSchema->items->resolve();
                         if (!isset($ref->properties['relationships'])) {
@@ -79,7 +82,7 @@ class SchemaResponseResolver
                         return isset($relationSchema->properties) ? array_keys($relationSchema->properties) : [];
                     }
                     if (self::isObjectSchema($dataSchema)) {
-                        $ref = $dataSchema->resolve();
+                        $ref = $dataSchema;
                         if (!isset($ref->properties['relationships'])) {
                             continue;
                         }
