@@ -70,7 +70,7 @@ abstract class PetController extends \yii\rest\Controller
      * If the data model is not found, a 404 HTTP exception will be raised.
      * @param string $id the ID of the model to be loaded.
      * @return \app\models\Pet the model found
-     * @throws NotFoundHttpException if the model cannot be found.
+     * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
     public function findPetModel($id)
     {
@@ -78,6 +78,6 @@ abstract class PetController extends \yii\rest\Controller
         if ($model !== null) {
             return $model;
         }
-        throw new NotFoundHttpException("Object not found: $id");
+        throw new \yii\web\NotFoundHttpException("Object not found: $id");
     }
 }

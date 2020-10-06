@@ -53,4 +53,19 @@ abstract class PostController extends \yii\rest\Controller
     {
         // TODO implement checkAccess
     }
+
+    public function actionViewRelatedCategory($id)
+    {
+        // TODO implement actionViewRelatedCategory
+    }
+
+    public function actionListRelatedComments($id)
+    {
+        // TODO implement actionListRelatedComments
+    }
+
+    public function actionViewForCategory($categoryId, $id)
+    {
+        // TODO implement actionViewForCategory
+    }
 }

@@ -8,6 +8,7 @@ use Yii;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\helpers\FileHelper;
+use yii\helpers\VarDumper;
 use function array_filter;
 use function getenv;
 use function strpos;

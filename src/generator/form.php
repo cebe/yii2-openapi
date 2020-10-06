@@ -36,6 +36,8 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
     <div class="panel-body card-body">
         <?= $form->field($generator, 'modelNamespace') ?>
         <?= $form->field($generator, 'generateModelFaker')->checkbox() ?>
+        <?= $form->field($generator, 'generateModelsOnlyXTable')->checkbox() ?>
+        <?= $form->field($generator, 'skipUnderscoredSchemas')->checkbox() ?>
     </div>
 </div>
 

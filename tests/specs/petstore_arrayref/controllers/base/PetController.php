@@ -53,7 +53,7 @@ abstract class PetController extends \yii\rest\Controller
         $this->checkAccess('delete', $model);
 
         if ($model->delete() === false) {
-            throw new ServerErrorHttpException('Failed to delete the object for unknown reason.');
+            throw new \yii\web\ServerErrorHttpException('Failed to delete the object for unknown reason.');
         }
 
         \Yii::$app->response->setStatusCode(204);
@@ -66,7 +66,7 @@ abstract class PetController extends \yii\rest\Controller
 
         $model->load(Yii::$app->getRequest()->getBodyParams(), '');
         if ($model->save() === false && !$model->hasErrors()) {
-            throw new ServerErrorHttpException('Failed to update the object for unknown reason.');
+            throw new \yii\web\ServerErrorHttpException('Failed to update the object for unknown reason.');
         }
 
         return $model;
@@ -77,7 +77,7 @@ abstract class PetController extends \yii\rest\Controller
      * If the data model is not found, a 404 HTTP exception will be raised.
      * @param string $id the ID of the model to be loaded.
      * @return \app\models\Pet the model found
-     * @throws NotFoundHttpException if the model cannot be found.
+     * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
     public function findPetModel($id)
     {
@@ -85,6 +85,6 @@ abstract class PetController extends \yii\rest\Controller
         if ($model !== null) {
             return $model;
         }
-        throw new NotFoundHttpException("Object not found: $id");
+        throw new \yii\web\NotFoundHttpException("Object not found: $id");
     }
 }

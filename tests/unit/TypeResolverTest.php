@@ -2,7 +2,7 @@
 
 namespace tests\unit;
 
-use cebe\yii2openapi\lib\TypeResolver;
+use cebe\yii2openapi\lib\SchemaTypeResolver;
 use tests\TestCase;
 use yii\db\Schema as YiiDbSchema;
 use cebe\openapi\spec\Schema;
@@ -17,7 +17,7 @@ class TypeResolverTest extends TestCase
      */
     public function testResolveDbType(Schema $property, $isPrimary, $expected):void
     {
-        self::assertEquals($expected, TypeResolver::schemaToDbType($property, $isPrimary));
+        self::assertEquals($expected, SchemaTypeResolver::schemaToDbType($property, $isPrimary));
     }
 
     public function forDbTypeDataProvider():array
@@ -48,7 +48,7 @@ class TypeResolverTest extends TestCase
      */
     public function testResolvePhpType(Schema $property, string $expected):void
     {
-        self::assertEquals($expected, TypeResolver::schemaToPhpType($property));
+        self::assertEquals($expected, SchemaTypeResolver::schemaToPhpType($property));
     }
 
     public function forPhpTypeDataProvider():array

@@ -6,7 +6,7 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\lib\FakerStubResolver;
-use cebe\yii2openapi\lib\TypeResolver;
+use cebe\yii2openapi\lib\SchemaTypeResolver;
 use cebe\yii2openapi\lib\items\Attribute;
 use tests\TestCase;
 use Yii;
@@ -51,8 +51,8 @@ class FakerStubResolverTest extends TestCase
             ],
             [
                 (new Attribute('doubleval'))
-                    ->setPhpType(TypeResolver::schemaToPhpType($schema->properties['doubleval']))
-                    ->setDbType(TypeResolver::schemaToDbType($schema->properties['doubleval'])),
+                    ->setPhpType(SchemaTypeResolver::schemaToPhpType($schema->properties['doubleval']))
+                    ->setDbType(SchemaTypeResolver::schemaToDbType($schema->properties['doubleval'])),
                 $schema->properties['doubleval'],
                 '$faker->randomFloat()',
             ],

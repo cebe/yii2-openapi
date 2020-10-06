@@ -1,119 +1,36 @@
 <?php
+use cebe\yii2openapi\lib\items\FractalAction;
+
 /**
- * @var string $namespace
- * @var string $className
- * @var array $actions
+ * @var string                                            $namespace
+ * @var string                                            $className
+ * @var array|\cebe\yii2openapi\lib\items\FractalAction[] $actions
  **/
 
-echo '<?php';
-
-$modelActions = [
-    'index' => [
-        'class' => yii\rest\IndexAction::class,
-    ],
-    'view' => [
-        'class' => yii\rest\ViewAction::class,
-        'implementation' => <<<'PHP'
-        $model = $this->findModel($id);
-        $this->checkAccess(ACTION_ID, $model);
-        return $model;
-PHP
-    ],
-    'create' => [
-        'class' => yii\rest\CreateAction::class,
-    ],
-    'update' => [
-        'class' => yii\rest\UpdateAction::class,
-        'implementation' => <<<'PHP'
-        $model = $this->findModel($id);
-        $this->checkAccess(ACTION_ID, $model);
-
-        $model->load(Yii::$app->getRequest()->getBodyParams(), '');
-        if ($model->save() === false && !$model->hasErrors()) {
-            throw new ServerErrorHttpException('Failed to update the object for unknown reason.');
-        }
-
-        return $model;
-PHP
-    ],
-    'delete' => [
-        'class' => yii\rest\DeleteAction::class,
-        'implementation' => <<<'PHP'
-        $model = $this->findModel($id);
-        $this->checkAccess(ACTION_ID, $model);
-
-        if ($model->delete() === false) {
-            throw new ServerErrorHttpException('Failed to delete the object for unknown reason.');
-        }
-
-        \Yii::$app->response->setStatusCode(204);
-PHP
-    ],
-];
-$findModel = [];
-
-?>
-
+$findModels = [];
+$findModelsFor = [];
+echo '<?php';?>
 
 namespace <?= $namespace ?>;
 
-abstract class <?= $className ?> extends \yii\rest\Controller
+use insolita\fractal\JsonApiController;
+use Yii;
+
+abstract class <?= $className ?> extends JsonApiController
 {
     public function actions()
     {
         return [
-<?php
-
-foreach ($actions as $action):
-    if (isset($modelActions[$action['id']], $action['modelClass']) && ($action['idParam'] === null || $action['idParam'] === 'id')): ?>
-            <?= var_export($action['id'], true) ?> => [
-                'class' => \<?= $modelActions[$action['id']]['class'] ?>::class,
-                'modelClass' => <?= '\\' . $action['modelClass'] . '::class' ?>,
-                'checkAccess' => [$this, 'checkAccess'],
-            ],
-<?php endif;
-    // TODO model scenario for 'create' and 'update'
-endforeach;
-    ?>
+<?php foreach ($actions as $action):?>
+<?php if ($action->shouldUseTemplate()): ?>
+            <?=$action->template?>,
+<?php endif;?>
+<?php endforeach;?>
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
             ],
         ];
     }
-<?php
-    $serializerConfigs = [];
-    foreach ($actions as $action) {
-        if (isset($modelActions[$action['id']]) && !empty($action['responseWrapper'])) {
-            if (!empty($action['responseWrapper']['item'])) {
-                $serializerConfigs[] = '        if ($action->id === ' . var_export($action['id'], true) . ") {\n"
-                    . '            return ['.var_export($action['responseWrapper']['item'], true).' => $serializer->serialize($result)];' . "\n"
-                    . '        }';
-            } elseif (!empty($action['responseWrapper']['list'])) {
-                $serializerConfigs[] = '        if ($action->id === ' . var_export($action['id'], true) . ") {\n"
-                    . '            $serializer->collectionEnvelope = ' . var_export(
-                        $action['responseWrapper']['list'],
-                        true
-                    ) . ";\n"
-                    . '            return $serializer->serialize($result);' . "\n"
-                    . '        }';
-            }
-        }
-    }
-    if (!empty($serializerConfigs)): ?>
-
-    /**
-     * {@inheritdoc}
-     */
-    public function afterAction($action, $result)
-    {
-        $result = parent::afterAction($action, $result);
-        /** @var $serializer \yii\rest\Serializer */
-        $serializer = \Yii::createObject($this->serializer);
-<?= implode("\n", $serializerConfigs) ?>
-
-        return $serializer->serialize($result);
-    }
-<?php endif; ?>
 
     /**
      * Checks the privilege of the current user.
@@ -131,49 +48,47 @@ endforeach;
     {
         // TODO implement checkAccess
     }
-<?php
-    foreach ($actions as $action):
-        if (isset($modelActions[$action['id']], $action['modelClass'])) {
-            if ($action['idParam'] === null || $action['idParam'] === 'id') {
-                continue;
-            }
-            if (isset($modelActions[$action['id']]['implementation'])) {
-                $implementation = $modelActions[$action['id']]['implementation'];
-                $findModel[$action['modelClass']] = 'find' . \yii\helpers\StringHelper::basename($action['modelClass']) . 'Model';
-                $implementation = str_replace('findModel', $findModel[$action['modelClass']], $implementation);
-                $implementation = str_replace('$id', '$'.$action['idParam'], $implementation);
-                $implementation = str_replace('ACTION_ID', var_export($action['id'], true), $implementation);
-            }
-        }
+<?php foreach ($actions as $action): ?>
+<?php if (!$action->shouldUseTemplate()):?>
 
-        $actionName = 'action' . \yii\helpers\Inflector::id2camel($action['id']);
-        $actionParams = implode(', ', array_map(function ($p) {
-            return "\$$p";
-        }, $action['params']));
-        ?>
-
-    public function <?= $actionName ?>(<?= $actionParams ?>)
+    public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>)
     {
-<?= $implementation ?? '        // TODO implement ' . $actionName ?>
+<?=$action->getImplementation()?>
 
     }
-<?php endforeach; ?>
-<?php foreach ($findModel as $modelName => $methodName): ?>
-
+<?php endif;?>
+<?php endforeach;?>
+<?php foreach ($actions as $action): ?>
+<?php if ($action->shouldUseCustomFindModel() && !in_array($action->findModelMethodName, $findModels, true)):?>
+<?php $findModels[] = $action->findModelMethodName;?>
     /**
-     * Returns the <?= \yii\helpers\StringHelper::basename($modelName) ?> model based on the primary key given.
+     * Returns the <?= $action->baseModelName ?> model based on the primary key given.
      * If the data model is not found, a 404 HTTP exception will be raised.
      * @param string $id the ID of the model to be loaded.
-     * @return \<?= $modelName ?> the model found
-     * @throws NotFoundHttpException if the model cannot be found.
+     * @return \<?= $action->modelFqn ?> the model found
+     * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function <?= $methodName ?>($id)
+    public function <?= $action->findModelMethodName ?>($id)
     {
-        $model = \<?= $modelName ?>::findOne($id);
-        if ($model !== null) {
-            return $model;
+        $model = \<?= $action->modelFqn ?>::findOne($id);
+        if (!$model){
+            throw new \yii\web\NotFoundHttpException("Object not found: $id");
         }
-        throw new NotFoundHttpException("Object not found: $id");
+        return $model;
     }
-<?php endforeach; ?>
+<?php endif;?>
+<?php if ($action->shouldUseCustomFindForModel() && !in_array($action->findModelForMethodName, $findModelsFor, true)):?>
+<?php $findModelsFor[] = $action->findModelForMethodName;?>
+
+    public function <?= $action->findModelForMethodName ?>($id, $parentId)
+    {
+        $model = \<?= $action->modelFqn ?>::findOne(['id' => $id, '<?=$action->parentIdAttribute?>' => $parentId]);
+        if (!$model){
+            throw new \yii\web\NotFoundHttpException("Object not found: $id");
+        }
+        return $model;
+    }
+<?php endif;?>
+<?php endforeach;?>
 }
+

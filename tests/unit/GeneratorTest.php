@@ -26,6 +26,7 @@ class GeneratorTest extends TestCase
     public function testGenerate($testFile)
     {
         $testFile = Yii::getAlias("@specs/$testFile");
+
         $this->prepareTempDir();
 
         $this->mockApplication($this->mockDbSchemaAsEmpty());
@@ -47,14 +48,14 @@ class GeneratorTest extends TestCase
         },
             FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]));
 
-        //Skip database-specific migrations
+        //Skip database-specific migrations and json-api controllers
         $expectedFiles = array_filter($expectedFiles,
             function($file) {
-                return strpos($file, 'migrations_') === false;
+                return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;
             });
         $actualFiles = array_filter($actualFiles,
             function($file) {
-                return strpos($file, 'migrations_') === false;
+                return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;
             });
 
         sort($expectedFiles);

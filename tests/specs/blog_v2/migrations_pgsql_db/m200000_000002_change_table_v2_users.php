@@ -24,7 +24,7 @@ class m200000_000002_change_table_v2_users extends \yii\db\Migration
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(200));
         $this->addColumn('{{%v2_users}}', 'username', $this->string(200)->notNull());
         $this->dropColumn('{{%v2_users}}', 'login');
-        $this->alterColumn('{{%v2_users}}', 'created_at', "SET DEFAULT 'CURRENT_TIMESTAMP'");
+        $this->alterColumn('{{%v2_users}}', 'created_at', "SET DEFAULT CURRENT_TIMESTAMP");
         $this->alterColumn('{{%v2_users}}', 'role', "SET DEFAULT 'reader'");
         $this->execute('DROP TYPE enum_role');
     }

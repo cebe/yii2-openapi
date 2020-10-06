@@ -13,6 +13,7 @@ use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use Yii;
 use yii\base\Component;
+use yii\helpers\StringHelper;
 
 /**
  * Convert OpenAPI description into a database schema.
@@ -58,6 +59,7 @@ class SchemaToDatabase extends Component
      * @var array List of model names to exclude.
      */
     public $excludeModels = [];
+    public $skipUnderscoredSchemas = true;
 
     /**
      * @var array Generate database models only for Schemas that have the `x-table` annotation.
@@ -108,6 +110,11 @@ class SchemaToDatabase extends Component
         }
         // skip excluded model names
         if (in_array($schemaName, $this->excludeModels, true)) {
+            return false;
+        }
+
+        // skip schemas started with underscore
+        if ($this->skipUnderscoredSchemas && StringHelper::startsWith($schemaName, '_')) {
             return false;
         }
 
