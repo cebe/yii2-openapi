@@ -11,7 +11,7 @@ class CategoryTransformer extends TransformerAbstract
 
      public function transform(Category $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
     public function includePosts(Category $model)

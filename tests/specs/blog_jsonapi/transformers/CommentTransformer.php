@@ -11,7 +11,7 @@ class CommentTransformer extends TransformerAbstract
 
      public function transform(Comment $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
     public function includePost(Comment $model)

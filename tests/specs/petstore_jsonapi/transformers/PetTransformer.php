@@ -11,7 +11,7 @@ class PetTransformer extends TransformerAbstract
 
      public function transform(Pet $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
 

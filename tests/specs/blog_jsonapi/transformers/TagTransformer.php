@@ -11,7 +11,7 @@ class TagTransformer extends TransformerAbstract
 
      public function transform(Tag $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
     public function includePostTags(Tag $model)

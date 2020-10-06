@@ -11,7 +11,7 @@ class PostTransformer extends TransformerAbstract
 
      public function transform(Post $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
     public function includeCategory(Post $model)

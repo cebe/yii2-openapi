@@ -11,7 +11,7 @@ class UserTransformer extends TransformerAbstract
 
      public function transform(User $model)
      {
-          return $model->getAttributes([]);
+          return $model->getAttributes();
      }
 
 
