@@ -230,8 +230,6 @@ paths:
         description: The id of the post to retrieve
         schema:
           type: integer
-          additionalProperties:
-            $ref: '#/components/schemas/Post'
     get:
       summary: Show post's author id
       operationId: showPostAuthor
@@ -271,8 +269,6 @@ paths:
         description: The id of the post to retrieve
         schema:
           type: integer
-          additionalProperties:
-            $ref: '#/components/schemas/Post'
     get:
       summary: Show post's comments ids
       operationId: showPostComments
@@ -289,8 +285,6 @@ paths:
         description: The id of the post to retrieve
         schema:
           type: integer
-          additionalProperties:
-            $ref: '#/components/schemas/Post'
     get:
       summary: Show post's tags
       operationId: showPostTags

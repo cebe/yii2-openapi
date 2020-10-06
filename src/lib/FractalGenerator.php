@@ -10,10 +10,9 @@ namespace cebe\yii2openapi\lib;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use cebe\yii2openapi\lib\items\FractalAction;
-use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\items\RouteData;
-use yii\base\BaseObject;
 use yii\helpers\Inflector;
+use function in_array;
 
 class FractalGenerator extends UrlGenerator
 {
@@ -38,7 +37,7 @@ class FractalGenerator extends UrlGenerator
     {
         $actionType = $this->resolveActionType($routeData, $method);
         $modelClass = SchemaResponseResolver::guessModelClass($operation, $actionType);
-        $expectedRelations = \in_array($actionType, ['list', 'view'])
+        $expectedRelations = in_array($actionType, ['list', 'view'])
             ?  SchemaResponseResolver::guessResponseRelations($operation)
             : [];
         // fallback to known model class on same URL
