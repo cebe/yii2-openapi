@@ -34,13 +34,11 @@ abstract class MeController extends JsonApiController
 
     public function actionView()
     {
-        if (Yii::$app->user->isGuest){
+        if (Yii::$app->user->isGuest) {
             throw new \yii\web\NotFoundHttpException();
         }
         $user  = Yii::$app->user->getIdentity();
         $transformer = Yii::createObject(['class'=>\app\transformers\UserTransformer::class]);
         return new \League\Fractal\Resource\Item($user, $transformer, 'me');
-
     }
 }
-

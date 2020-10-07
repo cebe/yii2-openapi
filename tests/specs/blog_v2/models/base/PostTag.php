@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $post_id A blog post (uid used as pk for test purposes)
@@ -32,10 +32,11 @@ abstract class PostTag extends \yii\db\ActiveRecord
 
     public function getPost()
     {
-        return $this->hasOne(\app\models\Post::class,['id' => 'post_id']);
+        return $this->hasOne(\app\models\Post::class, ['id' => 'post_id']);
     }
+
     public function getTag()
     {
-        return $this->hasOne(\app\models\Tag::class,['id' => 'tag_id']);
+        return $this->hasOne(\app\models\Tag::class, ['id' => 'tag_id']);
     }
 }

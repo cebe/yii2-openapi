@@ -44,14 +44,16 @@ abstract class Post extends \yii\db\ActiveRecord
 
     public function getCategory()
     {
-        return $this->hasOne(\app\models\Category::class,['id' => 'category_id']);
+        return $this->hasOne(\app\models\Category::class, ['id' => 'category_id']);
     }
+
     public function getCreatedBy()
     {
-        return $this->hasOne(\app\models\User::class,['id' => 'created_by_id']);
+        return $this->hasOne(\app\models\User::class, ['id' => 'created_by_id']);
     }
+
     public function getComments()
     {
-        return $this->hasMany(\app\models\Comment::class,['post_id' => 'uid']);
+        return $this->hasMany(\app\models\Comment::class, ['post_id' => 'uid']);
     }
 }

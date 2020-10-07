@@ -42,4 +42,3 @@ abstract class CommentController extends JsonApiController
         // TODO implement checkAccess
     }
 }
-

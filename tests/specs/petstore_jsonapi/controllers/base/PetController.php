@@ -57,7 +57,6 @@ abstract class PetController extends JsonApiController
         $this->checkAccess('view', $model);
         $transformer = Yii::createObject(['class'=>\app\transformers\PetTransformer::class]);
         return new \League\Fractal\Resource\Item(\$model, $transformer, 'pets');
-
     }
 
     public function actionDelete($petId)
@@ -68,7 +67,6 @@ abstract class PetController extends JsonApiController
             throw new \yii\web\ServerErrorHttpException('Failed to delete the object for unknown reason.');
         }
         Yii::$app->getResponse()->setStatusCode(204);
-
     }
 
     public function actionUpdate($petId)
@@ -85,7 +83,6 @@ abstract class PetController extends JsonApiController
         }
         $transformer = Yii::createObject(['class'=>\app\transformers\PetTransformer::class]);
         return new \League\Fractal\Resource\Item(\$model, $transformer, 'pets');
-
     }
     /**
      * Returns the Pet model based on the primary key given.
@@ -103,4 +100,3 @@ abstract class PetController extends JsonApiController
         return $model;
     }
 }
-

@@ -52,4 +52,3 @@ abstract class AuthController extends JsonApiController
         // TODO implement actionCreateNewPassword
     }
 }
-

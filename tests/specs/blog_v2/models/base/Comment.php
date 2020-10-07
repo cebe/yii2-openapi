@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $post_id A blog post (uid used as pk for test purposes)
@@ -37,10 +37,11 @@ abstract class Comment extends \yii\db\ActiveRecord
 
     public function getPost()
     {
-        return $this->hasOne(\app\models\Post::class,['id' => 'post_id']);
+        return $this->hasOne(\app\models\Post::class, ['id' => 'post_id']);
     }
+
     public function getUser()
     {
-        return $this->hasOne(\app\models\User::class,['id' => 'user_id']);
+        return $this->hasOne(\app\models\User::class, ['id' => 'user_id']);
     }
 }
