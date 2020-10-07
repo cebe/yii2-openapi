@@ -16,35 +16,33 @@ use <?=$transformer->modelFQN?>;
 class <?=$transformer->name?> extends TransformerAbstract
 {
 <?php if (!empty($transformer->availableRelations)):?>
-     protected $availableIncludes = ['<?=implode("', '", $transformer->availableRelations)?>'];
+    protected $availableIncludes = ['<?=implode("', '", $transformer->availableRelations)?>'];
 <?php else:?>
-     protected $availableIncludes = [];
+    protected $availableIncludes = [];
 <?php endif;?>
 <?php if (!empty($transformer->defaultRelations)):?>
-     protected $defaultIncludes = ['<?=implode("', '", $transformer->defaultRelations)?>'];
+    protected $defaultIncludes = ['<?=implode("', '", $transformer->defaultRelations)?>'];
 <?php else:?>
-     protected $defaultIncludes = [];
+    protected $defaultIncludes = [];
 <?php endif;?>
 
-     public function transform(<?=$transformer->dbModel->getClassName()?> $model)
-     {
-          return $model->getAttributes();
-     }
-
+    public function transform(<?=$transformer->dbModel->getClassName()?> $model)
+    {
+        return $model->getAttributes();
+    }
 <?php if ($transformer->shouldIncludeRelations()):?>
 <?php foreach ($transformer->relations as $relation):?>
+
     public function include<?=$relation->getCamelName()?>(<?=$transformer->dbModel->getClassName()?> $model)
     {
-         $relation = $model-><?=Inflector::variablize($relation->getName())?>;
-         $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
+        $relation = $model-><?=Inflector::variablize($relation->getName())?>;
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
 <?php if ($relation->isHasOne()):?>
-         return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+        return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php else:?>
-         return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+        return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php endif;?>
     }
-<?php endforeach;?>
-<?php endif;?>
-
-
+<?php endforeach;
+endif;?>
 }

@@ -1,7 +1,7 @@
 <?php
 /**@var \cebe\yii2openapi\lib\items\FractalAction $action */
 ?>
-        if(Yii::$app->user->isGuest){
+        if (Yii::$app->user->isGuest) {
             throw new \yii\web\NotFoundHttpException();
         }
         $user  = Yii::$app->user->getIdentity();

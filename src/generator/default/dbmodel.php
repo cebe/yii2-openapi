@@ -13,7 +13,7 @@ use yii\helpers\VarDumper;
 namespace <?= $namespace ?>;
 
 /**
- * <?= str_replace("\n", "\n * ", trim($model->description)) ?>
+ *<?= empty($model->description) ? '' : str_replace("\n", "\n * ", ' ' . trim($model->description)) ?>
 
  *
 <?php foreach ($model->attributes as $attribute): ?>
@@ -41,11 +41,11 @@ abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
     {
         return <?=$model->getValidationRules()?>;
     }
-
 <?php foreach ($model->relations as $relationName => $relation): ?>
+
     public function get<?= $relation->getCamelName() ?>()
     {
-        return $this-><?= $relation->getMethod() ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>::class,<?php
+        return $this-><?= $relation->getMethod() ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>::class, <?php
             echo str_replace(
                     [',', '=>', ', ]'],
                     [', ', ' => ', ']'],

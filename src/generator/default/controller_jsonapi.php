@@ -54,7 +54,6 @@ abstract class <?= $className ?> extends JsonApiController
     public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>)
     {
 <?=$action->getImplementation()?>
-
     }
 <?php endif;?>
 <?php endforeach;?>
@@ -91,4 +90,3 @@ abstract class <?= $className ?> extends JsonApiController
 <?php endif;?>
 <?php endforeach;?>
 }
-

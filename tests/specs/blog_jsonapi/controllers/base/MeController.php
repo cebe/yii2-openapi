@@ -34,7 +34,7 @@ abstract class MeController extends JsonApiController
 
     public function actionView()
     {
-        if(Yii::$app->user->isGuest){
+        if (Yii::$app->user->isGuest){
             throw new \yii\web\NotFoundHttpException();
         }
         $user  = Yii::$app->user->getIdentity();
