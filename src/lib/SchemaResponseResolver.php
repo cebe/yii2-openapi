@@ -161,7 +161,7 @@ class SchemaResponseResolver
             }
             $name = self::schemaNameByRef($ref->properties['attributes']);
             if ($name !== null) {
-                return [$name, '', '', 'object'];
+                return [$name, '', '', 'array'];
             }
         }
         return [null, null, null, null];
