@@ -51,4 +51,3 @@ abstract class CategoryController extends JsonApiController
         // TODO implement checkAccess
     }
 }
-

@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property bool $active
@@ -51,5 +51,4 @@ abstract class Fakerable extends \yii\db\ActiveRecord
             'str_country_string' => [['str_country'], 'string'],
         ];
     }
-
 }

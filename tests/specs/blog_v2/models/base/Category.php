@@ -33,6 +33,6 @@ abstract class Category extends \yii\db\ActiveRecord
 
     public function getPosts()
     {
-        return $this->hasMany(\app\models\Post::class,['category_id' => 'id']);
+        return $this->hasMany(\app\models\Post::class, ['category_id' => 'id']);
     }
 }

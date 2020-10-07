@@ -6,14 +6,11 @@ use app\models\Pet;
 
 class PetTransformer extends TransformerAbstract
 {
-     protected $availableIncludes = [];
-     protected $defaultIncludes = [];
+    protected $availableIncludes = [];
+    protected $defaultIncludes = [];
 
-     public function transform(Pet $model)
-     {
-          return $model->getAttributes();
-     }
-
-
-
+    public function transform(Pet $model)
+    {
+        return $model->getAttributes();
+    }
 }

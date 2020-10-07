@@ -26,5 +26,4 @@ abstract class Pet extends \yii\db\ActiveRecord
             'tag_string' => [['tag'], 'string'],
         ];
     }
-
 }

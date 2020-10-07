@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $num
@@ -31,5 +31,4 @@ abstract class Custom extends \yii\db\ActiveRecord
             'safe' => [['json1', 'json2', 'json3', 'json4'], 'safe'],
         ];
     }
-
 }

@@ -38,5 +38,4 @@ abstract class User extends \yii\db\ActiveRecord
             'created_at_datetime' => [['created_at'], 'datetime'],
         ];
     }
-
 }

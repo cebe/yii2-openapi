@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -35,10 +35,11 @@ abstract class Menu extends \yii\db\ActiveRecord
 
     public function getParent()
     {
-        return $this->hasOne(\app\models\Menu::class,['id' => 'parent_id']);
+        return $this->hasOne(\app\models\Menu::class, ['id' => 'parent_id']);
     }
+
     public function getChildes()
     {
-        return $this->hasMany(\app\models\Menu::class,['parent_id' => 'id']);
+        return $this->hasMany(\app\models\Menu::class, ['parent_id' => 'id']);
     }
 }

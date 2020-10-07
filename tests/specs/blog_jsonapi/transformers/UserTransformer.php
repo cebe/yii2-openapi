@@ -6,14 +6,11 @@ use app\models\User;
 
 class UserTransformer extends TransformerAbstract
 {
-     protected $availableIncludes = [];
-     protected $defaultIncludes = [];
+    protected $availableIncludes = [];
+    protected $defaultIncludes = [];
 
-     public function transform(User $model)
-     {
-          return $model->getAttributes();
-     }
-
-
-
+    public function transform(User $model)
+    {
+        return $model->getAttributes();
+    }
 }

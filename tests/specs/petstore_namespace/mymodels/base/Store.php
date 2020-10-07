@@ -24,5 +24,4 @@ abstract class Store extends \yii\db\ActiveRecord
             'name_string' => [['name'], 'string'],
         ];
     }
-
 }

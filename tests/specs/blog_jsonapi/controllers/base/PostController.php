@@ -135,4 +135,3 @@ abstract class PostController extends JsonApiController
         // TODO implement actionUpdateUploadCover
     }
 }
-

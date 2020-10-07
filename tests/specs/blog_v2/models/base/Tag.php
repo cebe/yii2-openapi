@@ -3,7 +3,7 @@
 namespace app\models\base;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -32,6 +32,6 @@ abstract class Tag extends \yii\db\ActiveRecord
 
     public function getPostTags()
     {
-        return $this->hasMany(\app\models\PostTag::class,['tag_id' => 'id']);
+        return $this->hasMany(\app\models\PostTag::class, ['tag_id' => 'id']);
     }
 }

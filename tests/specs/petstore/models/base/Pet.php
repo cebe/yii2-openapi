@@ -33,6 +33,6 @@ abstract class Pet extends \yii\db\ActiveRecord
 
     public function getStore()
     {
-        return $this->hasOne(\app\models\Store::class,['id' => 'store_id']);
+        return $this->hasOne(\app\models\Store::class, ['id' => 'store_id']);
     }
 }
