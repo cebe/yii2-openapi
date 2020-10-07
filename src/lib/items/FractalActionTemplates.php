@@ -161,8 +161,8 @@ PHP;
 '{$this->action->id}' => [
                 'class' => {$className},
                 'checkAccess' => [\$this, 'checkAccess'],
-                'transformer' => {$this->action->transformerFqn}::class,
-                'modelClass' => {$this->action->modelFqn}::class,
+                'transformer' => \\{$this->action->transformerFqn}::class,
+                'modelClass' => \\{$this->action->modelFqn}::class,
                 'resourceKey' => '{$resourceKey}',
                 'parentIdParam' => '{$this->action->parentIdParam}',
                 'parentIdAttribute' => '{$this->action->parentIdAttribute}',
@@ -178,7 +178,7 @@ PHP;
 '{$this->action->id}' => [
                 'class' => {$className},
                 'checkAccess' => [\$this, 'checkAccess'],
-                'modelClass' => {$this->action->modelFqn}::class,
+                'modelClass' => \\{$this->action->modelFqn}::class,
                 'parentIdParam' => '{$this->action->parentIdParam}',
                 'parentIdAttribute' => '{$this->action->parentIdAttribute}',
                 'findModelFor' => null

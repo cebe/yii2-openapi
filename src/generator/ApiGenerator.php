@@ -334,7 +334,7 @@ class ApiGenerator extends Generator
         }
         if ($this->generateControllers) {
             if ($this->useJsonApi) {
-                $required[] = 'controller_json.php';
+                $required[] = 'controller_jsonapi.php';
                 $required[] = 'transformer.php';
             }
             $required[] = 'controller.php';
@@ -425,7 +425,7 @@ class ApiGenerator extends Generator
         $controllers = $this->prepareControllers();
         $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
         $controllerPath = $this->getPathFromNamespace($controllerNamespace);
-        $templateName = $this->useJsonApi? 'controller_json.php': 'controller.php';
+        $templateName = $this->useJsonApi? 'controller_jsonapi.php': 'controller.php';
 
         foreach ($controllers as $controller => $actions) {
             $className = Inflector::id2camel($controller) . 'Controller';
