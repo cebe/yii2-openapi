@@ -106,7 +106,7 @@ class AttributeResolver
                     $foreignPk = $this->componentSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
                     $foreignPkProperty = $this->componentSchema->properties[$foreignPk];
                     $relatedTableName = $this->tableName;
-                    $phpType = TypeResolver::schemaToPhpType($foreignPkProperty);
+                    $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
                               ->setDbType($this->guessDbType($foreignPkProperty, true, true));
 
@@ -125,8 +125,11 @@ class AttributeResolver
                      **/
                     $foreignPk = $relatedSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
                     $foreignPkProperty = $relatedSchema->properties[$foreignPk];
-
-                    $phpType = TypeResolver::schemaToPhpType($foreignPkProperty);
+                    if ($foreignPkProperty === null) {
+                        //Non-db
+                        return;
+                    }
+                    $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
                               ->setDbType($this->guessDbType($foreignPkProperty, true, true));
 
@@ -139,7 +142,7 @@ class AttributeResolver
 
         if (!$attribute->isReference()) {
             /**@var Schema $property */
-            $phpType = TypeResolver::schemaToPhpType($property);
+            $phpType = SchemaTypeResolver::schemaToPhpType($property);
             $attribute->setPhpType($phpType)
                       ->setDbType($this->guessDbType($property, ($propertyName === $this->primaryKey)))
                       ->setUnique($property->{CustomSpecAttr::UNIQUE} ?? false)
@@ -218,9 +221,9 @@ class AttributeResolver
     protected function guessDbType(Schema $property, bool $isPk, bool $isReference = false):string
     {
         if ($isReference === true) {
-            return TypeResolver::referenceToDbType($property);
+            return SchemaTypeResolver::referenceToDbType($property);
         }
-        return TypeResolver::schemaToDbType($property, $isPk);
+        return SchemaTypeResolver::schemaToDbType($property, $isPk);
     }
 
     protected function guessDefault(Schema $property, Attribute $attribute)

@@ -145,6 +145,11 @@ class AttributeRelation
         return $this->className;
     }
 
+    public function getClassKey():string
+    {
+        return Inflector::camel2id($this->getClassName());
+    }
+
     /**
      * @return string
      */

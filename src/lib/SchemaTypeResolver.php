@@ -13,7 +13,7 @@ use yii\helpers\StringHelper;
 use function in_array;
 use function strtolower;
 
-class TypeResolver
+class SchemaTypeResolver
 {
     public static function schemaToPhpType(Schema $property):string
     {
@@ -34,7 +34,7 @@ class TypeResolver
 //            case 'array':
 //                return $property->type;
             default:
-                return $property->type;
+                return $property->type ?? 'string';
         }
     }
 

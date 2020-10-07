@@ -276,6 +276,7 @@ class ColumnToCode
                     $this->rawParts['default'] = self::defaultValueArray($value->getValue());
                 } else {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                    $this->rawParts['default'] = self::escapeQuotes((string)$value);
                 }
                 break;
             case 'array':

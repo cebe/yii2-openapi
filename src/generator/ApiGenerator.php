@@ -10,22 +10,28 @@ namespace cebe\yii2openapi\generator;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\items\DbModel;
-use cebe\yii2openapi\lib\items\RouteData;
+use cebe\yii2openapi\lib\FractalGenerator;
+use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\MigrationsGenerator;
 use cebe\yii2openapi\lib\PathAutoCompletion;
 use cebe\yii2openapi\lib\SchemaToDatabase;
+use cebe\yii2openapi\lib\TransformerGenerator;
 use cebe\yii2openapi\lib\UrlGenerator;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
+use Laminas\Code\Generator\MethodGenerator;
 use Yii;
 use yii\di\Instance;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use function array_filter;
+use function array_map;
 use function array_merge;
+use function array_unique;
 use const YII_ENV_TEST;
 
 class ApiGenerator extends Generator
@@ -62,6 +68,11 @@ class ApiGenerator extends Generator
     public $useJsonApi = false;
 
     /**
+     * @var bool if true singular resource keys will be used /post/{id}, plural by default
+     */
+    public $singularResourceKeys = false;
+
+    /**
      * @var string namespace to create controllers in. This must be resolvable via Yii alias.
      * Defaults to `null` which means to use the application controller namespace: `Yii::$app->controllerNamespace`.
      */
@@ -90,12 +101,23 @@ class ApiGenerator extends Generator
     public $fakerNamespace = 'app\\models';
 
     /**
+     * @var string namespace to create fractal transformers in. (Only when generatedControllers and useJsonApi checked)
+     * Defaults to `app\transformers`.
+     */
+    public $transformerNamespace = 'app\\transformers';
+
+    /**
      * @var array List of model names to exclude.
      */
     public $excludeModels = [];
 
     /**
-     * @var array Generate database models only for Schemas that have the `x-table` annotation.
+     * @var bool Generate database models only for Schemas that not starts with underscore
+     */
+    public $skipUnderscoredSchemas = true;
+
+    /**
+     * @var bool Generate database models only for Schemas that have the `x-table` annotation.
      */
     public $generateModelsOnlyXTable = false;
 
@@ -134,9 +156,9 @@ class ApiGenerator extends Generator
     private $preparedModels;
 
     /**
-     * @var RouteData[]
+     * @var \cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction
     **/
-    private $preparedUrls;
+    private $preparedActions;
 
     /**
      * @return string name of the code generator
@@ -171,6 +193,7 @@ class ApiGenerator extends Generator
                         'fakerNamespace',
                         'migrationPath',
                         'migrationNamespace',
+                        'transformerNamespace',
                     ],
                     'filter',
                     'filter' => 'trim',
@@ -186,7 +209,9 @@ class ApiGenerator extends Generator
                         'generateModelFaker',
                         'generateControllers',
                         'generateModelsOnlyXTable',
-                        'useJsonApi'
+                        'skipUnderscoredSchemas',
+                        'useJsonApi',
+                        'singularResourceKeys'
                     ],
                     'boolean',
                 ],
@@ -222,7 +247,13 @@ class ApiGenerator extends Generator
                         return (bool)$model->generateMigrations;
                     },
                 ],
-
+                [
+                    ['transformerNamespace'],
+                    'required',
+                    'when' => function (ApiGenerator $model) {
+                        return (bool)$model->generateControllers && (bool) $model->useJsonApi;
+                    },
+                ],
             ]
         );
     }
@@ -256,6 +287,7 @@ class ApiGenerator extends Generator
                 'openApiPath' => 'OpenAPI 3 Spec file',
                 'generateUrls' => 'Generate URL Rules',
                 'generateModelsOnlyXTable' => 'Generate DB Models and Tables only for schemas that include `x-table` property',
+                'skipUnderscoredSchemas'=>'Generate DB Models and Tables only for schemas that not starts with underscore'
             ]
         );
     }
@@ -276,7 +308,9 @@ class ApiGenerator extends Generator
                 'migrationPath' => 'Path to create migration files in.',
                 'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
                 'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
-                'useJsonApi' => 'use actions that return responses followed JsonApi specification'
+                'useJsonApi' => 'use actions that return responses followed JsonApi specification',
+                'singularResourceKeys' => 'Use singular resource keys (/post/{id}) (Plural by defaut : /posts/{id})',
+                'transformerNamespace' => 'Namespace to create fractal transformers'
             ]
         );
     }
@@ -299,7 +333,11 @@ class ApiGenerator extends Generator
             $required[] = 'urls.php';
         }
         if ($this->generateControllers) {
-            $required[] = $this->useJsonApi?'controller_json.php' :'controller.php';
+            if ($this->useJsonApi) {
+                $required[] = 'controller_jsonapi.php';
+                $required[] = 'transformer.php';
+            }
+            $required[] = 'controller.php';
         }
         if ($this->generateModels) {
             $required[] = 'dbmodel.php';
@@ -364,9 +402,10 @@ class ApiGenerator extends Generator
         }
         $urls = [];
         $optionsUrls = [];
-        foreach ($this->prepareUrls() as $urlRule) {
-            $urls["{$urlRule->method} {$urlRule->pattern}"] = $urlRule->route;
-            $optionsUrls[$urlRule->pattern] = $urlRule->getOptionsRoute();
+        foreach ($this->prepareActions() as $action) {
+            $urls["{$action->requestMethod} {$action->urlPattern}"] = $action->route;
+            //@TODO: need to ensure
+            $optionsUrls[$action->urlPattern] = $action->getOptionsRoute();
         }
         $urls = array_merge($urls, $optionsUrls);
         $file = new CodeFile(Yii::getAlias($this->urlConfigFile), $this->render('urls.php', ['urls' => $urls]));
@@ -386,7 +425,8 @@ class ApiGenerator extends Generator
         $controllers = $this->prepareControllers();
         $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
         $controllerPath = $this->getPathFromNamespace($controllerNamespace);
-        $templateName = $this->useJsonApi? 'controller_json.php': 'controller.php';
+        $templateName = $this->useJsonApi? 'controller_jsonapi.php': 'controller.php';
+
         foreach ($controllers as $controller => $actions) {
             $className = Inflector::id2camel($controller) . 'Controller';
             $files[] = new CodeFile(
@@ -409,10 +449,31 @@ class ApiGenerator extends Generator
                     null,
                     $controllerNamespace . '\\base\\' . $className
                 );
+
+                if ($this->useJsonApi) {
+                    $body = <<<'PHP'
+$actions = parent::actions();
+return $actions;
+PHP;
+                    $reflection->addMethod('actions', [], MethodGenerator::FLAG_PUBLIC, $body);
+                }
                 $classFileGenerator->setClasses([$reflection]);
                 $files[] = new CodeFile(
                     Yii::getAlias("$controllerPath/$className.php"),
                     $classFileGenerator->generate()
+                );
+            }
+        }
+        if ($this->useJsonApi) {
+            $transformers = $this->prepareTransformers();
+            $transformerPath = $this->getPathFromNamespace($this->transformerNamespace);
+            foreach ($transformers as $transformer) {
+                $files[] = new CodeFile(
+                    Yii::getAlias($transformerPath . "/{$transformer->name}.php"),
+                    $this->render('transformer.php', [
+                        'namespace' => $this->transformerNamespace,
+                        'transformer' => $transformer
+                    ])
                 );
             }
         }
@@ -586,38 +647,35 @@ class ApiGenerator extends Generator
     }
 
     /**
-     * @return array|\cebe\yii2openapi\lib\items\RouteData[]
+     * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction
      * @throws \yii\base\InvalidConfigException
      * @throws \Exception
      */
-    protected function prepareUrls():array
+    protected function prepareActions():array
     {
-        if (!$this->preparedUrls) {
-            $generator = new UrlGenerator($this->getOpenApi(), $this->modelNamespace);
-            $this->preparedUrls = $generator->generate();
+        if (!$this->preparedActions) {
+            $generator = $this->useJsonApi
+                ? new FractalGenerator(
+                    $this->getOpenApi(),
+                    $this->modelNamespace,
+                    $this->transformerNamespace,
+                    $this->singularResourceKeys
+                )
+                : new UrlGenerator($this->getOpenApi(), $this->modelNamespace);
+            $this->preparedActions = $generator->generate();
         }
-        return $this->preparedUrls;
+        return $this->preparedActions;
     }
 
     /**
-     * @return array
+     * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction[]
      * @throws \Exception
      */
     protected function prepareControllers():array
     {
-        $urls = $this->prepareUrls();
+        $actions = $this->prepareActions();
 
-        $controllers = [];
-        foreach ($urls as $url) {
-            $controllers[$url->controllerId][] = [
-                'id' => $url->actionId,
-                'params' => array_keys($url->actionParams),
-                'idParam' => $url->idParam ?? null,
-                'modelClass' => $url->modelClass,
-                'responseWrapper' => $url->responseWrapper,
-            ];
-        }
-        return $controllers;
+        return ArrayHelper::index($actions, null, 'controllerId');
     }
 
     /**
@@ -633,11 +691,33 @@ class ApiGenerator extends Generator
             $converter = Yii::createObject([
                 'class' => SchemaToDatabase::class,
                 'excludeModels' => $this->excludeModels,
+                'skipUnderscoredSchemas' => $this->skipUnderscoredSchemas,
                 'generateModelsOnlyXTable' => $this->generateModelsOnlyXTable,
             ]);
             $this->preparedModels = $converter->generateModels($this->getOpenApi());
         }
         return $this->preparedModels;
+    }
+
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\Transformer[]
+     */
+    protected function prepareTransformers(): array
+    {
+        $models = array_filter($this->prepareModels(), function ($model) {
+            return $model instanceof DbModel;
+        });
+        $usedTransformers = array_unique(array_map(function (FractalAction $action) {
+            return $action->transformerFqn;
+        }, $this->prepareActions()));
+        $generator = new TransformerGenerator(
+            $models,
+            $usedTransformers,
+            $this->transformerNamespace,
+            $this->modelNamespace,
+            $this->singularResourceKeys
+        );
+        return $generator->generate();
     }
 
     /**

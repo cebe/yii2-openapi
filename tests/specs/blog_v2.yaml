@@ -30,7 +30,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Posts"
         default:
@@ -61,6 +61,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /posts/{id}/relationships/category:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+          additionalProperties:
+            $ref: "#/components/schemas/Post"
+    get:
+      summary: Category for a specific post
+      operationId: showPostCategory
+      tags:
+        - categories
+      responses:
+        '200':
+           $ref: "#/components/responses/Category"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /posts/{id}/relationships/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+          additionalProperties:
+            $ref: "#/components/schemas/Post"
+    get:
+      summary: Category for a specific post
+      operationId: showPostComments
+      tags:
+        - comments
+      responses:
+        '200':
+          $ref: "#/components/responses/Comments"
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
   /posts/{postId}/comments:
     parameters:
       -   name: postId
@@ -69,6 +117,8 @@ paths:
           description: The id of the post to retrieve
           schema:
             type: integer
+            additionalProperties:
+              $ref: "#/components/schemas/Post"
     get:
       summary: Info for a specific post
       operationId: showPostComments
@@ -76,11 +126,7 @@ paths:
         - comments
       responses:
         '200':
-          description: Expected response to a valid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Comments"
+          $ref: "#/components/responses/Comments"
         default:
           description: unexpected error
           content:
@@ -101,14 +147,52 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /posts/{postSlug}/comment/{id}:
+  /category/{categoryId}/posts/{id}:
     parameters:
-      -   name: postSlug
+      - name: categoryId
+        in: path
+        required: true
+        description: The slug of the post to retrieve
+        schema:
+          type: integer
+          additionalProperties:
+              $ref: "#/components/schemas/Category"
+      - name: id
+        in: path
+        required: true
+        description: The id of the comment to retrieve
+        schema:
+          type: integer
+          additionalProperties:
+             $ref: "#/components/schemas/Post"
+    get:
+       summary: Show post from concrete category
+       operationId: showPostFromCategory
+       tags:
+         - posts
+       responses:
+         '200':
+           description: Expected response to a valid request
+           content:
+             application/json:
+               schema:
+                 $ref: "#/components/schemas/Post"
+         default:
+           description: unexpected error
+           content:
+             application/json:
+               schema:
+                 $ref: "#/components/schemas/Error"
+  /posts/{slug}/comment/{id}:
+    parameters:
+      -   name: slug
           in: path
           required: true
           description: The slug of the post to retrieve
           schema:
             type: string
+            additionalProperties:
+              $ref: "#/components/schemas/Post"
       -   name: id
           in: path
           required: true
@@ -122,11 +206,7 @@ paths:
         - comments
       responses:
         '200':
-          description: Expected response to a valid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Comment"
+          $ref: "#/components/responses/Comment"
         default:
           description: unexpected error
           content:
@@ -369,3 +449,56 @@ components:
             properties:
               post:
                 $ref: "#/components/schemas/Post"
+    Category:
+      description: Expected response to a valid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              category:
+                $ref: "#/components/schemas/Category"
+    Comment:
+      description: Expected response to a valid request
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                    id:
+                      type: integer
+                      example: 1
+                    type:
+                      type: string
+                      enum:
+                        - "comment"
+                    attributes:
+                      $ref: "#/components/schemas/Comment"
+                    relationships:
+                      type: object
+                      properties:
+                        author:
+                          type: object
+              links:
+                type: object
+                additionalProperties:
+                  oneOf:
+                      - type: string
+                      - type: object
+                        properties:
+                          href:
+                            type: string
+                          meta:
+                            type: object
+    Comments:
+      description: Expected response to a valid request
+      content:
+        application/vnd.api+json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Comment"
+

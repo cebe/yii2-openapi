@@ -50,6 +50,7 @@ class PathAutoCompletion
             'modelNamespace' => $namespaces,
             'fakerNamespace' => $namespaces,
             'migrationNamespace' => $namespaces,
+            'transformerNamespace' => $namespaces,
 //            'urlConfigFile' => [
 //                '@app/config/urls.rest.php',
 //            ],

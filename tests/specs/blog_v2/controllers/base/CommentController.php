@@ -40,17 +40,17 @@ abstract class CommentController extends \yii\rest\Controller
         // TODO implement actionCreateForPost
     }
 
-    public function actionViewForPost($postSlug, $id)
+    public function actionViewForPost($slug, $id)
     {
         // TODO implement actionViewForPost
     }
 
-    public function actionDeleteForPost($postSlug, $id)
+    public function actionDeleteForPost($slug, $id)
     {
         // TODO implement actionDeleteForPost
     }
 
-    public function actionUpdateForPost($postSlug, $id)
+    public function actionUpdateForPost($slug, $id)
     {
         // TODO implement actionUpdateForPost
     }
