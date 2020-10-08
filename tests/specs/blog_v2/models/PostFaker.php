@@ -20,7 +20,7 @@ class PostFaker
         $model->slug = substr($uniqueFaker->slug, 0, 200);
         $model->lang = $faker->randomElement(['ru','eng']);
         $model->active = $faker->boolean;
-        $model->created_at = $faker->iso8601;
+        $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d');
         return $model;
     }
 }
