@@ -64,7 +64,7 @@ class FakerStubResolver
     {
         $formats = [
             'date' => '$faker->dateTimeThisCentury->format(\'Y-m-d\')',
-            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)',
+            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
             'email' => '$faker->safeEmail',
         ];
         if ($this->property->format && isset($formats[$this->property->format])) {
