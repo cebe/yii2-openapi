@@ -17,7 +17,7 @@ class CommentFaker
         $model = new Comment();
         $model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->message = $faker->sentence;
-        $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d H:i:s');
+        $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
         return $model;
     }
 }

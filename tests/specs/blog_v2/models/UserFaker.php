@@ -21,7 +21,7 @@ class UserFaker
         $model->password = $faker->password;
         $model->role = $faker->randomElement(['admin', 'editor', 'reader']);
         $model->flags = $faker->numberBetween(0, 2147483647);
-        $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d H:i:s');
+        $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
         return $model;
     }
 }

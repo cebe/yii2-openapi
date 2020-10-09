@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib;
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\Attribute;
 use yii\helpers\VarDumper;
+use const DATE_ATOM;
 use const PHP_EOL;
 
 /**
@@ -62,8 +63,8 @@ class FakerStubResolver
     private function fakeForString():?string
     {
         $formats = [
-            'date' => '$faker->iso8601',
-            'date-time' => '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')',
+            'date' => '$faker->dateTimeThisCentury->format(\'Y-m-d\')',
+            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
             'email' => '$faker->safeEmail',
         ];
         if ($this->property->format && isset($formats[$this->property->format])) {

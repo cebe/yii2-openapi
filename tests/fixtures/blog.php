@@ -25,7 +25,7 @@ return [
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 2147483647)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
-                ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')'),
+                ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
         ],
         'relations' => [],
     ]),
@@ -64,7 +64,7 @@ return [
                 ->setDescription('Category of posts')
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'date']))
-               ->setFakerStub('$faker->iso8601'),
+               ->setFakerStub('$faker->dateTimeThisCentury->format(\'Y-m-d\')'),
             'created_by' => (new Attribute('created_by', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->asReference('User')
                 ->setDescription('The User')

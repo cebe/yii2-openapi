@@ -77,7 +77,7 @@ class ValidationRulesBuilder
             return;
         }
 
-        if (in_array($attribute->dbType, ['date', 'time', 'datetime'], true)) {
+        if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
             $key = $attribute->columnName.'_'.$attribute->dbType;
             $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
             return;

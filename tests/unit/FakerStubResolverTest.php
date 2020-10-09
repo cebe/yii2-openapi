@@ -11,6 +11,7 @@ use cebe\yii2openapi\lib\items\Attribute;
 use tests\TestCase;
 use Yii;
 use yii\db\Schema as YiiDbSchema;
+use const DATE_ATOM;
 
 class FakerStubResolverTest extends TestCase
 {
@@ -119,12 +120,12 @@ class FakerStubResolverTest extends TestCase
             [
                 (new Attribute('str_date'))->setPhpType('string')->setDbType(YiiDbSchema::TYPE_DATE),
                 $schema->properties['str_date'],
-                '$faker->iso8601',
+                '$faker->dateTimeThisCentury->format(\'Y-m-d\')',
             ],
             [
                 (new Attribute('str_datetime'))->setPhpType('string')->setDbType(YiiDbSchema::TYPE_DATETIME),
                 $schema->properties['str_datetime'],
-                '$faker->dateTimeThisCentury->format(\'Y-m-d H:i:s\')',
+                '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)',
             ],
         ];
     }
