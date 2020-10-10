@@ -7,9 +7,9 @@ matrix:
     - php: 7.2
       env: PHPUNIT_VERSION=''
     - php: 7.3
-      env: PHPUNIT_VERSION='^8.5'
+      env: PHPUNIT_VERSION=''
     - php: 7.4
-      env: PHPUNIT_VERSION='^9.4'
+      env: PHPUNIT_VERSION='^9.0'
 
 install:
   - travis_retry composer self-update && composer --version
