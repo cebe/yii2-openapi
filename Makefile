@@ -5,7 +5,7 @@ PHPARGS=-dmemory_limit=64M
 all:
 
 check-style:
-	vendor/bin/php-cs-fixer fix src/ --diff --dry-run
+	vendor/bin/php-cs-fixer fix --diff --dry-run
 
 fix-style:
 	vendor/bin/indent --tabs composer.json
