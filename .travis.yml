@@ -6,10 +6,21 @@ php:
   - '7.3'
   - '7.4'
 
+matrix:
+  include:
+    - php: 7.1
+      env: PHPUNIT_VERSION=''
+    - php: 7.2
+      env: PHPUNIT_VERSION=''
+    - php: 7.3
+      env: PHPUNIT_VERSION='^8.5'
+    - php: 7.4
+      env: PHPUNIT_VERSION='^9.4'
+
 install:
   - travis_retry composer self-update && composer --version
   - travis_retry composer install --prefer-dist --no-interaction
-  - if [[ $TRAVIS_PHP_VERSION == "7.4" ]]; then composer update phpunit/phpunit; fi
+  - if [[ $PHPUNIT_VERSION != '' ]]; then composer require --dev phpunit/phpunit:${PHPUNIT_VERSION}; fi
 script:
   - make test
   - if [[ $TRAVIS_PHP_VERSION == "7.3" || $TRAVIS_PHP_VERSION == "7.4" ]]; then true; else make check-style; fi
