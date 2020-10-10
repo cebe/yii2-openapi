@@ -8,7 +8,7 @@ php:
 
 install:
   - travis_retry composer self-update && composer --version
-  - travis_retry composer install --prefer-lowest --prefer-stable --prefer-dist --no-interaction
+  - travis_retry composer install --prefer-stable --prefer-dist --no-interaction
   - if [[ $TRAVIS_PHP_VERSION == "7.4" ]]; then composer update phpunit/phpunit; fi
 script:
   - make test
