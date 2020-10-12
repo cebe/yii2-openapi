@@ -15,7 +15,7 @@ class TagFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Tag();
-        $model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->name = substr($faker->text(100), 0, 100);
         $model->lang = $faker->randomElement(['ru','eng']);
         return $model;
@@ -30,7 +30,7 @@ class TagFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -48,7 +48,7 @@ class TagFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }

@@ -15,7 +15,7 @@ class FakerableFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Fakerable();
-        $model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->active = $faker->boolean;
         $model->floatval = $faker->randomFloat();
         $model->floatval_lim = $faker->randomFloat(null, 0, 1);
@@ -43,7 +43,7 @@ class FakerableFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -61,7 +61,7 @@ class FakerableFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }
