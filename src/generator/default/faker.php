@@ -52,7 +52,7 @@ class <?= $model->getClassName() ?>Faker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -70,7 +70,7 @@ class <?= $model->getClassName() ?>Faker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }
