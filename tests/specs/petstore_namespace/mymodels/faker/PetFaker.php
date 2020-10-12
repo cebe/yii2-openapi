@@ -16,7 +16,7 @@ class PetFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Pet();
-        $model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->name = $faker->sentence;
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
         return $model;
@@ -31,7 +31,7 @@ class PetFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -49,7 +49,7 @@ class PetFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }

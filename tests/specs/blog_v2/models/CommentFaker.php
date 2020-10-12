@@ -15,7 +15,7 @@ class CommentFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Comment();
-        $model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->message = $faker->sentence;
         $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
         return $model;
@@ -30,7 +30,7 @@ class CommentFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -48,7 +48,7 @@ class CommentFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }

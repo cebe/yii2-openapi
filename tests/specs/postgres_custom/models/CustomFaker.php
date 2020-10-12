@@ -15,7 +15,7 @@ class CustomFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Custom();
-        $model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->num = $faker->numberBetween(0, 2147483647);
         $model->json1 = [];
         $model->json2 = [];
@@ -34,7 +34,7 @@ class CustomFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -52,7 +52,7 @@ class CustomFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }

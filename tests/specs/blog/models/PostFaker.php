@@ -15,7 +15,7 @@ class PostFaker
         $faker = FakerFactory::create(\Yii::$app->language);
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Post();
-        $model->uid = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->uid = $uniqueFaker->numberBetween(0, 2147483647);
         $model->title = substr($faker->sentence, 0, 255);
         $model->slug = substr($uniqueFaker->slug, 0, 200);
         $model->active = $faker->boolean;
@@ -32,7 +32,7 @@ class PostFaker
     {
         $model = (new static())->generateModel();
         $model->setAttributes($attributes);
-        if($save === true){
+        if ($save === true) {
             $model->save();
         }
         return $model;
@@ -50,7 +50,7 @@ class PostFaker
         if ($number < 1) {
             return [];
         }
-        return array_map(function() use ($commonAttributes, $save){
+        return array_map(function () use ($commonAttributes, $save) {
             return static::makeOne($commonAttributes, $save);
         }, range(0, $number -1));
     }

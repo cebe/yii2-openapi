@@ -30,16 +30,14 @@ class <?= $model->getClassName() ?>Faker
 <?php foreach ($model->attributes as $attribute):
         if (!$attribute->fakerStub || $attribute->isReference()) {
             continue;
-        } ?>
+        }
+        ?>
+<?php if($attribute->primary === true && $attribute->phpType === 'int'):?>
+        //$model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
+<?php else:?>
         $model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
-<?php endforeach; ?><?php /** For foreign referenced
-<?php foreach ($model->attributes as $attribute):
-        if (!$attribute->fakerStub || !$attribute->isReference()) {
-             continue;
-        } ?>
-        $model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
+<?php endif;?>
 <?php endforeach; ?>
- **/?>
         return $model;
     }
 
