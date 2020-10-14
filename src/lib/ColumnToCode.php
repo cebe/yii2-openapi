@@ -120,12 +120,15 @@ class ColumnToCode
         return $quoted ? "'" . $code . "'" : $code;
     }
 
-    public function getType():string
+    public function getTypeAndNullState():string
     {
         if ($this->isEnum() && $this->isPostgres()) {
             return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
         }
-        return $this->isBuiltinType ? '$this->' . $this->fluentParts['type'] : "'" . $this->rawParts['type'] . "'";
+
+        return $this->isBuiltinType
+            ? '$this->' . $this->fluentParts['type'].'->'.$this->fluentParts['nullable']
+            : "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']."'";
     }
 
     public function getDefaultValue():?string

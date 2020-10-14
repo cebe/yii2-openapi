@@ -80,13 +80,13 @@ class MigrationRecordBuilder
     public function alterColumnType(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, false, false);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getType());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, false, true);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getType());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
