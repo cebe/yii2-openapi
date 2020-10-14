@@ -50,12 +50,7 @@ abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
     public function get<?= $relation->getCamelName() ?>()
     {
         return $this-><?= $relation->getMethod() ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>::class, <?php
-            echo str_replace(
-    [',', '=>', ', ]'],
-    [', ', ' => ', ']'],
-    preg_replace('~\s+~', '', VarDumper::export($relation->getLink()))
-)
-        ?>);
+            echo $relation->linkToString()?>);
     }
 <?php endforeach; ?>
 <?php foreach ($model->many2many as $relation): ?>
