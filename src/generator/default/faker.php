@@ -24,7 +24,7 @@ class <?= $model->getClassName() ?>Faker
 {
     public function generateModel()
     {
-        $faker = FakerFactory::create(\Yii::$app->language);
+        $faker = FakerFactory::create(str_replace('-', '_', \Yii::$app->language));
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new <?= $model->getClassName() ?>();
 <?php foreach ($model->attributes as $attribute):
