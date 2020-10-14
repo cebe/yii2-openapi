@@ -97,7 +97,7 @@ Specify the table name for a Schema that defines a model which is stored in the 
 
 ### `x-pk`
 
-Explicitly specify primary key name for table, if it different from "id" 
+Explicitly specify primary key name for table, if it is different from "id" 
 
 ```yaml
     Post:
