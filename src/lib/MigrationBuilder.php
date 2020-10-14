@@ -15,6 +15,7 @@ use yii\db\ColumnSchema;
 use yii\db\Connection;
 use yii\db\Schema;
 use function array_intersect;
+use function array_keys;
 use function array_map;
 use function in_array;
 use function is_bool;
@@ -102,6 +103,8 @@ class MigrationBuilder
         $tableAlias = $relation->getViaTableAlias();
         $this->migration->addUpCode($builder->createTable($tableAlias, $relation->columnSchema, []))
                         ->addDownCode($builder->dropTable($tableAlias));
+        $this->migration->addUpCode($builder->addPrimaryKey($tableAlias, array_keys($relation->columnSchema)))
+                        ->addDownCode($builder->dropPrimaryKey($tableAlias, array_keys($relation->columnSchema)));
         foreach ($relation->getRelations() as $rel) {
             $fkCol = $rel->getColumnName();
             $refCol = $rel->getForeignName();

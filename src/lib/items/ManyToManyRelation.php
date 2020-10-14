@@ -163,14 +163,6 @@ class ManyToManyRelation extends BaseObject
         $relatedPkColumn = $castPkColumn($this->relatedPkAttribute->toColumnSchema());
         $relatedPkColumn->name = $this->relatedFk;
         return [
-            'id' => new ColumnSchema([
-                'name' => 'id',
-                'phpType' => 'int',
-                'dbType' => Schema::TYPE_BIGPK,
-                'type' => 'integer',
-                'allowNull' => false,
-                'size' => null,
-            ]),
             $this->selfFk => $selfPkColumn,
             $this->relatedFk => $relatedPkColumn,
         ];
