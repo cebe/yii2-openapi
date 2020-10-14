@@ -43,10 +43,21 @@ class MigrationsGenerator extends Component
      */
     public function generate(array $models):array
     {
+        $junctions = [];
         foreach ($models as $model) {
             $migration = (new MigrationBuilder($this->db, $model))->build();
             if ($migration->notEmpty()) {
                 $this->migrations[$model->tableAlias] = $migration;
+            }
+            foreach ($model->many2many as $relation) {
+                if ($relation->hasViaModel === true || \in_array($relation->viaTableName, $junctions, true)) {
+                    continue;
+                }
+                $migration = (new MigrationBuilder($this->db, $model))->buildJunction($relation);
+                if ($migration->notEmpty()) {
+                    $this->migrations[$relation->viaTableAlias] = $migration;
+                }
+                $junctions[] = $relation->viaTableName;
             }
         }
         return !empty($this->migrations) ? $this->sortMigrationsByDeps() : [];

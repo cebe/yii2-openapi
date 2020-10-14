@@ -347,10 +347,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Comment"
-        post_tags:
+        tags:
           type: array
           items:
-            $ref: "#/components/schemas/Post_tag"
+            $ref: "#/components/schemas/Tag"
     Posts:
       type: array
       items:
@@ -402,33 +402,14 @@ components:
           enum:
             - ru
             - eng
-        post_tags:
+        posts:
           type: array
           items:
-            $ref: "#/components/schemas/Post_tag"
+            $ref: "#/components/schemas/Post"
     Tags:
       type: array
       items:
         $ref: "#/components/schemas/Tag"
-    Post_tag:
-      x-table: v2_post_tag
-      required:
-        - id
-        - post
-        - tag
-      properties:
-        id:
-          type: integer
-          format: int64
-          readOnly: True
-        post:
-          $ref: "#/components/schemas/Post"
-        tag:
-          $ref: "#/components/schemas/Tag"
-    PostTags:
-      type: array
-      items:
-        $ref: "#/components/schemas/Post_tag"
     Error:
       required:
         - code

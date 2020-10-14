@@ -17,7 +17,7 @@ namespace app\models\base;
  * @property \app\models\Category $category
  * @property \app\models\User $created_by
  * @property array|\app\models\Comment[] $comments
- * @property array|\app\models\PostTag[] $post_tags
+ * @property array|\app\models\Tag[] $tags
  */
 abstract class Post extends \yii\db\ActiveRecord
 {
@@ -60,8 +60,9 @@ abstract class Post extends \yii\db\ActiveRecord
         return $this->hasMany(\app\models\Comment::class, ['post_id' => 'id']);
     }
 
-    public function getPostTags()
+    public function getTags()
     {
-        return $this->hasMany(\app\models\PostTag::class, ['post_id' => 'id']);
+        return $this->hasMany(\app\models\Tag::class, ['id' => 'tag_id'])
+                    ->viaTable('posts2tags', ['post_id' => 'id']);
     }
 }

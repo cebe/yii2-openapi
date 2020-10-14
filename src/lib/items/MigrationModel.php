@@ -53,13 +53,23 @@ class MigrationModel extends BaseObject
      */
     private $model;
 
-    public function __construct(DbModel $model, bool $isFresh = true, $config = [])
+    /**@var \cebe\yii2openapi\lib\items\ManyToManyRelation|null **/
+    private $relation;
+
+    public function __construct(DbModel $model, bool $isFresh = true, ManyToManyRelation $relation = null, $config = [])
     {
         parent::__construct($config);
         $this->model = $model;
-        $this->fileName = $isFresh
-            ? 'create_table_' . $model->tableName
-            : 'change_table_' . $model->tableName;
+        $this->relation = $relation;
+        if ($relation === null) {
+            $this->fileName = $isFresh
+                ? 'create_table_' . $model->tableName
+                : 'change_table_' . $model->tableName;
+        } else {
+            $this->fileName = $isFresh
+                ? 'create_table_' . $relation->viaTableName
+                : 'change_table_' . $relation->viaTableName;
+        }
     }
 
     public function getUpCodeString():string
@@ -79,7 +89,7 @@ class MigrationModel extends BaseObject
 
     public function getTableAlias():string
     {
-        return $this->model->tableAlias;
+        return $this->relation === null? $this->model->tableAlias : $this->relation->viaTableAlias;
     }
 
     public function getFileClassName():string
@@ -89,7 +99,9 @@ class MigrationModel extends BaseObject
 
     public function getDescription():string
     {
-        return 'Table for '.$this->model->getClassName();
+        return $this->relation === null?
+            'Table for '.$this->model->getClassName():
+            'Table for '.$this->relation->getViaModelName();
     }
 
     public function makeClassNameByTime(int $index, ?string $nameSpace = null, ?string $date = null):string

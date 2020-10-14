@@ -14,7 +14,6 @@ class AttributeRelation
 {
     public const HAS_ONE = 'hasOne';
     public const HAS_MANY = 'hasMany';
-
     /**
      * @var string $name
      **/

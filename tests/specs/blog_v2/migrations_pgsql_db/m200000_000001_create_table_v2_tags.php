@@ -3,7 +3,7 @@
 /**
  * Table for Tag
  */
-class m200000_000004_create_table_v2_tags extends \yii\db\Migration
+class m200000_000001_create_table_v2_tags extends \yii\db\Migration
 {
     public function safeUp()
     {

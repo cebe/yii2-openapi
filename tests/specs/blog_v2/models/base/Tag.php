@@ -9,7 +9,7 @@ namespace app\models\base;
  * @property string $name
  * @property string $lang
  *
- * @property array|\app\models\PostTag[] $post_tags
+ * @property array|\app\models\Post[] $posts
  */
 abstract class Tag extends \yii\db\ActiveRecord
 {
@@ -30,8 +30,9 @@ abstract class Tag extends \yii\db\ActiveRecord
         ];
     }
 
-    public function getPostTags()
+    public function getPosts()
     {
-        return $this->hasMany(\app\models\PostTag::class, ['tag_id' => 'id']);
+        return $this->hasMany(\app\models\Post::class, ['id' => 'post_id'])
+                    ->viaTable('posts2tags', ['tag_id' => 'id']);
     }
 }

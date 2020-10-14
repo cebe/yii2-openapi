@@ -3,7 +3,7 @@
 /**
  * Table for Post
  */
-class m200000_000001_change_table_v2_posts extends \yii\db\Migration
+class m200000_000000_change_table_v2_posts extends \yii\db\Migration
 {
     public function up()
     {

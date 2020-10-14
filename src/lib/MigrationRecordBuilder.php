@@ -116,12 +116,12 @@ class MigrationRecordBuilder
 
     public function setColumnNotNull(string $tableAlias, ColumnSchema $column):string
     {
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, 'SET NOT NULL');
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET NOT NULL"');
     }
 
     public function dropColumnNotNull(string $tableAlias, ColumnSchema $column):string
     {
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, 'DROP NOT NULL');
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"DROP NOT NULL"');
     }
 
     public function createEnum(string $columnName, array $values):string

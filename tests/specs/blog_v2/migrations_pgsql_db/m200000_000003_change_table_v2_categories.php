@@ -3,7 +3,7 @@
 /**
  * Table for Category
  */
-class m200000_000000_change_table_v2_categories extends \yii\db\Migration
+class m200000_000003_change_table_v2_categories extends \yii\db\Migration
 {
     public function safeUp()
     {

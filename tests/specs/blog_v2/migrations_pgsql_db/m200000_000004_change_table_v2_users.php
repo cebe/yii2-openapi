@@ -3,7 +3,7 @@
 /**
  * Table for User
  */
-class m200000_000002_change_table_v2_users extends \yii\db\Migration
+class m200000_000004_change_table_v2_users extends \yii\db\Migration
 {
     public function safeUp()
     {
