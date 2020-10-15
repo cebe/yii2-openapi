@@ -7,7 +7,7 @@ Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/ext
 [![Latest Stable Version](https://poser.pugx.org/cebe/yii2-openapi/v/stable)](https://packagist.org/packages/cebe/yii2-openapi)
 [![Total Downloads](https://poser.pugx.org/cebe/yii2-openapi/downloads)](https://packagist.org/packages/cebe/yii2-openapi)
 [![License](https://poser.pugx.org/cebe/yii2-openapi/license)](https://packagist.org/packages/cebe/yii2-openapi)
-[![Build Status](https://travis-ci.org/cebe/yii2-openapi.svg?branch=master)](https://travis-ci.org/cebe/yii2-openapi)
+![yii2-openapi](https://github.com/cebe/yii2-openapi/workflows/yii2-openapi/badge.svg?branch=wip)
 
 ## what should this do?
 
@@ -23,8 +23,7 @@ This library is currently work in progress, current features are checked here wh
 - [x] generate Models
 - [x] generate Database migration
 - [x] provide Dummy API via Faker
-
-- [ ] update Database and models when API schema changes
+- [x] update Database and models when API schema changes
 
 ## Requirements
 
@@ -96,11 +95,16 @@ You may specify custom PHP code for generating fake data for a property:
 
 Specify the table name for a Schema that defines a model which is stored in the database.
 
+### `x-pk`
+
+Explicitly specify primary key name for table, if it is different from "id" 
+
 ```yaml
     Post:
       x-table: posts
+      x-pk: uid
       properties:
-        id:
+        uid:
            type: integer
         title:
            type: string
@@ -108,7 +112,10 @@ Specify the table name for a Schema that defines a model which is stored in the 
 
 ### `x-db-type`
 
-Explicitly specify the database type for a column.
+Explicitly specify the database type for a column. (MUST contains only db type! (json, jsonb, uuid, varchar etc))
+
+### `x-db-unique`
+Flag for unique column
 
 ```yaml
     Post:
@@ -119,10 +126,24 @@ Explicitly specify the database type for a column.
            x-db-type: INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT
         title:
            type: string
+           x-db-unique: true
         metadata:
            type: object
            x-db-type: JSON NOT NULL DEFAULT '{}'
 ```
+
+### Many-to-Many relation definition
+- property name for many-to-many relation should be equal lower-cased, pluralized related schema name 
+- referenced schema should contains mirrored reference to current schema
+- migration for junction table can be generated automatically - table name should be [pluralized, lower-cased
+ schema_name1]2[pluralized, lower-cased schema name2], in alphabetical order;
+ For example, for schemas Post and Tag - table should be posts2tags, for schemas Post and Attachement - table should
+  be attachments2posts
+- If you need custom junction table, (if it should contains additional attributes) - define schema model named as
+  [pluralized, pascal-cased schema_name1]2[pluralized, pascal-cased schema name2] in alphabetical order
+  For example, for schemas Post and Tag - junction schema name should be Posts2Tags, for schemas BlogPost and
+   BlogCategory - junction schema name should be BlogCategories2BlogPosts
+ - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)         
 
 ## Screenshots
 

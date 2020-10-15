@@ -8,12 +8,14 @@
 namespace cebe\yii2openapi\lib;
 
 use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
 use yii\db\Connection;
 use yii\db\Schema;
 use function array_intersect;
+use function array_keys;
 use function array_map;
 use function in_array;
 use function is_bool;
@@ -90,6 +92,36 @@ class MigrationBuilder
         return $this->tableSchema === null ? $this->buildFresh() : $this->buildSecondary();
     }
 
+    public function buildJunction(ManyToManyRelation $relation): MigrationModel
+    {
+        $this->tableSchema = $this->db->getTableSchema($relation->getViaTableAlias(), true);
+        if ($this->tableSchema !== null) {
+            return $this->buildSecondary($relation);
+        }
+        $this->migration = new MigrationModel($this->model, true, $relation);
+        $builder = $this->recordBuilder;
+        $tableAlias = $relation->getViaTableAlias();
+        $this->migration->addUpCode($builder->createTable($tableAlias, $relation->columnSchema, []))
+                        ->addDownCode($builder->dropTable($tableAlias));
+        $this->migration->addUpCode($builder->addPrimaryKey($tableAlias, array_keys($relation->columnSchema)))
+                        ->addDownCode($builder->dropPrimaryKey($tableAlias, array_keys($relation->columnSchema)));
+        foreach ($relation->getRelations() as $rel) {
+            $fkCol = $rel->getColumnName();
+            $refCol = $rel->getForeignName();
+            $refTable = $rel->getTableAlias();
+            $fkName = $this->foreignKeyName($relation->viaTableName, $fkCol, $rel->getTableName(), $refCol);
+            if (isset($existedRelations[$fkName])) {
+                unset($existedRelations[$fkName]);
+                continue;
+            }
+            $this->migration
+                ->addUpCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol))
+                ->addDownCode($this->recordBuilder->dropFk($fkName, $tableAlias));
+            $this->migration->dependencies[] = $refTable;
+        }
+        return $this->migration;
+    }
+
     public function buildFresh():MigrationModel
     {
         $this->migration = new MigrationModel($this->model, true);
@@ -125,12 +157,12 @@ class MigrationBuilder
         return $this->migration;
     }
 
-    public function buildSecondary():MigrationModel
+    public function buildSecondary(?ManyToManyRelation $relation = null):MigrationModel
     {
-        $this->migration = new MigrationModel($this->model, false);
-        $this->uniqueColumns = $this->model->getUniqueColumnsList();
-        $this->currentUniqueColumns = array_values($this->findUniqueIndexes());
-        $this->newColumns = $this->model->attributesToColumnSchema();
+        $this->migration = new MigrationModel($this->model, false, $relation);
+        $this->uniqueColumns = $relation? [] : $this->model->getUniqueColumnsList();
+        $this->currentUniqueColumns = $relation? [] : array_values($this->findUniqueIndexes());
+        $this->newColumns = $relation? $relation->columnSchema: $this->model->attributesToColumnSchema();
         $wantNames = array_keys($this->newColumns);
         $haveNames = $this->tableSchema->columnNames;
         sort($wantNames);
@@ -156,8 +188,11 @@ class MigrationBuilder
         foreach ($columnsForChange as $commonColumn) {
             $this->buildColumnChanges($this->tableSchema->columns[$commonColumn], $this->newColumns[$commonColumn]);
         }
-
-        $this->buildRelations();
+        if ($relation) {
+            $this->buildRelationsForJunction($relation);
+        } else {
+            $this->buildRelations();
+        }
         return $this->migration;
     }
 
@@ -282,9 +317,42 @@ class MigrationBuilder
         }
     }
 
+    private function buildRelationsForJunction(ManyToManyRelation $relation):void
+    {
+        $tableAlias = $relation->viaTableAlias;
+        $existedRelations = [];
+        foreach ($this->tableSchema->foreignKeys as $fkName => $rel) {
+            $refTable = $this->unPrefixTableName(array_shift($rel));
+            $refCol = array_keys($rel)[0];
+            $fkCol = $rel[$refCol];
+            $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
+        }
+        foreach ($relation->getRelations() as $rel) {
+            $fkCol = $rel->getColumnName();
+            $refCol = $rel->getForeignName();
+            $refTable = $rel->getTableAlias();
+            $fkName = $this->foreignKeyName($relation->viaTableName, $fkCol, $rel->getTableName(), $refCol);
+            if (isset($existedRelations[$fkName])) {
+                unset($existedRelations[$fkName]);
+                continue;
+            }
+            $this->migration
+                ->addUpCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol))
+                ->addDownCode($this->recordBuilder->dropFk($fkName, $tableAlias));
+            if ($rel->getTableName() !== $relation->viaTableName) {
+                $this->migration->dependencies[] = $refTable;
+            }
+        }
+        foreach ($existedRelations as $fkName => $rel) {
+            ['fkCol' => $fkCol, 'refCol' => $refCol, 'refTable' => $refTable] = $rel;
+            $this->migration
+                ->addUpCode($this->recordBuilder->dropFk($fkName, $tableAlias), true)
+                ->addDownCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol), true);
+        }
+    }
     private function buildRelations():void
     {
-        $tableName = $this->model->getTableAlias();
+        $tableAlias = $this->model->getTableAlias();
         $existedRelations = [];
         foreach ($this->tableSchema->foreignKeys as $fkName => $relation) {
             $refTable = $this->unPrefixTableName(array_shift($relation));
@@ -302,8 +370,8 @@ class MigrationBuilder
                 continue;
             }
             $this->migration
-                ->addUpCode($this->recordBuilder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol))
-                ->addDownCode($this->recordBuilder->dropFk($fkName, $tableName));
+                ->addUpCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol))
+                ->addDownCode($this->recordBuilder->dropFk($fkName, $tableAlias));
             if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;
             }
@@ -311,8 +379,8 @@ class MigrationBuilder
         foreach ($existedRelations as $fkName => $relation) {
             ['fkCol' => $fkCol, 'refCol' => $refCol, 'refTable' => $refTable] = $relation;
             $this->migration
-                ->addUpCode($this->recordBuilder->dropFk($fkName, $tableName), true)
-                ->addDownCode($this->recordBuilder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol), true);
+                ->addUpCode($this->recordBuilder->dropFk($fkName, $tableAlias), true)
+                ->addDownCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol), true);
         }
     }
 

@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\items;
 
 use yii\helpers\Inflector;
+use yii\helpers\VarDumper;
 use function reset;
 
 class AttributeRelation
@@ -116,6 +117,7 @@ class AttributeRelation
     {
         return $this->selfReference;
     }
+
     /**
      * @return string
      */
@@ -179,5 +181,14 @@ class AttributeRelation
     public function getForeignName():string
     {
         return key($this->link);
+    }
+
+    public function linkToString():string
+    {
+        return str_replace(
+            [',', '=>', ', ]'],
+            [', ', ' => ', ']'],
+            preg_replace('~\s+~', '', VarDumper::export($this->getLink()))
+        );
     }
 }

@@ -3,7 +3,7 @@
 /**
  * Table for Comment
  */
-class m200000_000003_create_table_v2_comments extends \yii\db\Migration
+class m200000_000005_create_table_v2_comments extends \yii\db\Migration
 {
     public function up()
     {

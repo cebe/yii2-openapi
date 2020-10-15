@@ -7,12 +7,39 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\lib\AttributeResolver;
 use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use tests\TestCase;
 use Yii;
 use const PHP_EOL;
 
 class AttributeResolverTest extends TestCase
 {
+    public function testManyToManyResolve()
+    {
+        $schemaFile = Yii::getAlias("@specs/many2many.yaml");
+        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
+        $postModel = (new AttributeResolver('Post', $openApi->components->schemas['Post']))->resolve();
+        self::assertNotEmpty($postModel->many2many);
+        $relation = $postModel->many2many['tags'];
+        self::assertInstanceOf(ManyToManyRelation::class, $relation);
+        self::assertEquals('Tag', $relation->relatedClassName);
+        self::assertEquals('Post', $relation->className);
+        self::assertEquals('id', $relation->pkAttribute->propertyName);
+        self::assertEquals('posts2tags', $relation->getViaTableName());
+        self::assertEquals(['id' => 'tag_id'], $relation->getLink());
+        self::assertEquals(['post_id' => 'id'], $relation->getViaLink());
+
+        $tagModel = (new AttributeResolver('Tag', $openApi->components->schemas['Tag']))->resolve();
+        self::assertNotEmpty($tagModel->many2many);
+        $relation = $tagModel->many2many['posts'];
+        self::assertInstanceOf(ManyToManyRelation::class, $relation);
+        self::assertEquals('Post', $relation->relatedClassName);
+        self::assertEquals('Tag', $relation->className);
+        self::assertEquals('id', $relation->pkAttribute->propertyName);
+        self::assertEquals('posts2tags', $relation->getViaTableName());
+        self::assertEquals(['id' => 'post_id'], $relation->getLink());
+        self::assertEquals(['tag_id' => 'id'], $relation->getViaLink());
+    }
     /**
      * @dataProvider dataProvider
      * @param string                              $schemaName

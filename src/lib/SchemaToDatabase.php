@@ -11,6 +11,7 @@ use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
+use cebe\yii2openapi\lib\items\DbModel;
 use Yii;
 use yii\base\Component;
 use yii\helpers\StringHelper;
@@ -86,8 +87,18 @@ class SchemaToDatabase extends Component
             if (!$this->canGenerateModel($schemaName, $schema)) {
                 continue;
             }
+            /**@var \cebe\yii2openapi\lib\AttributeResolver $resolver*/
             $resolver = Yii::createObject($this->attributeResolverClass, [$schemaName, $schema]);
             $models[$schemaName] = $resolver->resolve();
+        }
+        foreach ($models as $schemaName => $model) {
+            foreach ($model->many2many as $relation) {
+                if (isset($models[$relation->viaModelName])) {
+                    $relation->hasViaModel = true;
+                }
+                $relation->pkAttribute = $model->getPkAttribute();
+                $relation->relatedPkAttribute = $models[$relation->relatedSchemaName]->getPkAttribute();
+            }
         }
 
         // TODO generate inverse relations

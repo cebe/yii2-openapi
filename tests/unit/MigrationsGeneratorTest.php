@@ -76,7 +76,7 @@ class MigrationsGeneratorTest extends TestCase
                 'title' => '$this->string(60)->notNull()->unique()',
                 'article' => '$this->text()->null()->defaultValue("")',
             ]));
-        $expect = new MigrationModel($dbModel, true, [
+        $expect = new MigrationModel($dbModel, true, null, [
             'dependencies' => [],
             'upCodes' => [
                 "\$this->createTable('{{%dummy}}', $codes);",

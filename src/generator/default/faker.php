@@ -32,7 +32,7 @@ class <?= $model->getClassName() ?>Faker
             continue;
         }
         ?>
-<?php if($attribute->primary === true && $attribute->phpType === 'int'):?>
+<?php if ($attribute->primary === true && $attribute->phpType === 'int'):?>
         //$model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;
 <?php else:?>
         $model-><?= $attribute->columnName ?> = <?= $attribute->fakerStub ?>;

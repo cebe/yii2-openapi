@@ -12,7 +12,7 @@ class PetFaker
 {
     public function generateModel()
     {
-        $faker = FakerFactory::create(\Yii::$app->language);
+        $faker = FakerFactory::create(str_replace('-', '_', \Yii::$app->language));
         $uniqueFaker = new UniqueGenerator($faker);
         $model = new Pet();
         //$model->id = $uniqueFaker->numberBetween(0, 2147483647);

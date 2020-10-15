@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib;
 use yii\db\ColumnSchema;
 use yii\db\Schema;
 use yii\helpers\VarDumper;
+use function implode;
 use function sprintf;
 use function str_replace;
 
@@ -18,6 +19,7 @@ class MigrationRecordBuilder
     public const INDENT = '        ';
     public const DROP_INDEX = MigrationRecordBuilder::INDENT . "\$this->dropIndex('%s', '%s');";
     public const DROP_FK = MigrationRecordBuilder::INDENT . "\$this->dropForeignKey('%s', '%s');";
+    public const DROP_PK = MigrationRecordBuilder::INDENT . "\$this->dropPrimaryKey('%s', '%s');";
     public const ADD_TABLE = MigrationRecordBuilder::INDENT . "\$this->createTable('%s', %s);";
     public const ADD_UNIQUE = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', true);";
     public const DROP_COLUMN = MigrationRecordBuilder::INDENT . "\$this->dropColumn('%s', '%s');";
@@ -25,6 +27,7 @@ class MigrationRecordBuilder
     public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE enum_%s');";
     public const DROP_TABLE = MigrationRecordBuilder::INDENT . "\$this->dropTable('%s');";
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
+    public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
     public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
 
@@ -80,13 +83,13 @@ class MigrationRecordBuilder
     public function alterColumnType(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, false, false);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getType());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, false, true);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getType());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
@@ -116,12 +119,12 @@ class MigrationRecordBuilder
 
     public function setColumnNotNull(string $tableAlias, ColumnSchema $column):string
     {
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, 'SET NOT NULL');
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET NOT NULL"');
     }
 
     public function dropColumnNotNull(string $tableAlias, ColumnSchema $column):string
     {
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, 'DROP NOT NULL');
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"DROP NOT NULL"');
     }
 
     public function createEnum(string $columnName, array $values):string
@@ -137,6 +140,18 @@ class MigrationRecordBuilder
     public function addUniqueIndex(string $tableAlias, string $columnName):string
     {
         return sprintf(self::ADD_UNIQUE, 'unique_' . $columnName, $tableAlias, $columnName);
+    }
+
+    public function addPrimaryKey(string $tableAlias, array $columns)
+    {
+        $name = 'pk_'. implode('_', $columns);
+        return sprintf(self::ADD_PK, $name, $tableAlias, implode(',', $columns));
+    }
+
+    public function dropPrimaryKey(string $tableAlias, array $columns)
+    {
+        $name = 'pk_'. implode('_', $columns);
+        return sprintf(self::DROP_PK, $name, $tableAlias);
     }
 
     public function dropTable(string $tableAlias):string

@@ -14,6 +14,8 @@ use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
 use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\ManyToManyRelation;
+use Throwable;
 use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
@@ -22,6 +24,7 @@ use function in_array;
 use function is_string;
 use function str_replace;
 use function strpos;
+use function strtolower;
 use function substr;
 
 class AttributeResolver
@@ -38,6 +41,11 @@ class AttributeResolver
      * @var AttributeRelation[]|array
      */
     private $relations = [];
+
+    /**
+     * @var ManyToManyRelation[]|array
+     */
+    private $many2many = [];
 
     /**
      * @var string
@@ -75,15 +83,17 @@ class AttributeResolver
             $this->resolveProperty($propertyName, $property, $isRequired);
         }
         return new DbModel([
+            'pkName' => $this->primaryKey,
             'name' => $this->schemaName,
             'tableName' => $this->tableName,
             'description' => $this->componentSchema->description,
             'attributes' => $this->attributes,
             'relations' => $this->relations,
+            'many2many' => $this->many2many,
         ]);
     }
 
-    protected static function tableNameBySchema(string $schemaName):string
+    public static function tableNameBySchema(string $schemaName):string
     {
         return Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_');
     }
@@ -100,7 +110,7 @@ class AttributeResolver
             $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $relatedSchema = $property->resolve();
             if (strpos($refPointer, self::REFERENCE_PATH) === 0) {
-                if (strpos($refPointer, '/properties/')!==false) {
+                if (strpos($refPointer, '/properties/') !== false) {
                     $relatedClassName = Inflector::id2camel($this->schemaName, '_');
                     $attribute->asReference($relatedClassName);
                     $foreignPk = $this->componentSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
@@ -158,10 +168,11 @@ class AttributeResolver
         // has Many relation
         $refPointer = $this->getHasManyReference($property);
         if ($refPointer !== null) {
-            if (strpos($refPointer, '/properties/')!==false) {
+            //self relation
+            if (strpos($refPointer, '/properties/') !== false) {
                 $relatedClassName = Inflector::id2camel($this->schemaName, '_');
                 $relatedTableName = $this->tableName;
-                $foreignAttr = str_replace(self::REFERENCE_PATH.$relatedClassName.'/properties/', '', $refPointer);
+                $foreignAttr = str_replace(self::REFERENCE_PATH . $relatedClassName . '/properties/', '', $refPointer);
                 $foreignPk = Inflector::camel2id($foreignAttr, '_') . '_id';
                 $attribute->setPhpType($relatedClassName . '[]');
                 $this->relations[$propertyName] =
@@ -169,12 +180,16 @@ class AttributeResolver
                         ->asHasMany([$foreignPk => $this->primaryKey]);
                 return;
             }
-            $relatedClassName = substr($refPointer, self::REFERENCE_PATH_LEN);
-            $relatedClassName = Inflector::id2camel($relatedClassName, '_');
+            $relatedSchemaName = substr($refPointer, self::REFERENCE_PATH_LEN);
+            $relatedClassName = Inflector::id2camel($relatedSchemaName, '_');
             $property->items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $relatedSchema = $property->items->resolve();
             $relatedTableName =
                 $relatedSchema->{CustomSpecAttr::TABLE} ?? self::tableNameBySchema($relatedClassName);
+            if ($this->catchManyToMany($propertyName, $relatedSchemaName, $relatedTableName, $relatedSchema)) {
+                return;
+            }
+
 //            $foreignPk = $relatedSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
             $attribute->setPhpType($relatedClassName . '[]');
             $this->relations[$propertyName] =
@@ -183,6 +198,49 @@ class AttributeResolver
             return;
         }
         $this->attributes[$propertyName] = $attribute->setFakerStub($this->guessFakerStub($attribute, $property));
+    }
+
+    /**
+     * Check and register many-to-many relation
+     * - property name for many-to-many relation should be equal lower-cased, pluralized schema name
+     * - referenced schema should contains mirrored reference to current schema
+     * @param string                    $propertyName
+     * @param string                    $relatedSchemaName
+     * @param string                    $relatedTableName
+     * @param \cebe\openapi\spec\Schema $relatedSchema
+     * @return bool
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
+    protected function catchManyToMany(
+        string $propertyName,
+        string $relatedSchemaName,
+        string $relatedTableName,
+        Schema $relatedSchema
+    ):bool {
+        if (strtolower(Inflector::id2camel($propertyName, '_'))
+            !== strtolower(Inflector::pluralize($relatedSchemaName))) {
+            return false;
+        }
+        $expectedPropertyName = strtolower(Inflector::pluralize(Inflector::camel2id($this->schemaName, '_')));
+        if (!isset($relatedSchema->properties[$expectedPropertyName])) {
+            return false;
+        }
+        $relatedProperty = $relatedSchema->properties[$expectedPropertyName];
+        $ref = $this->getHasManyReference($relatedProperty);
+        $refClassName = substr($ref, self::REFERENCE_PATH_LEN);
+        if ($refClassName !== $this->schemaName) {
+            return false;
+        }
+        $relation = new ManyToManyRelation([
+            'name' => $propertyName,
+            'schemaName' => $this->schemaName,
+            'relatedSchemaName' => $relatedSchemaName,
+            'tableName' => $this->tableName,
+            'relatedTableName' => $relatedTableName,
+            'pkAttribute' => $this->attributes[$this->primaryKey],
+        ]);
+        $this->many2many[$propertyName] = $relation;
+        return true;
     }
 
     protected function getHasManyReference(SpecObjectInterface $property):?string
@@ -240,13 +298,13 @@ class AttributeResolver
             && StringHelper::startsWith($attribute->dbType, 'json')) {
             try {
                 return Json::decode($property->default);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 return [];
             }
         }
 
         if ($attribute->phpType === 'integer' && $property->default !== null) {
-            return (int) $property->default;
+            return (int)$property->default;
         }
 
         return $property->default;

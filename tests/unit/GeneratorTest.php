@@ -6,6 +6,7 @@ use cebe\yii2openapi\generator\ApiGenerator;
 use tests\TestCase;
 use Yii;
 use yii\helpers\FileHelper;
+use yii\helpers\StringHelper;
 use function strpos;
 
 class GeneratorTest extends TestCase
@@ -15,6 +16,9 @@ class GeneratorTest extends TestCase
         $tests = FileHelper::findFiles(Yii::getAlias('@specs'), ['recursive' => false, 'only' => ['*.php']]);
         $ret = [];
         foreach ($tests as $testFile) {
+//            if(!StringHelper::endsWith($testFile, 'blog_v2.php')){
+//                continue;
+//            }
             $ret[] = [substr($testFile, strlen(Yii::getAlias('@specs')) + 1)];
         }
         return $ret;

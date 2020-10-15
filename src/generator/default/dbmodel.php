@@ -29,6 +29,10 @@ namespace <?= $namespace ?>;
 <?php endif?>
 
 <?php endforeach; ?>
+<?php foreach ($model->many2many as $relation): ?>
+ * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->relatedClassName ?>[] $<?= $relation->name ?>
+
+<?php endforeach; ?>
  */
 abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 {
@@ -46,12 +50,20 @@ abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
     public function get<?= $relation->getCamelName() ?>()
     {
         return $this-><?= $relation->getMethod() ?>(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>::class, <?php
-            echo str_replace(
-                    [',', '=>', ', ]'],
-                    [', ', ' => ', ']'],
-                    preg_replace('~\s+~', '', VarDumper::export($relation->getLink()))
-            )
-        ?>);
+            echo $relation->linkToString()?>);
+    }
+<?php endforeach; ?>
+<?php foreach ($model->many2many as $relation): ?>
+
+    public function get<?= $relation->getCamelName() ?>()
+    {
+        return $this->hasMany(\<?= trim($relationNamespace, '\\') ?>\<?= $relation->relatedClassName ?>::class, <?php
+            echo $relation->linkToString($relation->link)?>)
+<?php if (!$relation->hasViaModel):?>
+                    ->viaTable(<?=VarDumper::export($relation->viaTableName)?>, <?=$relation->linkToString($relation->viaLink)?>);
+<?php else:?>
+                    ->via('<?=lcfirst($relation->getViaModelName())?>');
+<?php endif;?>
     }
 <?php endforeach; ?>
 }

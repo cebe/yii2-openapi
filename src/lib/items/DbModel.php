@@ -27,6 +27,10 @@ use const PHP_EOL;
 class DbModel extends BaseObject
 {
     /**
+     * @var string primary key attribute name
+     */
+    public $pkName;
+    /**
      * @var string model name.
      */
     public $name;
@@ -50,6 +54,11 @@ class DbModel extends BaseObject
      * @var array|\cebe\yii2openapi\lib\items\AttributeRelation[] database relations.
      */
     public $relations = [];
+
+    /**
+     * @var array|\cebe\yii2openapi\lib\items\ManyToManyRelation[] many to many relations.
+     */
+    public $many2many = [];
 
     public function getTableAlias():string
     {
@@ -93,6 +102,11 @@ class DbModel extends BaseObject
                 return $relation->isHasOne();
             }
         );
+    }
+
+    public function getPkAttribute():Attribute
+    {
+        return $this->attributes[$this->pkName];
     }
 
     /**
