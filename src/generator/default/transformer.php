@@ -43,6 +43,15 @@ class <?=$transformer->name?> extends TransformerAbstract
         return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php endif;?>
     }
-<?php endforeach;
-endif;?>
+<?php endforeach;?>
+<?php foreach ($transformer->many2Many as $relation):?>
+
+    public function include<?=$relation->getCamelName()?>(<?=$transformer->dbModel->getClassName()?> $model)
+    {
+        $relation = $model-><?=Inflector::variablize($relation->name)?>;
+        $transformer = new <?=Inflector::singularize($relation->getRelatedClassName())?>Transformer();
+        return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->relatedSchemaName)?>');
+    }
+<?php endforeach;?>
+<?php endif;?>
 }

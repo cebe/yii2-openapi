@@ -7,13 +7,13 @@ info:
 servers:
   - url: http://blog.dummy.io/v2
 paths:
-  /some:
+  /posts:
     get:
       summary: dummy path
       operationId: showDummy
       responses:
         '200':
-          description: Some response
+          $ref: '#/components/responses/PostListResponse'
 components:
   schemas:
     Post:
@@ -86,3 +86,38 @@ components:
           $ref: '#/components/schemas/Photo'
         post:
           $ref: '#/components/schemas/Post'
+    _PostResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Post'
+        links:
+          type: object
+        relationships:
+          type: object
+  responses:
+    PostResponse:
+      description: Single post info
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_PostResource'
+    PostListResponse:
+      description: Posts List
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_PostResource'

@@ -11,12 +11,13 @@ use yii\base\BaseObject;
 use yii\helpers\Inflector;
 
 /**
- * @property-read string                                                $name
- * @property-read array                                                 $defaultRelations
- * @property-read string                                                $modelFQN
- * @property-read string                                                $fQN
- * @property-read array|\cebe\yii2openapi\lib\items\AttributeRelation[] $relations
- * @property-read array                                                 $availableRelations
+ * @property-read string                                                 $name
+ * @property-read array                                                  $defaultRelations
+ * @property-read string                                                 $modelFQN
+ * @property-read string                                                 $fQN
+ * @property-read array|\cebe\yii2openapi\lib\items\AttributeRelation[]  $relations
+ * @property-read \cebe\yii2openapi\lib\items\ManyToManyRelation[]|array $many2Many
+ * @property-read array                                                  $availableRelations
  */
 class Transformer extends BaseObject
 {
@@ -77,6 +78,14 @@ class Transformer extends BaseObject
         return $this->dbModel->relations;
     }
 
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\ManyToManyRelation[]
+     */
+    public function getMany2Many(): array
+    {
+        return $this->dbModel->many2many;
+    }
+
     public function getDefaultRelations(): array
     {
         return [];
@@ -84,11 +93,12 @@ class Transformer extends BaseObject
 
     public function getAvailableRelations(): array
     {
-        return \array_keys($this->dbModel->relations);
+        return array_merge(array_keys($this->dbModel->relations), array_keys($this->dbModel->many2many));
     }
 
     public function makeResourceKey(string $value): string
     {
-        return $this->singularResourceKey ? Inflector::singularize($value): Inflector::pluralize($value);
+        $value = $this->singularResourceKey ? Inflector::singularize($value): Inflector::pluralize($value);
+        return strtolower(Inflector::camel2id($value, '_'));
     }
 }
