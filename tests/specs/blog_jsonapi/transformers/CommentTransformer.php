@@ -17,6 +17,9 @@ class CommentTransformer extends TransformerAbstract
     public function includePost(Comment $model)
     {
         $relation = $model->post;
+        if ($relation === null) {
+            return $this->null();
+        }
         $transformer = new PostTransformer();
         return $this->item($relation, $transformer, 'posts');
     }
@@ -24,6 +27,9 @@ class CommentTransformer extends TransformerAbstract
     public function includeUser(Comment $model)
     {
         $relation = $model->user;
+        if ($relation === null) {
+            return $this->null();
+        }
         $transformer = new UserTransformer();
         return $this->item($relation, $transformer, 'users');
     }

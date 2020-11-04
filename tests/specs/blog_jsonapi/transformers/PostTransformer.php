@@ -17,6 +17,9 @@ class PostTransformer extends TransformerAbstract
     public function includeCategory(Post $model)
     {
         $relation = $model->category;
+        if ($relation === null) {
+            return $this->null();
+        }
         $transformer = new CategoryTransformer();
         return $this->item($relation, $transformer, 'categories');
     }
@@ -24,6 +27,9 @@ class PostTransformer extends TransformerAbstract
     public function includeAuthor(Post $model)
     {
         $relation = $model->author;
+        if ($relation === null) {
+            return $this->null();
+        }
         $transformer = new UserTransformer();
         return $this->item($relation, $transformer, 'users');
     }
