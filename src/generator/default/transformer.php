@@ -36,10 +36,14 @@ class <?=$transformer->name?> extends TransformerAbstract
     public function include<?=$relation->getCamelName()?>(<?=$transformer->dbModel->getClassName()?> $model)
     {
         $relation = $model-><?=Inflector::variablize($relation->getName())?>;
-        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
 <?php if ($relation->isHasOne()):?>
+        if ($relation === null) {
+            return $this->null();
+        }
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
         return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php else:?>
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
         return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php endif;?>
     }
