@@ -29,7 +29,7 @@ class TagFaker
     public static function makeOne(array $attributes, bool $save = false)
     {
         $model = (new static())->generateModel();
-        $model->setAttributes($attributes);
+        $model->setAttributes($attributes, false);
         if ($save === true) {
             $model->save();
         }
