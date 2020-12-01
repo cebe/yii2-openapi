@@ -32,9 +32,9 @@ abstract class AuthController extends JsonApiController
         // TODO implement checkAccess
     }
 
-    public function actionViewPasswordRecovery()
+    public function actionPasswordRecovery()
     {
-        // TODO implement actionViewPasswordRecovery
+        // TODO implement actionPasswordRecovery
     }
 
     public function actionCreatePasswordRecovery()
@@ -42,9 +42,9 @@ abstract class AuthController extends JsonApiController
         // TODO implement actionCreatePasswordRecovery
     }
 
-    public function actionViewPasswordConfirmRecovery($token)
+    public function actionPasswordConfirmRecovery($token)
     {
-        // TODO implement actionViewPasswordConfirmRecovery
+        // TODO implement actionPasswordConfirmRecovery
     }
 
     public function actionCreateNewPassword()

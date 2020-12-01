@@ -70,7 +70,7 @@ class FractalGeneratorTest extends TestCase
                 'relatedModel' => null
             ]),
             new FractalAction([
-                'id' => 'view-password-recovery',
+                'id' => 'password-recovery',
                 'type' => RouteData::TYPE_DEFAULT,
                 'urlPath' => '/auth/password/recovery',
                 'requestMethod' => 'GET',
@@ -102,7 +102,7 @@ class FractalGeneratorTest extends TestCase
                 'relatedModel' => null
             ]),
             new FractalAction([
-                'id' => 'view-password-confirm-recovery',
+                'id' => 'password-confirm-recovery',
                 'type' => RouteData::TYPE_DEFAULT,
                 'urlPath' => '/auth/password/confirm-recovery/{token}',
                 'requestMethod' => 'GET',

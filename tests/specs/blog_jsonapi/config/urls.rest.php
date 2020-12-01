@@ -6,9 +6,9 @@
  */
 return [
     'GET me' => 'me/view',
-    'GET auth/password/recovery' => 'auth/view-password-recovery',
+    'GET auth/password/recovery' => 'auth/password-recovery',
     'POST auth/password/recovery' => 'auth/create-password-recovery',
-    'GET auth/password/confirm-recovery/<token:[\w-]+>' => 'auth/view-password-confirm-recovery',
+    'GET auth/password/confirm-recovery/<token:[\w-]+>' => 'auth/password-confirm-recovery',
     'POST auth/new-password' => 'auth/create-new-password',
     'GET categories' => 'category/list',
     'POST categories' => 'category/create',

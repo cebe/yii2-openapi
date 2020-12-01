@@ -80,7 +80,7 @@ class FractalGenerator extends UrlGenerator
         return new FractalAction([
             'singularResourceKey'=> $this->singularResourceKeys,
             'type' => $routeData->type,
-            'id' => $routeData->isNonCrudAction()?"{$actionType}-{$routeData->action}":"$actionType{$routeData->action}",
+            'id' => $routeData->isNonCrudAction()?trim("{$actionType}-{$routeData->action}", '-'):"$actionType{$routeData->action}",
             'controllerId' => $controllerId,
             'urlPath' => $routeData->path,
             'requestMethod' => strtoupper($method),
