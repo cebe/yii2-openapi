@@ -116,9 +116,15 @@ class SchemaToDatabase extends Component
     {
         $junctions = [];
         foreach ($openApi->components->schemas as $schemaName => $schema) {
-            if (!StringHelper::startsWith($schemaName, 'junk_') || $schema instanceof Reference) {
+            if (!StringHelper::startsWith($schemaName, JunctionSchemas::PREFIX)) {
                 continue;
             }
+
+            if ($schema instanceof Reference) {
+                $schema->getContext()->mode = ReferenceContext::RESOLVE_MODE_INLINE;
+                $schema = $schema->resolve();
+            }
+
             if (!$this->canGenerateModel($schemaName, $schema)) {
                 continue;
             }
@@ -141,6 +147,9 @@ class SchemaToDatabase extends Component
                 $relatedClassName = Inflector::id2camel($relatedClassName, '_');
 
                 foreach ($relatedSchema->properties as $propName => $prop) {
+                    if ($prop instanceof Reference) {
+                        continue;
+                    }
                     if (!($prop->type === 'array' && isset($prop->items) && $prop->items instanceof Reference)) {
                         continue;
                     }
