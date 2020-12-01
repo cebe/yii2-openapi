@@ -195,9 +195,11 @@ class SchemaToDatabase extends Component
             $junkRef0 = $propertyMap[0]['refProperty'];
             $junkRef1 = $propertyMap[1]['refProperty'];
             $propertyMap[0]['class'] = $propertyMap[1]['targetClass'];
+            $propertyMap[0]['pairProperty'] = $propertyMap[1]['property'];
             $propertyMap[0]['refProperty'] = $junkRef1;
             $propertyMap[1]['class'] = $propertyMap[0]['targetClass'];
             $propertyMap[1]['refProperty'] = $junkRef0;
+            $propertyMap[1]['pairProperty'] = $propertyMap[0]['property'];
             $junctions[] = $propertyMap[0];
             $junctions[] = $propertyMap[1];
             unset($junkRef, $junkRef1, $junkRef0, $propertyMap);

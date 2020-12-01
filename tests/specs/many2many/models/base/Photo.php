@@ -33,12 +33,12 @@ abstract class Photo extends \yii\db\ActiveRecord
 
     public function getPostsAttaches()
     {
-        return $this->hasMany(\app\models\PostsAttaches::class, ['photo_id' => 'id']);
+        return $this->hasMany(\app\models\PostsAttaches::class, ['attach_id' => 'id']);
     }
 
     public function getPostsGallery()
     {
-        return $this->hasMany(\app\models\PostsGallery::class, ['photo_id' => 'id']);
+        return $this->hasMany(\app\models\PostsGallery::class, ['image_id' => 'id']);
     }
 
     public function getPhotosPosts()
@@ -48,13 +48,13 @@ abstract class Photo extends \yii\db\ActiveRecord
 
     public function getTargets()
     {
-        return $this->hasMany(\app\models\Post::class, ['id' => 'post_id'])
+        return $this->hasMany(\app\models\Post::class, ['id' => 'target_id'])
                     ->via('postsAttaches');
     }
 
     public function getArticles()
     {
-        return $this->hasMany(\app\models\Post::class, ['id' => 'post_id'])
+        return $this->hasMany(\app\models\Post::class, ['id' => 'article_id'])
                     ->via('postsGallery');
     }
 

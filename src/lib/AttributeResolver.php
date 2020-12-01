@@ -162,12 +162,15 @@ class AttributeResolver
                 'pkAttribute' => $this->attributes[$this->primaryKey],
                 'hasViaModel' => true,
                 'viaModelName' => $viaModel,
-                'viaRelationName' => Inflector::id2camel($junkRef, '_')
+                'viaRelationName' => Inflector::id2camel($junkRef, '_'),
+                'fkProperty' => $junkAttribute['pairProperty'],
+                'relatedFkProperty' => $junkAttribute['property'],
             ]);
             $this->many2many[Inflector::pluralize($junkProperty)] = $relation;
+
             $this->relations[Inflector::pluralize($junkRef)] =
                 (new AttributeRelation($junkRef, $junkAttribute['junctionTable'], $viaModel))
-                    ->asHasMany([Inflector::camel2id($this->schemaName, '_') . '_id' => $this->primaryKey]);
+                    ->asHasMany([$junkAttribute['pairProperty'].'_id' => $this->primaryKey]);
             return;
         }
 

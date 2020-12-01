@@ -60,6 +60,11 @@ class ManyToManyRelation extends BaseObject
     /**@var string**/
     public $viaRelationName;
 
+    /**@var string**/
+    public $fkProperty;
+    /**@var string**/
+    public $relatedFkProperty;
+
     public function getCamelName():string
     {
         return Inflector::camelize($this->name);
@@ -126,12 +131,14 @@ class ManyToManyRelation extends BaseObject
 
     public function getSelfFk():string
     {
-        return strtolower(Inflector::camel2id($this->schemaName, '_')) . '_id';
+        $fk = $this->fkProperty ?? $this->schemaName;
+        return strtolower(Inflector::camel2id($fk, '_')) . '_id';
     }
 
     public function getRelatedFk():string
     {
-        return strtolower(Inflector::camel2id($this->relatedSchemaName, '_')) . '_id';
+        $fk = $this->relatedFkProperty ?? $this->relatedSchemaName;
+        return strtolower(Inflector::camel2id($fk, '_')) . '_id';
     }
 
     public function getLink():array
