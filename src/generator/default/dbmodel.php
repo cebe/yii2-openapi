@@ -31,7 +31,7 @@ namespace <?= $namespace ?>;
 
 <?php endforeach; ?>
 <?php foreach ($model->many2many as $relation): ?>
- * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->relatedClassName ?>[] $<?= $relation->name ?>
+ * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->relatedClassName ?>[] $<?= Inflector::variablize($relation->name) ?>
 
 <?php endforeach; ?>
  */
