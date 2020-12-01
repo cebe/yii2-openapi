@@ -133,17 +133,80 @@ Flag for unique column
 ```
 
 ### Many-to-Many relation definition
-- property name for many-to-many relation should be equal lower-cased, pluralized related schema name 
-- referenced schema should contains mirrored reference to current schema
-- migration for junction table can be generated automatically - table name should be [pluralized, lower-cased
+
+There are two ways for define many-to-many relations:
+
+#### Simple many-to-many without junction model
+
+   - property name for many-to-many relation should be equal lower-cased, pluralized related schema name
+     
+   - referenced schema should contains mirrored reference to current schema
+     
+   - migration for junction table can be generated automatically - table name should be [pluralized, lower-cased
  schema_name1]2[pluralized, lower-cased schema name2], in alphabetical order;
  For example, for schemas Post and Tag - table should be posts2tags, for schemas Post and Attachement - table should
   be attachments2posts
-- If you need custom junction table, (if it should contains additional attributes) - define schema model named as
-  [pluralized, pascal-cased schema_name1]2[pluralized, pascal-cased schema name2] in alphabetical order
-  For example, for schemas Post and Tag - junction schema name should be Posts2Tags, for schemas BlogPost and
-   BlogCategory - junction schema name should be BlogCategories2BlogPosts
- - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)         
+  
+```
+Post:
+  properties:
+  ...
+    tags:
+      type: array
+      items:
+        $ref: '#/components/schemas/Tag'
+
+Tag:
+  properties:
+  ...
+    posts:
+      type: array
+      items:
+        $ref: '#/components/schemas/Post'
+```
+  
+#### Many-to-many with junction model 
+
+This way allowed creating multiple many-to-many relations between to models 
+
+- define junction schema with all necessary attributes. There are only one important requirement - the junction
+ schema name
+ must be started with prefix 'junk_' (This prefix will be used internally only and
+ will be trimmed before table and model generation)
+ 
+```
+# Model TeamMembers with table team_members will be generated with columns team_id, user_id and role
+junk_TeamMembers:
+   team:
+      $ref: '#/components/schemas/Team'
+   user:
+      $ref: '#/components/schemas/User'
+   role:
+     type: string
+```
+- Both many-to-many related schemas must have properties with reference to "junk_*" schema. These properties will be
+ used as relation names 
+
+```
+Team:
+  properties:
+  ...
+     team_members:
+       type: array
+       items:
+         $ref: '#/components/schemas/junk_TeamMembers'
+
+User:
+  properties:
+  ...
+    memberships: #You absolutely free with naming for relationship attributes
+      type: array
+      items:
+        $ref: '#/components/schemas/junk_TeamMembers'
+```
+  
+ - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)
+ 
 
 ## Screenshots
 

@@ -142,6 +142,12 @@ class MigrationBuilder
                                 ->addDownCode($builder->dropEnum($attr->columnName));
             }
         }
+        if (!empty($this->model->junctionCols)) {
+            if (!isset($this->model->attributes[$this->model->pkName])) {
+                $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
+                            ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
+            }
+        }
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
@@ -184,6 +190,14 @@ class MigrationBuilder
         $columnsForChange = array_intersect($wantNames, $haveNames);
 
         $this->buildColumnsCreation($columnsForCreate);
+        if ($this->model->junctionCols && !isset($this->model->attributes[$this->model->pkName])) {
+            if (!empty(\array_intersect($columnsForDrop, $this->model->junctionCols))) {
+                $builder = $this->recordBuilder;
+                $tableName = $this->model->getTableAlias();
+                $this->migration->addUpCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols))
+                                ->addDownCode($builder->addPrimaryKey($tableName, $this->model->junctionCols));
+            }
+        }
         $this->buildColumnsDrop($columnsForDrop);
         foreach ($columnsForChange as $commonColumn) {
             $this->buildColumnChanges($this->tableSchema->columns[$commonColumn], $this->newColumns[$commonColumn]);

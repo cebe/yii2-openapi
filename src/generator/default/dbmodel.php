@@ -4,6 +4,7 @@
  * @var string $namespace
  * @var string $relationNamespace
  **/
+use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 
 ?>
@@ -23,9 +24,9 @@ namespace <?= $namespace ?>;
  *
 <?php foreach ($model->relations as $relationName => $relation): ?>
 <?php if ($relation->isHasOne()):?>
- * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?> $<?= $relationName ?>
+ * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?> $<?= Inflector::variablize($relation->getName()) ?>
 <?php else:?>
- * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>[] $<?= $relationName ?>
+ * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>[] $<?= Inflector::variablize($relation->getName()) ?>
 <?php endif?>
 
 <?php endforeach; ?>
@@ -62,7 +63,7 @@ abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 <?php if (!$relation->hasViaModel):?>
                     ->viaTable(<?=VarDumper::export($relation->viaTableName)?>, <?=$relation->linkToString($relation->viaLink)?>);
 <?php else:?>
-                    ->via('<?=lcfirst($relation->getViaModelName())?>');
+                    ->via('<?=lcfirst($relation->getViaRelationName())?>');
 <?php endif;?>
     }
 <?php endforeach; ?>
