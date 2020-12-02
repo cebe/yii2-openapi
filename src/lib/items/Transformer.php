@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
+use function array_map;
 
 /**
  * @property-read string                                                 $name
@@ -93,7 +94,15 @@ class Transformer extends BaseObject
 
     public function getAvailableRelations(): array
     {
-        return array_merge(array_keys($this->dbModel->relations), array_keys($this->dbModel->many2many));
+        $relations = array_map(function (AttributeRelation $relation) {
+            return Inflector::variablize($relation->getName());
+        }, $this->dbModel->relations);
+
+        $relationsMany = array_map(function (ManyToManyRelation $relation) {
+            return Inflector::variablize($relation->name);
+        }, $this->dbModel->many2many);
+
+        return array_merge($relations, $relationsMany);
     }
 
     public function makeResourceKey(string $value): string

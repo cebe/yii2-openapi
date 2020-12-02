@@ -6,7 +6,7 @@ use app\models\Post;
 
 class PostTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['category', 'author', 'comments', 'post_tags'];
+    protected $availableIncludes = ['category', 'author', 'comments', 'postTags'];
     protected $defaultIncludes = [];
 
     public function transform(Post $model)
