@@ -40,15 +40,15 @@ components:
         posts_attaches:
           type: array
           items:
-            $ref: '#/components/schemas/junk_PostsAttaches'
+            $ref: '#/components/schemas/junction_PostsAttaches'
         posts_gallery:
           type: array
           items:
-            $ref: '#/components/schemas/junk_PostsGallery'
+            $ref: '#/components/schemas/junction_PostsGallery'
         posts_photos:
           type: array
           items:
-            $ref: '#/components/schemas/junk_Photos2Posts'
+            $ref: '#/components/schemas/junction_Photos2Posts'
     Tag:
       x-table: tags
       required:
@@ -84,17 +84,17 @@ components:
         posts_attaches:
           type: array
           items:
-            $ref: '#/components/schemas/junk_PostsAttaches'
+            $ref: '#/components/schemas/junction_PostsAttaches'
         posts_gallery:
           type: array
           items:
-            $ref: '#/components/schemas/junk_PostsGallery'
+            $ref: '#/components/schemas/junction_PostsGallery'
         photos_posts:
           type: array
           items:
-            $ref: '#/components/schemas/junk_Photos2Posts'
+            $ref: '#/components/schemas/junction_Photos2Posts'
 
-    junk_Photos2Posts:
+    junction_Photos2Posts:
       x-table: photos2posts
       required:
         - id
@@ -108,7 +108,7 @@ components:
         post:
           $ref: '#/components/schemas/Post'
 
-    junk_PostsGallery:
+    junction_PostsGallery:
       x-table: posts_gallery
       properties:
         image:
@@ -118,7 +118,7 @@ components:
         is_cover:
           type: bool
 
-    junk_PostsAttaches:
+    junction_PostsAttaches:
       x-table: posts_attaches
       properties:
         id:

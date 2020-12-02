@@ -16,7 +16,7 @@ use function str_replace;
 
 class JunctionSchemas
 {
-    public const PREFIX = 'junk_';
+    public const PREFIX = 'junction_';
 
     /**@var array */
     private $data = [];

@@ -171,12 +171,12 @@ This way allowed creating multiple many-to-many relations between to models
 
 - define junction schema with all necessary attributes. There are only one important requirement - the junction
  schema name
- must be started with prefix 'junk_' (This prefix will be used internally only and
+ must be started with prefix 'junction_' (This prefix will be used internally only and
  will be trimmed before table and model generation)
  
 ```
 # Model TeamMembers with table team_members will be generated with columns team_id, user_id and role
-junk_TeamMembers:
+junction_TeamMembers:
    team:
       $ref: '#/components/schemas/Team'
    user:
@@ -184,7 +184,7 @@ junk_TeamMembers:
    role:
      type: string
 ```
-- Both many-to-many related schemas must have properties with reference to "junk_*" schema. These properties will be
+- Both many-to-many related schemas must have properties with reference to "junction_*" schema. These properties will be
  used as relation names 
 
 ```
@@ -194,7 +194,7 @@ Team:
      team_members:
        type: array
        items:
-         $ref: '#/components/schemas/junk_TeamMembers'
+         $ref: '#/components/schemas/junction_TeamMembers'
 
 User:
   properties:
@@ -202,7 +202,7 @@ User:
     memberships: #You absolutely free with naming for relationship attributes
       type: array
       items:
-        $ref: '#/components/schemas/junk_TeamMembers'
+        $ref: '#/components/schemas/junction_TeamMembers'
 ```
   
  - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)

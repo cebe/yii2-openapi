@@ -23,25 +23,25 @@ class SchemaToDatabaseTest extends TestCase
         VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
         self::assertEqualsCanonicalizing(
-            ['junk_Photos2Posts', 'junk_PostsGallery', 'junk_PostsAttaches'],
+            ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
             array_keys($result->indexByJunctionSchema())
         );
         self::assertEqualsCanonicalizing(
             ['Post', 'Photo'],
             array_keys($result->indexByClassSchema())
         );
-        self::assertEquals('junk_PostAttaches', $result->addPrefix('PostAttaches'));
-        self::assertEquals('PostAttaches', $result->trimPrefix('junk_PostAttaches'));
+        self::assertEquals('junction_PostAttaches', $result->addPrefix('PostAttaches'));
+        self::assertEquals('PostAttaches', $result->trimPrefix('junction_PostAttaches'));
         self::assertTrue($result->isJunctionSchema('PostsAttaches'));
-        self::assertTrue($result->isJunctionSchema('junk_PostsAttaches'));
+        self::assertTrue($result->isJunctionSchema('junction_PostsAttaches'));
         self::assertTrue($result->isManyToManyProperty('Post', 'image'));
         self::assertTrue($result->isManyToManyProperty('Post', 'photo'));
         self::assertTrue($result->isManyToManyProperty('Photo', 'article'));
         self::assertTrue($result->isManyToManyProperty('Photo', 'post'));
-        self::assertTrue($result->isJunctionProperty('junk_PostsGallery', 'image'));
+        self::assertTrue($result->isJunctionProperty('junction_PostsGallery', 'image'));
         self::assertTrue($result->isJunctionProperty('PostsGallery', 'article'));
-        self::assertTrue($result->isJunctionProperty('junk_Photos2Posts', 'photo'));
-        self::assertTrue($result->isJunctionProperty('junk_Photos2Posts', 'post'));
+        self::assertTrue($result->isJunctionProperty('junction_Photos2Posts', 'photo'));
+        self::assertTrue($result->isJunctionProperty('junction_Photos2Posts', 'post'));
         self::assertTrue($result->isJunctionProperty('Photos2Posts', 'post'));
         self::assertTrue($result->isJunctionRef('Photo', 'posts_gallery'));
         self::assertTrue($result->isJunctionRef('Photo', 'posts_attaches'));
