@@ -33,14 +33,22 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Tag'
-        photos:
+        attaches:
           type: array
           items:
             $ref: '#/components/schemas/Photo'
-        photos2posts:
+        posts_attaches:
           type: array
           items:
-            $ref: '#/components/schemas/Photos2Posts'
+            $ref: '#/components/schemas/junction_PostsAttaches'
+        posts_gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsGallery'
+        posts_photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_Photos2Posts'
     Tag:
       x-table: tags
       required:
@@ -69,11 +77,24 @@ components:
           readOnly: True
         filename:
           type: string
-        posts:
+        targets:
           type: array
           items:
             $ref: '#/components/schemas/Post'
-    Photos2Posts:
+        posts_attaches:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsAttaches'
+        posts_gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsGallery'
+        photos_posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_Photos2Posts'
+
+    junction_Photos2Posts:
       x-table: photos2posts
       required:
         - id
@@ -86,6 +107,29 @@ components:
           $ref: '#/components/schemas/Photo'
         post:
           $ref: '#/components/schemas/Post'
+
+    junction_PostsGallery:
+      x-table: posts_gallery
+      properties:
+        image:
+          $ref: '#/components/schemas/Photo'
+        article:
+          $ref: '#/components/schemas/Post'
+        is_cover:
+          type: bool
+
+    junction_PostsAttaches:
+      x-table: posts_attaches
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        attach:
+          $ref: '#/components/schemas/Photo'
+        target:
+          $ref: '#/components/schemas/Post'
+
     _PostResource:
       type: object
       properties:

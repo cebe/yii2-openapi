@@ -14,6 +14,7 @@ use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
 use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use Throwable;
 use Yii;
@@ -29,8 +30,8 @@ use function substr;
 
 class AttributeResolver
 {
-    private const REFERENCE_PATH = '/components/schemas/';
-    private const REFERENCE_PATH_LEN = 20;
+    public const REFERENCE_PATH = '/components/schemas/';
+    public const REFERENCE_PATH_LEN = 20;
 
     /**
      * @var Attribute[]|array
@@ -64,12 +65,26 @@ class AttributeResolver
      */
     private $tableName;
 
-    public function __construct(string $schemaName, Schema $componentSchema)
+    /**
+     * @var \cebe\yii2openapi\lib\items\JunctionSchemas
+     */
+    private $junctions;
+
+    /**@var bool */
+    private $isJunctionSchema;
+
+    /**@var bool */
+    private $hasMany2Many;
+
+    public function __construct(string $schemaName, Schema $componentSchema, JunctionSchemas $junctions)
     {
         $this->schemaName = $schemaName;
         $this->componentSchema = $componentSchema;
         $this->primaryKey = $componentSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
         $this->tableName = $componentSchema->{CustomSpecAttr::TABLE} ?? self::tableNameBySchema($this->schemaName);
+        $this->junctions = $junctions;
+        $this->isJunctionSchema = $junctions->isJunctionSchema($schemaName);
+        $this->hasMany2Many = $junctions->hasMany2Many($schemaName);
     }
 
     /**
@@ -80,7 +95,13 @@ class AttributeResolver
         $requiredProps = $this->componentSchema->required ?? [];
         foreach ($this->componentSchema->properties as $propertyName => $property) {
             $isRequired = in_array($propertyName, $requiredProps);
-            $this->resolveProperty($propertyName, $property, $isRequired);
+            if ($this->isJunctionSchema) {
+                $this->resolveJunctionTableProperty($propertyName, $property, $isRequired);
+            } elseif ($this->hasMany2Many) {
+                $this->resolveHasMany2ManyTableProperty($propertyName, $property, $isRequired);
+            } else {
+                $this->resolveProperty($propertyName, $property, $isRequired);
+            }
         }
         return new DbModel([
             'pkName' => $this->primaryKey,
@@ -90,12 +111,70 @@ class AttributeResolver
             'attributes' => $this->attributes,
             'relations' => $this->relations,
             'many2many' => $this->many2many,
+            //For valid primary keys for junction tables
+            'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : []
         ]);
     }
 
     public static function tableNameBySchema(string $schemaName):string
     {
         return Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_');
+    }
+
+    protected function resolveJunctionTableProperty($propertyName, SpecObjectInterface $property, bool $isRequired)
+    {
+        if ($this->junctions->isJunctionProperty($this->schemaName, $propertyName)) {
+            $junkAttribute = $this->junctions->byJunctionSchema($this->schemaName)[$propertyName];
+            $attribute = new Attribute($propertyName);
+            $attribute->setRequired($isRequired)
+                      ->setDescription($property->description ?? '')
+                      ->setReadOnly($property->readOnly ?? false)
+                      ->setIsPrimary($propertyName === $this->primaryKey)
+                      ->asReference($junkAttribute['relatedClassName'])
+                      ->setPhpType($junkAttribute['phpType'])
+                      ->setDbType($junkAttribute['dbType']);
+            $relation = (new AttributeRelation($propertyName, $junkAttribute['relatedTableName'], $junkAttribute['relatedClassName']))
+                ->asHasOne([$junkAttribute['foreignPk'] => $attribute->columnName]);
+            $this->relations[$propertyName] = $relation;
+            $this->attributes[$propertyName] = $attribute->setFakerStub($this->guessFakerStub($attribute, $property));
+        } else {
+            $this->resolveProperty($propertyName, $property, $isRequired);
+        }
+    }
+
+    protected function resolveHasMany2ManyTableProperty($propertyName, SpecObjectInterface $property, bool $isRequired)
+    {
+        if ($this->junctions->isManyToManyProperty($this->schemaName, $propertyName)) {
+            return;
+        }
+        if ($this->junctions->isJunctionRef($this->schemaName, $propertyName)) {
+            $junkAttribute = $this->junctions->indexByJunctionRef()[$propertyName][$this->schemaName];
+            $junkRef = $propertyName;
+            $junkProperty = $junkAttribute['property'];
+            $viaModel = $this->junctions->trimPrefix($junkAttribute['junctionSchema']);
+
+            $relation = new ManyToManyRelation([
+                'name' => Inflector::pluralize($junkProperty),
+                'schemaName' => $this->schemaName,
+                'relatedSchemaName' => $junkAttribute['relatedClassName'],
+                'tableName' => $this->tableName,
+                'relatedTableName' => $junkAttribute['relatedTableName'],
+                'pkAttribute' => $this->attributes[$this->primaryKey],
+                'hasViaModel' => true,
+                'viaModelName' => $viaModel,
+                'viaRelationName' => Inflector::id2camel($junkRef, '_'),
+                'fkProperty' => $junkAttribute['pairProperty'],
+                'relatedFkProperty' => $junkAttribute['property'],
+            ]);
+            $this->many2many[Inflector::pluralize($junkProperty)] = $relation;
+
+            $this->relations[Inflector::pluralize($junkRef)] =
+                (new AttributeRelation($junkRef, $junkAttribute['junctionTable'], $viaModel))
+                    ->asHasMany([$junkAttribute['pairProperty'].'_id' => $this->primaryKey]);
+            return;
+        }
+
+        $this->resolveProperty($propertyName, $property, $isRequired);
     }
 
     protected function resolveProperty($propertyName, SpecObjectInterface $property, bool $isRequired)

@@ -60,6 +60,8 @@ class DbModel extends BaseObject
      */
     public $many2many = [];
 
+    public $junctionCols = [];
+
     public function getTableAlias():string
     {
         return '{{%' . $this->tableName . '}}';

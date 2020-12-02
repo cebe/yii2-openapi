@@ -12,6 +12,7 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use cebe\openapi\SpecObjectInterface;
+use cebe\yii2openapi\lib\items\JunctionSchemas;
 use function array_keys;
 use function explode;
 
@@ -47,7 +48,8 @@ class SchemaResponseResolver
 //            $schemaOrReference->resolve();
 //        }
         $ref = $schemaOrReference->getJsonReference()->getJsonPointer()->getPointer();
-        return strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
+        $name = strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
+        return \str_replace(JunctionSchemas::PREFIX, '', $name);
     }
 
     public static function guessResponseRelations(Operation $operation):array

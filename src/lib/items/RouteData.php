@@ -41,7 +41,7 @@ final class RouteData extends BaseObject
      * @example /auth/reset/password
      * @example /auth/verify/{email}
      */
-    private const PATTERN_ACTION = '~^/(?<controller>[\w-]+)/(?<action>[\w-]+)/?(?<method>[\w-]+)?/?(?:[{}/\w-]+)?$~';
+    private const PATTERN_ACTION = '~^/(?<controller>[\w-]+)/(?<action>[\w-]+)/?({(?<param>[\w-]+)}/)?(?<method>[\w-]+)?/?(?:[{}/\w-]+)?$~';
     /** @example /posts */
     private const PATTERN_LIST = '~^/(?<controller>[\w-]+)$~';
     /**
@@ -304,6 +304,9 @@ final class RouteData extends BaseObject
 
     public function resolveGetActionType():string
     {
+        if ($this->type === self::TYPE_DEFAULT) {
+            return '';
+        }
         if ($this->type === self::TYPE_PROFILE || $this->isNonCrudAction()) {
             return 'view';
         }

@@ -112,7 +112,7 @@ class UrlGenerator
         }
 
         return new RestAction([
-            'id' => "$actionType{$routeData->action}",
+            'id' => trim("$actionType{$routeData->action}", '-'),
             'controllerId' => $controllerId,
             'urlPath' => $routeData->path,
             'requestMethod' => strtoupper($method),

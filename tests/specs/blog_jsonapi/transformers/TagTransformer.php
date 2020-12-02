@@ -6,7 +6,7 @@ use app\models\Tag;
 
 class TagTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['post_tags'];
+    protected $availableIncludes = ['postTags'];
     protected $defaultIncludes = [];
 
     public function transform(Tag $model)

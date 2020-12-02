@@ -15,7 +15,7 @@ namespace app\models\base;
  * @property int $created_by_id The User
  *
  * @property \app\models\Category $category
- * @property \app\models\User $created_by
+ * @property \app\models\User $createdBy
  * @property array|\app\models\Comment[] $comments
  * @property array|\app\models\Tag[] $tags
  */
