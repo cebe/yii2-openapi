@@ -1,16 +1,10 @@
 <?php
+
 namespace app\transformers;
 
-use League\Fractal\TransformerAbstract;
-use app\models\User;
-
-class UserTransformer extends TransformerAbstract
+class UserTransformer extends \app\transformers\base\UserTransformer
 {
-    protected $availableIncludes = [];
-    protected $defaultIncludes = [];
 
-    public function transform(User $model)
-    {
-        return $model->getAttributes();
-    }
+
 }
+

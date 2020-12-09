@@ -4,6 +4,7 @@ return [
     'generateUrls' => true,
     'generateControllers' => true,
     'useJsonApi' => true,
+    'extendableTransformers' => true,
     'generateModels' => false,
     'generateMigrations' => false,
     'excludeModels' => [

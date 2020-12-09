@@ -5,6 +5,7 @@ return [
     'generateControllers' => true,
     'generateModels' => true,
     'useJsonApi' => true,
+    'extendableTransformers' => false,
     'generateMigrations' => true,
     'excludeModels' => [
         'Error',
