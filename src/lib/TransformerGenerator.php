@@ -59,17 +59,23 @@ class TransformerGenerator
      */
     public function generate():array
     {
-        $transformers = \array_map(function(DbModel $model) {
-            return new Transformer($model,
+        $transformers = \array_map(
+            function (DbModel $model) {
+            return new Transformer(
+                $model,
                 $this->transformerNamespace,
                 $this->modelNamespace,
-                $this->singularResourceKeys);
+                $this->singularResourceKeys
+            );
         },
-            $this->models);
-        return array_filter($transformers,
-            function(Transformer $transformer) {
+            $this->models
+        );
+        return array_filter(
+            $transformers,
+            function (Transformer $transformer) {
                 $baseNamespace = str_replace('\\base', '', $transformer->getFQN());
                 return in_array($baseNamespace, $this->usedTransformers);
-            });
+            }
+        );
     }
 }

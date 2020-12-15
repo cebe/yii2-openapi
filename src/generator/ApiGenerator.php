@@ -483,7 +483,7 @@ PHP;
                     ])
                 );
 
-                if(!$this->extendableTransformers){
+                if (!$this->extendableTransformers) {
                     continue;
                 }
                 // only generate custom classes if they do not exist, do not override
