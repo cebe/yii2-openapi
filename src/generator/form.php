@@ -25,6 +25,7 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
         <?= $form->field($generator, 'useJsonApi')->checkbox(['checked' => false]) ?>
         <div id="json_api_opts" class="hidden">
             <?= $form->field($generator, 'transformerNamespace') ?>
+            <?= $form->field($generator, 'extendableTransformers')->checkbox(['checked' => true]) ?>
             <?= $form->field($generator, 'singularResourceKeys')->checkbox() ?>
         </div>
     </div>
