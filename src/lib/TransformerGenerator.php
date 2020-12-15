@@ -61,13 +61,13 @@ class TransformerGenerator
     {
         $transformers = \array_map(
             function (DbModel $model) {
-            return new Transformer(
-                $model,
-                $this->transformerNamespace,
-                $this->modelNamespace,
-                $this->singularResourceKeys
-            );
-        },
+                return new Transformer(
+                    $model,
+                    $this->transformerNamespace,
+                    $this->modelNamespace,
+                    $this->singularResourceKeys
+                );
+            },
             $this->models
         );
         return array_filter(
