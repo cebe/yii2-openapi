@@ -24,7 +24,7 @@ This library is currently work in progress, current features are checked here wh
 - [x] generate Database migration
 - [x] provide Dummy API via Faker
 
-- [ ] update Database and models when API schema changes
+- [x] update Database and models when API schema changes
 
 ## Requirements
 
