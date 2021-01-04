@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\Transformer;
 use function array_filter;
+use function array_map;
 use function in_array;
 use function str_replace;
 
@@ -42,7 +43,6 @@ class TransformerGenerator
 
     public function __construct(
         array $models,
-        array $usedTransformers,
         string $transformerNamespace,
         string $modelNamespace,
         bool $singularResourceKeys
@@ -50,7 +50,6 @@ class TransformerGenerator
         $this->models = $models;
         $this->transformerNamespace = $transformerNamespace;
         $this->modelNamespace = $modelNamespace;
-        $this->usedTransformers = $usedTransformers;
         $this->singularResourceKeys = $singularResourceKeys;
     }
 
@@ -59,7 +58,7 @@ class TransformerGenerator
      */
     public function generate():array
     {
-        $transformers = \array_map(
+        return array_map(
             function (DbModel $model) {
                 return new Transformer(
                     $model,
@@ -69,13 +68,6 @@ class TransformerGenerator
                 );
             },
             $this->models
-        );
-        return array_filter(
-            $transformers,
-            function (Transformer $transformer) {
-                $baseNamespace = str_replace('\\base', '', $transformer->getFQN());
-                return in_array($baseNamespace, $this->usedTransformers);
-            }
         );
     }
 }
