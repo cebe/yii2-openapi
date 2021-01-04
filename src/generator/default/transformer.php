@@ -15,11 +15,8 @@ namespace <?= $namespace ?>;
 use League\Fractal\TransformerAbstract;
 use <?=$transformer->modelFQN?>;
 <?php if ($extendable === true && $transformer->shouldIncludeRelations()):?>
-<?php foreach ($transformer->relations as $relation):?>
-use <?=$mainNamespace?>\<?=Inflector::singularize($relation->getClassName())?>Transformer;
-<?php endforeach;?>
-<?php foreach ($transformer->many2Many as $relation):?>
-use <?=$mainNamespace?>\<?=Inflector::singularize($relation->getRelatedClassName())?>Transformer;
+<?php foreach ($transformer->getUniqueTransformerClasses() as $transformerClass):?>
+use <?=$mainNamespace?>\<?=$transformerClass?>;
 <?php endforeach;?>
 <?php endif;?>
 
