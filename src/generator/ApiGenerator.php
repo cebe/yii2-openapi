@@ -735,12 +735,8 @@ PHP;
         $models = array_filter($this->prepareModels(), function ($model) {
             return $model instanceof DbModel;
         });
-        $usedTransformers = array_unique(array_map(function (FractalAction $action) {
-            return $action->transformerFqn;
-        }, $this->prepareActions()));
         $generator = new TransformerGenerator(
             $models,
-            $usedTransformers,
             $this->transformerNamespace.($this->extendableTransformers? '\\base': ''),
             $this->modelNamespace,
             $this->singularResourceKeys
