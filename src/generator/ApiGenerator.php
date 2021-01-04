@@ -479,6 +479,8 @@ PHP;
                     Yii::getAlias("{$dirPath}/{$transformer->name}.php"),
                     $this->render('transformer.php', [
                         'namespace' => $this->transformerNamespace . ($this->extendableTransformers ? '\\base' : ''),
+                        'mainNamespace' => $this->transformerNamespace,
+                        'extendable' => $this->extendableTransformers,
                         'transformer' => $transformer
                     ])
                 );

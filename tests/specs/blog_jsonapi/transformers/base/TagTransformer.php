@@ -3,6 +3,7 @@ namespace app\transformers\base;
 
 use League\Fractal\TransformerAbstract;
 use app\models\Tag;
+use app\transformers\PostTagTransformer;
 
 class TagTransformer extends TransformerAbstract
 {

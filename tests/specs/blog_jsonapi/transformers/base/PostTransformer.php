@@ -3,6 +3,10 @@ namespace app\transformers\base;
 
 use League\Fractal\TransformerAbstract;
 use app\models\Post;
+use app\transformers\CategoryTransformer;
+use app\transformers\UserTransformer;
+use app\transformers\CommentTransformer;
+use app\transformers\PostTagTransformer;
 
 class PostTransformer extends TransformerAbstract
 {

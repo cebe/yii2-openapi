@@ -1,6 +1,8 @@
 <?php
 /**
- * @var string $namespace
+ * @var string $namespace (current namespace, maby be base, if transformers are extendable)
+ * @var string $mainNamespace  (main namespace)
+ * @var bool $extendable
  * @var \cebe\yii2openapi\lib\items\Transformer $transformer
 */
 use yii\helpers\Inflector;
@@ -12,6 +14,14 @@ namespace <?= $namespace ?>;
 
 use League\Fractal\TransformerAbstract;
 use <?=$transformer->modelFQN?>;
+<?php if ($extendable === true && $transformer->shouldIncludeRelations()):?>
+<?php foreach ($transformer->relations as $relation):?>
+use <?=$mainNamespace?>\<?=Inflector::singularize($relation->getClassName())?>Transformer;
+<?php endforeach;?>
+<?php foreach ($transformer->many2Many as $relation):?>
+use <?=$mainNamespace?>\<?=Inflector::singularize($relation->getRelatedClassName())?>Transformer;
+<?php endforeach;?>
+<?php endif;?>
 
 class <?=$transformer->name?> extends TransformerAbstract
 {

@@ -3,6 +3,8 @@ namespace app\transformers\base;
 
 use League\Fractal\TransformerAbstract;
 use app\models\Comment;
+use app\transformers\PostTransformer;
+use app\transformers\UserTransformer;
 
 class CommentTransformer extends TransformerAbstract
 {
