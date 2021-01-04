@@ -80,7 +80,7 @@ class Transformer extends BaseObject
         }, $this->dbModel->relations);
 
         $relationsMany = array_map(function (ManyToManyRelation $relation) {
-            return Inflector::singularize($relation->getRelatedClassName).'Transformer';
+            return Inflector::singularize($relation->getRelatedClassName()).'Transformer';
         }, $this->dbModel->many2many);
 
         return array_unique(array_merge($relations, $relationsMany));
