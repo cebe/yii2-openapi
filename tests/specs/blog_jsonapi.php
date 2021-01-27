@@ -10,4 +10,8 @@ return [
     'excludeModels' => [
         'Error',
     ],
+    'controllerModelMap' => [
+        'Category' => 'Group',
+        'Comment' => 'Reply'
+    ]
 ];

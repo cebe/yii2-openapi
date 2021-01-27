@@ -4,29 +4,20 @@ namespace app\controllers\base;
 use insolita\fractal\JsonApiController;
 use Yii;
 
-abstract class CategoryController extends JsonApiController
+abstract class ReplyController extends JsonApiController
 {
     public function actions()
     {
         return [
-            'list' => [
-                'class' => \insolita\fractal\actions\ListAction::class,
+            'view-for-post' => [
+                'class' => \insolita\fractal\actions\ViewAction::class,
                 'checkAccess' => [$this, 'checkAccess'],
-                'transformer' => \app\transformers\CategoryTransformer::class,
-                'modelClass' => \app\models\Category::class,
-                'resourceKey' => 'categories',
-                'dataFilter' => null,
-                'prepareDataProvider' => null
-            ],
-            'create' => [
-                'class' => \insolita\fractal\actions\CreateAction::class,
-                'checkAccess' => [$this, 'checkAccess'],
-                'transformer' => \app\transformers\CategoryTransformer::class,
-                'modelClass' => \app\models\Category::class,
-                'resourceKey' => 'categories',
-                'allowedRelations'=>[],
-                'viewRoute' => 'view',
-                'scenario' => 'default'
+                'transformer' => \app\transformers\CommentTransformer::class,
+                'modelClass' => \app\models\Comment::class,
+                'resourceKey' => 'comments',
+                'parentIdParam' => 'postId',
+                'parentIdAttribute' => 'post_id',
+                'findModelFor' => null
             ],
             'options' => [
                 'class' => \yii\rest\OptionsAction::class,
