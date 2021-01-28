@@ -116,6 +116,16 @@ class ApiGenerator extends Generator
     public $excludeModels = [];
 
     /**
+     * @var array Map for custom controller names not based on model name for exclusive cases
+     * @example
+     *  'controllerModelMap' => [
+     *      'User' => 'Profile',  //use ProfileController for User model
+     *      'File' => 'Upload',   //use UploadController for File model
+     *  ]
+    **/
+    public $controllerModelMap = [];
+
+    /**
      * @var bool Generate database models only for Schemas that not starts with underscore
      */
     public $skipUnderscoredSchemas = true;
@@ -686,10 +696,11 @@ PHP;
                 ? new FractalGenerator(
                     $this->getOpenApi(),
                     $this->modelNamespace,
+                    $this->controllerModelMap,
                     $this->transformerNamespace,
                     $this->singularResourceKeys
                 )
-                : new UrlGenerator($this->getOpenApi(), $this->modelNamespace);
+                : new UrlGenerator($this->getOpenApi(), $this->modelNamespace, $this->controllerModelMap);
             $this->preparedActions = $generator->generate();
         }
         return $this->preparedActions;

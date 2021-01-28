@@ -31,10 +31,16 @@ class UrlGenerator
      */
     protected $modelNamespace;
 
-    public function __construct(OpenApi $openApi, string $modelNamespace)
+    /**
+     * @var array
+     */
+    protected $controllerMap = [];
+
+    public function __construct(OpenApi $openApi, string $modelNamespace, array $controllerMap = [])
     {
         $this->openApi = $openApi;
         $this->modelNamespace = $modelNamespace;
+        $this->controllerMap = $controllerMap;
     }
 
     /**
@@ -107,8 +113,15 @@ class UrlGenerator
         if ($routeData->isRelationship()) {
             $controllerId = $routeData->controller;
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
+            $controllerId =  isset($this->controllerMap[$modelClass])
+                ? Inflector::camel2id($this->controllerMap[$modelClass])
+                : $controllerId;
+        } elseif ($modelClass !== null) {
+            $controllerId =  isset($this->controllerMap[$modelClass])
+                ? Inflector::camel2id($this->controllerMap[$modelClass])
+                : Inflector::camel2id($modelClass);
         } else {
-            $controllerId = $modelClass !== null ? Inflector::camel2id($modelClass) : $routeData->controller;
+            $controllerId = $routeData->controller;
         }
 
         return new RestAction([

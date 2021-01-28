@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-class CategoryController extends \app\controllers\base\CategoryController
+class GroupController extends \app\controllers\base\GroupController
 {
 
     public function actions()

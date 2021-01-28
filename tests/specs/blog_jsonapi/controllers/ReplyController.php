@@ -2,7 +2,7 @@
 
 namespace app\controllers;
 
-class CommentController extends \app\controllers\base\CommentController
+class ReplyController extends \app\controllers\base\ReplyController
 {
 
     public function actions()

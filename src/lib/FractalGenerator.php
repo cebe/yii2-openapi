@@ -29,10 +29,11 @@ class FractalGenerator extends UrlGenerator
     public function __construct(
         OpenApi $openApi,
         string $modelNamespace,
+        array $controllerMap,
         string $transformerNamespace,
         bool $singularResourceKeys = false
     ) {
-        parent::__construct($openApi, $modelNamespace);
+        parent::__construct($openApi, $modelNamespace, $controllerMap);
         $this->transformerNamespace = $transformerNamespace;
         $this->singularResourceKeys = $singularResourceKeys;
     }
@@ -63,11 +64,18 @@ class FractalGenerator extends UrlGenerator
                 : null;
             $controllerId = $routeData->controller;
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
+            if (isset($this->controllerMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            }
         } else {
             $relatedClass = null;
-            $controllerId = $modelClass !== null && $routeData->isModelBasedType() ?
-                Inflector::camel2id($modelClass, '-')
-                : $routeData->controller;
+            if ($modelClass === null || !$routeData->isModelBasedType()) {
+                $controllerId = $routeData->controller;
+            } elseif (isset($this->controllerMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            } else {
+                $controllerId = Inflector::camel2id($modelClass, '-');
+            }
             $transformerClass = $modelClass !== null
                 ? $this->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
                 : null;
@@ -75,6 +83,9 @@ class FractalGenerator extends UrlGenerator
 
         if ($routeData->type === RouteData::TYPE_RESOURCE_OPERATION && !$modelClass) {
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
+            if (isset($this->controllerMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            }
         }
 
         return new FractalAction([
