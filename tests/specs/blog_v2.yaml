@@ -238,6 +238,10 @@ components:
     User:
       description: The User
       x-table: v2_users
+      x-indexes:
+        - unique:login
+        - unique:email
+        - hash:role,flags
       required:
         - id
         - login
@@ -250,10 +254,8 @@ components:
           readOnly: True
         login:
           type: string
-          x-db-unique: 1
         email:
           type: string
-          x-db-unique: 1
         password:
           type: string
           format: password
@@ -277,6 +279,8 @@ components:
         $ref: "#/components/schemas/User"
     Category:
       x-table: v2_categories
+      x-indexes:
+        - title
       description: Category of posts
       required:
         - id
@@ -290,7 +294,6 @@ components:
           readOnly: True
         title:
           type: string
-          x-db-unique: true
           maxLength: 100
         cover:
           type: string
@@ -306,6 +309,8 @@ components:
         $ref: "#/components/schemas/Category"
     Post:
       x-table: v2_posts
+      x-indexes:
+        - unique:title
       description: A blog post (uid used as pk for test purposes)
       required:
         - id
@@ -321,7 +326,6 @@ components:
         title:
           type: string
           x-db-type: VARCHAR
-          x-db-unique: true
           maxLength: 255
         slug:
           type: string
@@ -382,6 +386,8 @@ components:
         $ref: "#/components/schemas/Comment"
     Tag:
       x-table: v2_tags
+      x-indexes:
+        - unique:name
       required:
         - id
         - name
@@ -394,7 +400,6 @@ components:
         name:
           type: string
           x-db-type: VARCHAR
-          x-db-unique: true
           maxLength: 100
         lang:
           type: string

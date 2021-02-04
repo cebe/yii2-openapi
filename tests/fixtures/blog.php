@@ -2,6 +2,7 @@
 //Data provider for AttributeResolver test for blog.yml spec
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
+use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 
 return [
@@ -28,6 +29,11 @@ return [
                 ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
         ],
         'relations' => [],
+        'indexes' => [
+            'users_email_key' => DbIndex::make('users', ['email'], null, true),
+            'users_username_key' => DbIndex::make('users', ['username'], null, true),
+            'users_role_flags_index' => DbIndex::make('users', ['role', 'flags'])
+        ]
     ]),
     'category' => new DbModel([
         'name' => 'Category',
@@ -44,6 +50,10 @@ return [
         'relations' => [
             'posts' => new AttributeRelation('posts', 'blog_posts', 'Post', 'hasMany', ['category_id' => 'id']),
         ],
+        'indexes' => [
+            'categories_active_index' => DbIndex::make('categories', ['active']),
+            'categories_title_key' => DbIndex::make('categories', ['title'], null, true)
+        ]
     ]),
     'post' => new DbModel([
         'name' => 'Post',
@@ -79,6 +89,10 @@ return [
             'created_by' => new AttributeRelation('created_by', 'users', 'User', 'hasOne', ['id' => 'created_by_id']),
             'comments' => new AttributeRelation('comments', 'post_comments', 'Comment', 'hasMany', ['post_id' => 'uid']),
         ],
+        'indexes' => [
+            'blog_posts_title_key' => DbIndex::make('blog_posts', ['title'], null, true),
+            'blog_posts_slug_key' => DbIndex::make('blog_posts', ['slug'], null, true)
+        ]
     ]),
     'comment' => new DbModel([
         'name' => 'Comment',
@@ -109,5 +123,6 @@ return [
             'post' => new AttributeRelation('post', 'blog_posts', 'Post', 'hasOne', ['uid' => 'post_id']),
             'author' => new AttributeRelation('author', 'users', 'User', 'hasOne', ['id' => 'author_id']),
         ],
+        'indexes' => []
     ]),
 ];
