@@ -7,13 +7,18 @@
 
 namespace cebe\yii2openapi\lib;
 
+use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
 use yii\db\Connection;
+use yii\db\IndexConstraint;
 use yii\db\Schema;
+use yii\helpers\ArrayHelper;
+use function array_column;
+use function array_diff;
 use function array_intersect;
 use function array_keys;
 use function array_map;
@@ -52,16 +57,6 @@ class MigrationBuilder
     private $migration;
 
     /**
-     * @var array<int, string>
-     */
-    private $uniqueColumns;
-
-    /**
-     * @var array<int, string>
-     */
-    private $currentUniqueColumns;
-
-    /**
      * @var \yii\db\ColumnSchema[]
      */
     private $newColumns;
@@ -92,7 +87,7 @@ class MigrationBuilder
         return $this->tableSchema === null ? $this->buildFresh() : $this->buildSecondary();
     }
 
-    public function buildJunction(ManyToManyRelation $relation): MigrationModel
+    public function buildJunction(ManyToManyRelation $relation):MigrationModel
     {
         $this->tableSchema = $this->db->getTableSchema($relation->getViaTableAlias(), true);
         if ($this->tableSchema !== null) {
@@ -125,7 +120,6 @@ class MigrationBuilder
     public function buildFresh():MigrationModel
     {
         $this->migration = new MigrationModel($this->model, true);
-        $this->uniqueColumns = $this->model->getUniqueColumnsList();
         $this->newColumns = $this->model->attributesToColumnSchema();
         if (empty($this->newColumns)) {
             return $this->migration;
@@ -133,7 +127,7 @@ class MigrationBuilder
         $builder = $this->recordBuilder;
         $tableName = $this->model->getTableAlias();
 
-        $this->migration->addUpCode($builder->createTable($tableName, $this->newColumns, $this->uniqueColumns))
+        $this->migration->addUpCode($builder->createTable($tableName, $this->newColumns))
                         ->addDownCode($builder->dropTable($tableName));
         if ($this->isPostgres) {
             $enums = $this->model->getEnumAttributes();
@@ -145,7 +139,7 @@ class MigrationBuilder
         if (!empty($this->model->junctionCols)) {
             if (!isset($this->model->attributes[$this->model->pkName])) {
                 $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
-                            ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
+                                ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
             }
         }
         foreach ($this->model->getHasOneRelations() as $relation) {
@@ -160,15 +154,20 @@ class MigrationBuilder
             }
         }
 
+        foreach ($this->model->indexes as $index) {
+            $upCode = $index->isUnique ? $builder->addUniqueIndex($tableName, $index->name, $index->columns)
+                                       : $builder->addIndex($tableName, $index->name, $index->columns, $index->type);
+            $this->migration->addUpCode($upCode)
+                            ->addDownCode($builder->dropIndex($tableName, $index->name));
+        }
+
         return $this->migration;
     }
 
     public function buildSecondary(?ManyToManyRelation $relation = null):MigrationModel
     {
         $this->migration = new MigrationModel($this->model, false, $relation);
-        $this->uniqueColumns = $relation? [] : $this->model->getUniqueColumnsList();
-        $this->currentUniqueColumns = $relation? [] : array_values($this->findUniqueIndexes());
-        $this->newColumns = $relation? $relation->columnSchema: $this->model->attributesToColumnSchema();
+        $this->newColumns = $relation ? $relation->columnSchema : $this->model->attributesToColumnSchema();
         $wantNames = array_keys($this->newColumns);
         $haveNames = $this->tableSchema->columnNames;
         sort($wantNames);
@@ -191,7 +190,7 @@ class MigrationBuilder
 
         $this->buildColumnsCreation($columnsForCreate);
         if ($this->model->junctionCols && !isset($this->model->attributes[$this->model->pkName])) {
-            if (!empty(\array_intersect($columnsForDrop, $this->model->junctionCols))) {
+            if (!empty(array_intersect($columnsForDrop, $this->model->junctionCols))) {
                 $builder = $this->recordBuilder;
                 $tableName = $this->model->getTableAlias();
                 $this->migration->addUpCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols))
@@ -207,6 +206,7 @@ class MigrationBuilder
         } else {
             $this->buildRelations();
         }
+        $this->buildIndexChanges();
         return $this->migration;
     }
 
@@ -219,9 +219,8 @@ class MigrationBuilder
             if ($column->isPrimaryKey) {
                 // TODO: Avoid pk changes, or previous pk should be dropped before
             }
-            $isUnique = in_array($column->name, $this->uniqueColumns, true);
             $tableName = $this->model->getTableAlias();
-            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column, $isUnique))
+            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
             if ($this->isPostgres && $column->dbType === 'enum') {
                 $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues), true)
@@ -239,9 +238,8 @@ class MigrationBuilder
             if ($column->isPrimaryKey) {
                 // TODO: drop pk index and foreign keys before or avoid drop?
             }
-            $isUnique = in_array($column->name, $this->currentUniqueColumns, true);
             $tableName = $this->model->getTableAlias();
-            $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column, $isUnique))
+            $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
             if ($this->isPostgres && $column->dbType === 'enum') {
                 $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
@@ -252,13 +250,10 @@ class MigrationBuilder
 
     private function buildColumnChanges(ColumnSchema $current, ColumnSchema $desired):void
     {
-        $isUniqueCurrent = in_array($current->name, $this->currentUniqueColumns, true);
-        $isUniqueDesired = in_array($desired->name, $this->uniqueColumns, true);
         if ($current->isPrimaryKey || in_array($desired->dbType, ['pk', 'upk', 'bigpk', 'ubigpk'])) {
             // do not adjust existing primary keys
             return;
         }
-        $columnName = $current->name;
         $tableName = $this->model->getTableAlias();
         $changedAttributes = $this->compareColumns($current, $desired);
         if (empty($changedAttributes)) {
@@ -266,7 +261,6 @@ class MigrationBuilder
         }
         if ($this->isPostgres) {
             $this->buildColumnsChangePostgres($current, $desired, $changedAttributes);
-            $this->addUniqueIndex($isUniqueCurrent, $isUniqueDesired, $tableName, $columnName);
             return;
         }
         $newColumn = clone $current;
@@ -278,7 +272,6 @@ class MigrationBuilder
         }
         $this->migration->addUpCode($this->recordBuilder->alterColumn($tableName, $newColumn))
                         ->addDownCode($this->recordBuilder->alterColumn($tableName, $current));
-        $this->addUniqueIndex($isUniqueCurrent, $isUniqueDesired, $tableName, $columnName);
     }
 
     private function buildColumnsChangePostgres(ColumnSchema $current, ColumnSchema $desired, array $changes):void
@@ -364,6 +357,7 @@ class MigrationBuilder
                 ->addDownCode($this->recordBuilder->addFk($fkName, $tableAlias, $fkCol, $refTable, $refCol), true);
         }
     }
+
     private function buildRelations():void
     {
         $tableAlias = $this->model->getTableAlias();
@@ -398,13 +392,75 @@ class MigrationBuilder
         }
     }
 
-    private function findUniqueIndexes():array
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\DbIndex[]
+     */
+    private function findTableIndexes():array
     {
+        if ($this->isPostgres) {
+            return $this->findPostgresTableIndexes();
+        }
+        $dbIndexes = [];
         try {
-            return $this->db->getSchema()->findUniqueIndexes($this->tableSchema);
+            /**@var IndexConstraint[] $indexes */
+            $indexes = $this->db->getSchema()->getTableIndexes($this->tableSchema->name);
+            $fkIndexes = array_keys($this->tableSchema->foreignKeys);
+            foreach ($indexes as $index) {
+                if (!$index->isPrimary && !in_array($index->name, $fkIndexes, true)) {
+                    $dbIndexes[] = DbIndex::fromConstraint($this->model->tableName, $index);
+                }
+            }
+            return ArrayHelper::index($dbIndexes, 'name');
         } catch (NotSupportedException $e) {
             return [];
         }
+    }
+
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\DbIndex[]
+     */
+    private function findPostgresTableIndexes():array
+    {
+        static $sql = <<<'SQL'
+SELECT
+    "ic"."relname" AS "name",
+    "ia"."attname" AS "column_name",
+    "i"."indisunique" AS "index_is_unique",
+    "i"."indisprimary" AS "index_is_primary",
+    "it"."amname"  AS "index_type"
+FROM "pg_class" AS "tc"
+INNER JOIN "pg_namespace" AS "tcns"
+    ON "tcns"."oid" = "tc"."relnamespace"
+INNER JOIN "pg_index" AS "i"
+    ON "i"."indrelid" = "tc"."oid"
+INNER JOIN "pg_class" AS "ic"
+    ON "ic"."oid" = "i"."indexrelid"
+INNER JOIN "pg_attribute" AS "ia"
+    ON "ia"."attrelid" = "i"."indrelid" AND "ia"."attnum" = ANY ("i"."indkey")
+INNER JOIN pg_am it on it.oid = ic.relam
+WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
+ORDER BY "ia"."attnum" ASC
+SQL;
+        $indexes = $this->db->createCommand($sql, [
+            ':schemaName' => $this->db->getSchema()->defaultSchema,
+            ':tableName' => $this->db->tablePrefix.$this->model->tableName
+        ])->queryAll();
+        $indexes = ArrayHelper::index($indexes, null, 'name');
+
+        $dbIndexes = [];
+        foreach ($indexes as $name => $index) {
+            if ((bool) $index[0]['index_is_primary']) {
+                continue;
+            }
+            $name = $this->unPrefixTableName($name);
+            $dbIndexes[$name] = new DbIndex([
+                'name' => $name,
+                'isUnique' => (bool) $index[0]['index_is_unique'],
+                'columns' => ArrayHelper::getColumn($index, 'column_name'),
+                'type' => $index[0]['index_type'] === 'btree' ? null : $index[0]['index_type']
+            ]);
+        }
+        return $dbIndexes;
     }
 
     private function foreignKeyName(string $table, string $column, string $foreignTable, string $foreignColumn):string
@@ -460,23 +516,41 @@ class MigrationBuilder
         return $changedAttributes;
     }
 
-    /**
-     * @param bool   $isUniqueCurrent
-     * @param bool   $isUniqueDesired
-     * @param string $tableName
-     * @param string $columnName
-     */
-    private function addUniqueIndex(
-        bool $isUniqueCurrent,
-        bool $isUniqueDesired,
-        string $tableName,
-        string $columnName
-    ):void {
-        if ($isUniqueCurrent !== $isUniqueDesired) {
-            $addUnique = $this->recordBuilder->addUniqueIndex($tableName, $columnName);
-            $dropUnique = $this->recordBuilder->dropUniqueIndex($tableName, $columnName);
-            $this->migration->addUpCode($isUniqueDesired === true ? $addUnique : $dropUnique)
-                            ->addDownCode($isUniqueDesired === true ? $dropUnique : $addUnique);
+    private function buildIndexChanges()
+    {
+        $haveIndexes = $this->findTableIndexes();
+        $wantIndexes = $this->model->indexes;
+        $wantIndexNames = array_column($wantIndexes, 'name');
+        $haveIndexNames = array_column($haveIndexes, 'name');
+        $tableName = $this->model->getTableAlias();
+        /**@var \cebe\yii2openapi\lib\items\DbIndex[] $forDrop */
+        $forDrop = array_map(function ($idx) use ($haveIndexes) {
+            return $haveIndexes[$idx];
+        }, array_diff($haveIndexNames, $wantIndexNames));
+        /**@var \cebe\yii2openapi\lib\items\DbIndex[] $forCreate */
+        $forCreate = array_map(function ($idx) use ($wantIndexes) {
+            return $wantIndexes[$idx];
+        }, array_diff($wantIndexNames, $haveIndexNames));
+        $forChange = array_intersect($wantIndexNames, $haveIndexNames);
+        foreach ($forChange as $indexName) {
+            if ($haveIndexes[$indexName]->isEqual($wantIndexes[$indexName]) === false) {
+                $forCreate[] = $wantIndexes[$indexName];
+                $forDrop[] = $haveIndexes[$indexName];
+            }
+        }
+        foreach ($forDrop as $index) {
+            $downCode = $index->isUnique
+                ? $this->recordBuilder->addUniqueIndex($tableName, $index->name, $index->columns)
+                : $this->recordBuilder->addIndex($tableName, $index->name, $index->columns, $index->type);
+            $this->migration ->addUpCode($this->recordBuilder->dropIndex($tableName, $index->name))
+                             ->addDownCode($downCode);
+        }
+        foreach ($forCreate as $index) {
+            $upCode = $index->isUnique
+                ? $this->recordBuilder->addUniqueIndex($tableName, $index->name, $index->columns)
+                : $this->recordBuilder->addIndex($tableName, $index->name, $index->columns, $index->type);
+            $this->migration ->addDownCode($this->recordBuilder->dropIndex($tableName, $index->name))
+                             ->addUpCode($upCode);
         }
     }
 

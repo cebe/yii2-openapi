@@ -62,6 +62,11 @@ class DbModel extends BaseObject
 
     public $junctionCols = [];
 
+    /**
+     * @var \cebe\yii2openapi\lib\items\DbIndex[]|array
+    */
+    public $indexes = [];
+
     public function getTableAlias():string
     {
         return '{{%' . $this->tableName . '}}';
@@ -80,17 +85,6 @@ class DbModel extends BaseObject
         }, $rules);
         $rules = VarDumper::export($rules);
         return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL.'        ', "'", '[[', '],'], $rules);
-    }
-
-    public function getUniqueColumnsList():array
-    {
-        $uniques = [];
-        foreach ($this->attributes as $attribute) {
-            if ($attribute->isUnique()) {
-                $uniques[] = $attribute->columnName;
-            }
-        }
-        return $uniques;
     }
 
     /**

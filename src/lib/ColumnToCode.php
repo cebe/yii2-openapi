@@ -54,11 +54,6 @@ class ColumnToCode
     /**
      * @var bool
      */
-    private $columnUnique;
-
-    /**
-     * @var bool
-     */
     private $fromDb;
 
     /**
@@ -79,14 +74,12 @@ class ColumnToCode
      * ColumnToCode constructor.
      * @param \yii\db\Schema       $dbSchema
      * @param \yii\db\ColumnSchema $column
-     * @param bool                 $columnUnique (Pass unique marker from schema, because ColumnSchema not contain it)
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
      */
-    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $columnUnique, bool $fromDb = false)
+    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false)
     {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
-        $this->columnUnique = $columnUnique;
         $this->fromDb = $fromDb;
         $this->resolve();
     }
@@ -98,9 +91,6 @@ class ColumnToCode
         }
         if ($this->isBuiltinType) {
             $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default']];
-            if ($this->columnUnique) {
-                $parts[] = 'unique()';
-            }
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
