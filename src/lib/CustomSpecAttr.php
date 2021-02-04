@@ -14,7 +14,7 @@ class CustomSpecAttr
     public const TABLE = 'x-table';
     //Primary key property name, if it different from "id" (Only one value, compound keys not supported yet)
     public const PRIMARY_KEY = 'x-pk';
-    //List of index name and indexed columns
+    //List of table indexes
     public const INDEXES = 'x-indexes';
 
     // --- For each property schema ---
