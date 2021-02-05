@@ -7,9 +7,11 @@
 
 namespace cebe\yii2openapi\lib;
 
+use a;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
+use function implode;
 use function in_array;
 use function preg_match;
 use function strtolower;
@@ -55,22 +57,30 @@ class ValidationRulesBuilder
         if (!empty($this->typeScope['ref'])) {
             $this->addExistRules($this->typeScope['ref']);
         }
+        foreach ($this->model->indexes as $index) {
+            if ($index->isUnique) {
+                $this->addUniqueRule($index->columns);
+            }
+        }
         foreach ($this->model->attributes as $attribute) {
             $this->resolveAttributeRules($attribute);
         }
+
         if (!empty($this->typeScope['safe'])) {
             $this->rules['safe'] = new ValidationRule($this->typeScope['safe'], 'safe');
         }
         return $this->rules;
     }
 
+    private function addUniqueRule(array $columns)
+    {
+        $this->rules[implode('_', $columns).'_unique'] = new ValidationRule($columns, 'unique');
+    }
+
     private function resolveAttributeRules(Attribute $attribute):void
     {
         if ($attribute->isReadOnly()) {
             return;
-        }
-        if ($attribute->isUnique()) {
-            $this->rules[$attribute->columnName.'_unique'] = new ValidationRule([$attribute->columnName], 'unique');
         }
         if ($attribute->phpType === 'bool') {
             $this->rules[$attribute->columnName.'_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');

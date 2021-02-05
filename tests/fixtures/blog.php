@@ -2,6 +2,7 @@
 //Data provider for AttributeResolver test for blog.yml spec
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
+use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 
 return [
@@ -13,9 +14,9 @@ return [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'username' => (new Attribute('username', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(200)->setRequired()->setUnique()->setFakerStub('substr($faker->userName, 0, 200)'),
+                ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(200)->setUnique()->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
+                ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
             'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setFakerStub('$faker->password'),
             'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
@@ -28,6 +29,11 @@ return [
                 ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
         ],
         'relations' => [],
+        'indexes' => [
+            'users_email_key' => DbIndex::make('users', ['email'], null, true),
+            'users_username_key' => DbIndex::make('users', ['username'], null, true),
+            'users_role_flags_index' => DbIndex::make('users', ['role', 'flags'])
+        ]
     ]),
     'category' => new DbModel([
         'name' => 'Category',
@@ -37,13 +43,17 @@ return [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setRequired()->setUnique()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
+                ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'active' => (new Attribute('active', ['phpType' => 'bool', 'dbType' => 'boolean']))
                 ->setRequired()->setDefault(false)->setFakerStub('$faker->boolean'),
         ],
         'relations' => [
             'posts' => new AttributeRelation('posts', 'blog_posts', 'Post', 'hasMany', ['category_id' => 'id']),
         ],
+        'indexes' => [
+            'categories_active_index' => DbIndex::make('categories', ['active']),
+            'categories_title_key' => DbIndex::make('categories', ['title'], null, true)
+        ]
     ]),
     'post' => new DbModel([
         'name' => 'Post',
@@ -53,9 +63,9 @@ return [
             'uid' => (new Attribute('uid', ['phpType' => 'int', 'dbType' => 'bigpk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setRequired()->setUnique()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
+                ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'slug' => (new Attribute('slug', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setUnique()->setSize(200)->setLimits(null, null, 1)->setFakerStub('substr($uniqueFaker->slug, 0, 200)'),
+                ->setSize(200)->setLimits(null, null, 1)->setFakerStub('substr($uniqueFaker->slug, 0, 200)'),
             'active' => (new Attribute('active', ['phpType' => 'bool', 'dbType' => 'boolean']))
                 ->setRequired()->setDefault(false)->setFakerStub('$faker->boolean'),
             'category' => (new Attribute('category', ['phpType' => 'int', 'dbType' => 'integer']))
@@ -79,6 +89,10 @@ return [
             'created_by' => new AttributeRelation('created_by', 'users', 'User', 'hasOne', ['id' => 'created_by_id']),
             'comments' => new AttributeRelation('comments', 'post_comments', 'Comment', 'hasMany', ['post_id' => 'uid']),
         ],
+        'indexes' => [
+            'blog_posts_title_key' => DbIndex::make('blog_posts', ['title'], null, true),
+            'blog_posts_slug_key' => DbIndex::make('blog_posts', ['slug'], null, true)
+        ]
     ]),
     'comment' => new DbModel([
         'name' => 'Comment',
@@ -109,5 +123,6 @@ return [
             'post' => new AttributeRelation('post', 'blog_posts', 'Post', 'hasOne', ['uid' => 'post_id']),
             'author' => new AttributeRelation('author', 'users', 'User', 'hasOne', ['id' => 'author_id']),
         ],
+        'indexes' => []
     ]),
 ];

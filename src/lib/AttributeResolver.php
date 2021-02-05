@@ -11,8 +11,10 @@ use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use cebe\openapi\SpecObjectInterface;
+use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
+use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
@@ -21,6 +23,7 @@ use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use function explode;
 use function in_array;
 use function is_string;
 use function str_replace;
@@ -61,7 +64,7 @@ class AttributeResolver
     private $primaryKey;
 
     /**
-     * @var array|false|mixed|string
+     * @var string
      */
     private $tableName;
 
@@ -89,6 +92,7 @@ class AttributeResolver
 
     /**
      * @return \cebe\yii2openapi\lib\items\DbModel
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      */
     public function resolve():DbModel
     {
@@ -103,6 +107,7 @@ class AttributeResolver
                 $this->resolveProperty($propertyName, $property, $isRequired);
             }
         }
+        $indexes = $this->componentSchema->{CustomSpecAttr::INDEXES} ?? [];
         return new DbModel([
             'pkName' => $this->primaryKey,
             'name' => $this->schemaName,
@@ -111,6 +116,7 @@ class AttributeResolver
             'attributes' => $this->attributes,
             'relations' => $this->relations,
             'many2many' => $this->many2many,
+            'indexes' => $this->prepareIndexes($indexes),
             //For valid primary keys for junction tables
             'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : []
         ]);
@@ -234,7 +240,6 @@ class AttributeResolver
             $phpType = SchemaTypeResolver::schemaToPhpType($property);
             $attribute->setPhpType($phpType)
                       ->setDbType($this->guessDbType($property, ($propertyName === $this->primaryKey)))
-                      ->setUnique($property->{CustomSpecAttr::UNIQUE} ?? false)
                       ->setSize($property->maxLength ?? null);
             $attribute->setDefault($this->guessDefault($property, $attribute));
             [$min, $max] = $this->guessMinMax($property);
@@ -387,5 +392,39 @@ class AttributeResolver
         }
 
         return $property->default;
+    }
+
+    /**
+     * @param array $indexes
+     * @return array|DbIndex[]
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
+     */
+    protected function prepareIndexes(array $indexes): array
+    {
+        $dbIndexes = [];
+        foreach ($indexes as $index) {
+            $unique = false;
+            if (strpos($index, ':') !== false) {
+                [$indexType, $props] = explode(':', $index);
+            } else {
+                $props = $index;
+                $indexType = null;
+            }
+            if ($indexType === 'unique') {
+                $indexType = null;
+                $unique = true;
+            }
+            $props = array_map('trim', explode(',', trim($props)));
+            $columns = [];
+            foreach ($props as $prop) {
+                if (!isset($this->attributes[$prop])) {
+                    throw new InvalidDefinitionException('Invalid index definition - property '.$prop.' not declared');
+                }
+                $columns[] = $this->attributes[$prop]->columnName;
+            }
+            $dbIndex = DbIndex::make($this->tableName, $columns, $indexType, $unique);
+            $dbIndexes[$dbIndex->name] = $dbIndex;
+        }
+        return $dbIndexes;
     }
 }

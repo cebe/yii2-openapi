@@ -30,7 +30,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 $ref: "#/components/schemas/Posts"
         default:
@@ -48,6 +48,10 @@ components:
         - username
         - email
         - password
+      x-indexes:
+        - unique:username
+        - unique:email
+        - role,flags
       properties:
         id:
           type: integer
@@ -56,11 +60,9 @@ components:
         username:
           type: string
           maxLength: 200
-          x-db-unique: 1
         email:
           type: string
           maxLength: 200
-          x-db-unique: 1
         password:
           type: string
           format: password
@@ -83,6 +85,9 @@ components:
         $ref: "#/components/schemas/User"
     Category:
       description: Category of posts
+      x-indexes:
+         - active
+         - unique:title
       required:
         - id
         - title
@@ -95,7 +100,6 @@ components:
         title:
           type: string
           maxLength: 255
-          x-db-unique: true
         active:
           type: boolean
           default: false
@@ -110,6 +114,10 @@ components:
     Post:
       x-table: blog_posts
       x-pk: uid
+      x-indexes:
+         - unique:title
+         - unique:slug
+
       description: A blog post (uid used as pk for test purposes)
       required:
         - uid
@@ -124,13 +132,11 @@ components:
           readOnly: True
         title:
           type: string
-          x-db-unique: true
           maxLength: 255
         slug:
           type: string
           minLength: 1
           maxLength: 200
-          x-db-unique: true
         category:
           $ref: "#/components/schemas/Category"
         active:

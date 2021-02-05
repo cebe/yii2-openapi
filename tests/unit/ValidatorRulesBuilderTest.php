@@ -3,6 +3,7 @@
 namespace tests\unit;
 
 use cebe\yii2openapi\lib\items\Attribute;
+use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
 use cebe\yii2openapi\lib\ValidationRulesBuilder;
@@ -21,7 +22,6 @@ class ValidatorRulesBuilderTest extends TestCase
                                      ->setRequired(true)->setReadOnly(true),
                 (new Attribute('title'))->setPhpType('string')
                                         ->setDbType('string')
-                                        ->setUnique(true)
                                         ->setSize(60)
                                         ->setRequired(true),
                 (new Attribute('article'))->setPhpType('string')->setDbType('text')->setDefault(''),
@@ -34,6 +34,9 @@ class ValidatorRulesBuilderTest extends TestCase
                 (new Attribute('required_with_def'))->setPhpType('string')
                                                     ->setDbType('string')->setRequired()->setDefault('xxx'),
             ],
+            'indexes' => [
+                'dummy_title_active_key' => DbIndex::make('dummy', ['title', 'active'], null, true)
+            ]
         ]);
         $expected = [
             'trim' => new ValidationRule([
@@ -47,7 +50,7 @@ class ValidatorRulesBuilderTest extends TestCase
             'required' => new ValidationRule(['title', 'category_id'], 'required'),
             'category_id_integer' => new ValidationRule(['category_id'], 'integer'),
             'category_id_exist' => new ValidationRule(['category_id'], 'exist', ['targetRelation' => 'Category']),
-            'title_unique' => new ValidationRule(['title'], 'unique'),
+            'title_active_unique' => new ValidationRule(['title', 'active'], 'unique'),
             'title_string' => new ValidationRule(['title'], 'string', ['max' => 60]),
             'article_string' => new ValidationRule(['article'], 'string'),
             'active_boolean' => new ValidationRule(['active'], 'boolean'),

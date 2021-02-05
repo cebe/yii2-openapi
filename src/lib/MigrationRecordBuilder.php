@@ -22,6 +22,7 @@ class MigrationRecordBuilder
     public const DROP_PK = MigrationRecordBuilder::INDENT . "\$this->dropPrimaryKey('%s', '%s');";
     public const ADD_TABLE = MigrationRecordBuilder::INDENT . "\$this->createTable('%s', %s);";
     public const ADD_UNIQUE = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', true);";
+    public const ADD_INDEX = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', %s);";
     public const DROP_COLUMN = MigrationRecordBuilder::INDENT . "\$this->dropColumn('%s', '%s');";
     public const ADD_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('CREATE TYPE enum_%s AS ENUM(%s)');";
     public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE enum_%s');";
@@ -44,57 +45,51 @@ class MigrationRecordBuilder
     /**
      * @param string                     $tableAlias
      * @param array|\yii\db\ColumnSchema $columns
-     * @param array                      $uniqueNames
      * @return string
      */
-    public function createTable(string $tableAlias, array $columns, array $uniqueNames):string
+    public function createTable(string $tableAlias, array $columns):string
     {
-        $codeColumns = array_map(
-            function (ColumnSchema $column) use ($uniqueNames) {
-                $isUnique = in_array($column->name, $uniqueNames, true);
-                $converter = $this->columnToCode($column, $isUnique, false);
-                return $converter->getCode();
-            },
-            $columns
-        );
+        $codeColumns = array_map(function (ColumnSchema $column) {
+            return $this->columnToCode($column, false)->getCode();
+        }, $columns);
         $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT, "'"], VarDumper::export($codeColumns));
         return sprintf(self::ADD_TABLE, $tableAlias, $codeColumns);
     }
 
-    public function addColumn(string $tableAlias, ColumnSchema $column, bool $isUnique = false):string
+    public function addColumn(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, $isUnique, false);
+        $converter = $this->columnToCode($column, false);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
-    public function addDbColumn(string $tableAlias, ColumnSchema $column, bool $isUnique = false):string
+    public function addDbColumn(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, $isUnique, true);
+        $converter = $this->columnToCode($column, true);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
     public function alterColumn(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, true);
+        $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
 
     public function alterColumnType(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, false);
+        $converter = $this->columnToCode($column, false);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, true);
+        $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
     }
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, false);
+        $converter = $this->columnToCode($column, false);
         $default = $converter->getDefaultValue();
         if ($default === null) {
             return '';
@@ -104,7 +99,7 @@ class MigrationRecordBuilder
 
     public function setColumnDefaultFromDb(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, true);
+        $converter = $this->columnToCode($column, true);
         $default = $converter->getDefaultValue();
         if ($default === null) {
             return '';
@@ -137,9 +132,15 @@ class MigrationRecordBuilder
         return sprintf(self::ADD_FK, $fkName, $tableAlias, $fkCol, $refTable, $refCol);
     }
 
-    public function addUniqueIndex(string $tableAlias, string $columnName):string
+    public function addUniqueIndex(string $tableAlias, string $indexName, array $columns):string
     {
-        return sprintf(self::ADD_UNIQUE, 'unique_' . $columnName, $tableAlias, $columnName);
+        return sprintf(self::ADD_UNIQUE, $indexName, $tableAlias, implode(',', $columns));
+    }
+
+    public function addIndex(string $tableAlias, string $indexName, array $columns, ?string $using = null):string
+    {
+        $indexType = $using === null ? 'false' : "'".$using."'";
+        return sprintf(self::ADD_INDEX, $indexName, $tableAlias, implode(',', $columns), $indexType);
     }
 
     public function addPrimaryKey(string $tableAlias, array $columns)
@@ -174,13 +175,13 @@ class MigrationRecordBuilder
         return sprintf(self::DROP_COLUMN, $tableAlias, $columnName);
     }
 
-    public function dropUniqueIndex(string $tableAlias, string $columnName):string
+    public function dropIndex(string $tableAlias, string $indexName):string
     {
-        return sprintf(self::DROP_INDEX, 'unique_' . $columnName, $tableAlias);
+        return sprintf(self::DROP_INDEX, $indexName, $tableAlias);
     }
 
-    private function columnToCode(ColumnSchema $column, bool $isUnique, bool $fromDb = false): ColumnToCode
+    private function columnToCode(ColumnSchema $column, bool $fromDb = false): ColumnToCode
     {
-        return new ColumnToCode($this->dbSchema, $column, $isUnique, $fromDb);
+        return new ColumnToCode($this->dbSchema, $column, $fromDb);
     }
 }

@@ -114,19 +114,27 @@ Explicitly specify primary key name for table, if it is different from "id"
 
 Explicitly specify the database type for a column. (MUST contains only db type! (json, jsonb, uuid, varchar etc))
 
-### `x-db-unique`
-Flag for unique column
+### `x-indexes`
+Specify table indexes
 
 ```yaml
     Post:
       x-table: posts
+      x-indexes:
+          - 'visible,publish_date'
+          - 'unique:title' #for unique attributes also unique validation check will be added
+          - 'gist:metadata' #for postgres will generate index using GIST index type
       properties:
         id:
            type: integer
            x-db-type: INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT
         title:
            type: string
-           x-db-unique: true
+        visible:
+            type: boolean
+        publish_date:
+            type: string
+            format: date
         metadata:
            type: object
            x-db-type: JSON NOT NULL DEFAULT '{}'
