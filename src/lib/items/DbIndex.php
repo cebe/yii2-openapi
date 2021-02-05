@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib\items;
 use yii\base\BaseObject;
 use yii\db\IndexConstraint;
 use function implode;
+use function substr;
 
 class DbIndex extends BaseObject
 {
@@ -49,7 +50,7 @@ class DbIndex extends BaseObject
         $name = $isUnique !== false ? $tableName . '_'  . implode('_', $columns).'_key'
             : $tableName . '_' . implode('_', $columns) . (isset($type) ? '_' . $type : '') . '_index';
         return new static([
-            'name' => $name,
+            'name' => substr($name, 0, 62),
             'columns' => $columns,
             'type' => $type,
             'isUnique' => $isUnique,
@@ -61,7 +62,7 @@ class DbIndex extends BaseObject
         $name = $constraint->isUnique !== false ? $tableName . '_'  . implode('_', $constraint->columnNames).'_key'
             : $tableName . '_' . implode('_', $constraint->columnNames) . '_index';
         return new static([
-            'name' => $name,
+            'name' => substr($name, 0, 62),
             'columns' => $constraint->columnNames,
             'type' => null,
             'isUnique' => $constraint->isUnique,
