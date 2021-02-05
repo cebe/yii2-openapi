@@ -26,6 +26,7 @@ use function in_array;
 use function is_bool;
 use function is_string;
 use function str_replace;
+use function substr;
 
 class MigrationBuilder
 {
@@ -467,7 +468,7 @@ SQL;
     {
         $table = $this->normalizeTableName($table);
         $foreignTable = $this->normalizeTableName($foreignTable);
-        return "fk_{$table}_{$column}_{$foreignTable}_{$foreignColumn}";
+        return substr("fk_{$table}_{$column}_{$foreignTable}_{$foreignColumn}", 0, 62);
     }
 
     private function normalizeTableName(string $tableName):string
