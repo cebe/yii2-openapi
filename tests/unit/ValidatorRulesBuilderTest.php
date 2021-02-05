@@ -22,7 +22,6 @@ class ValidatorRulesBuilderTest extends TestCase
                                      ->setRequired(true)->setReadOnly(true),
                 (new Attribute('title'))->setPhpType('string')
                                         ->setDbType('string')
-                                        ->setUnique(true)
                                         ->setSize(60)
                                         ->setRequired(true),
                 (new Attribute('article'))->setPhpType('string')->setDbType('text')->setDefault(''),

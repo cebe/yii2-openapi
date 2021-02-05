@@ -76,11 +76,6 @@ class Attribute extends BaseObject
     /**
      * @var bool
      */
-    public $unique = false;
-
-    /**
-     * @var bool
-     */
     public $primary = false;
 
     /**
@@ -132,12 +127,6 @@ class Attribute extends BaseObject
     public function setRequired(bool $required = true):Attribute
     {
         $this->required = $required;
-        return $this;
-    }
-
-    public function setUnique(bool $unique = true):Attribute
-    {
-        $this->unique = $unique;
         return $this;
     }
 
@@ -198,11 +187,6 @@ class Attribute extends BaseObject
     public function isReference():bool
     {
         return $this->reference !== null;
-    }
-
-    public function isUnique():bool
-    {
-        return $this->unique;
     }
 
     public function isRequired():bool

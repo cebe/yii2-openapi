@@ -14,9 +14,9 @@ return [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'username' => (new Attribute('username', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(200)->setRequired()->setUnique()->setFakerStub('substr($faker->userName, 0, 200)'),
+                ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(200)->setUnique()->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
+                ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
             'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setFakerStub('$faker->password'),
             'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
@@ -43,7 +43,7 @@ return [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setRequired()->setUnique()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
+                ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'active' => (new Attribute('active', ['phpType' => 'bool', 'dbType' => 'boolean']))
                 ->setRequired()->setDefault(false)->setFakerStub('$faker->boolean'),
         ],
@@ -63,9 +63,9 @@ return [
             'uid' => (new Attribute('uid', ['phpType' => 'int', 'dbType' => 'bigpk']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setRequired()->setUnique()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
+                ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'slug' => (new Attribute('slug', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setUnique()->setSize(200)->setLimits(null, null, 1)->setFakerStub('substr($uniqueFaker->slug, 0, 200)'),
+                ->setSize(200)->setLimits(null, null, 1)->setFakerStub('substr($uniqueFaker->slug, 0, 200)'),
             'active' => (new Attribute('active', ['phpType' => 'bool', 'dbType' => 'boolean']))
                 ->setRequired()->setDefault(false)->setFakerStub('$faker->boolean'),
             'category' => (new Attribute('category', ['phpType' => 'int', 'dbType' => 'integer']))

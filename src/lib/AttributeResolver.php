@@ -421,9 +421,6 @@ class AttributeResolver
                     throw new InvalidDefinitionException('Invalid index definition - property '.$prop.' not declared');
                 }
                 $columns[] = $this->attributes[$prop]->columnName;
-                if ($unique === true) {
-                    $this->attributes[$prop]->unique = true;
-                }
             }
             $dbIndex = DbIndex::make($this->tableName, $columns, $indexType, $unique);
             $dbIndexes[$dbIndex->name] = $dbIndex;
