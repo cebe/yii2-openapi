@@ -468,7 +468,7 @@ SQL;
     {
         $table = $this->normalizeTableName($table);
         $foreignTable = $this->normalizeTableName($foreignTable);
-        return substr("fk_{$table}_{$column}_{$foreignTable}_{$foreignColumn}", 0, 62);
+        return substr("fk_{$table}_{$column}_{$foreignTable}_{$foreignColumn}", 0, 63);
     }
 
     private function normalizeTableName(string $tableName):string
