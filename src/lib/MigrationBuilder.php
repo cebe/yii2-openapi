@@ -437,7 +437,7 @@ INNER JOIN "pg_index" AS "i"
 INNER JOIN "pg_class" AS "ic"
     ON "ic"."oid" = "i"."indexrelid"
 INNER JOIN "pg_attribute" AS "ia"
-    ON "ia"."attrelid" = "i"."indrelid" AND "ia"."attnum" = ANY ("i"."indkey")
+    ON "ia"."attrelid" = "i"."indexrelid"
 INNER JOIN pg_am it on it.oid = ic.relam
 WHERE "tcns"."nspname" = :schemaName AND "tc"."relname" = :tableName
 ORDER BY "ia"."attnum" ASC
@@ -453,13 +453,13 @@ SQL;
             if ((bool) $index[0]['index_is_primary']) {
                 continue;
             }
-            $name = $this->unPrefixTableName($name);
-            $dbIndexes[$name] = new DbIndex([
-                'name' => $name,
-                'isUnique' => (bool) $index[0]['index_is_unique'],
-                'columns' => ArrayHelper::getColumn($index, 'column_name'),
-                'type' => $index[0]['index_type'] === 'btree' ? null : $index[0]['index_type']
-            ]);
+            $dbIndex = DbIndex::make(
+                $this->model->tableName,
+                ArrayHelper::getColumn($index, 'column_name'),
+                $index[0]['index_type'] === 'btree' ? null : $index[0]['index_type'],
+                (bool) $index[0]['index_is_unique']
+            );
+            $dbIndexes[$dbIndex->name] = $dbIndex;
         }
         return $dbIndexes;
     }
