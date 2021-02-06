@@ -38,8 +38,7 @@ class DbIndex extends BaseObject
     {
         return $this->type === $dbIndex->type
                && $this->isUnique === $dbIndex->isUnique
-               && count($this->columns) === count($dbIndex->columns)
-               && array_diff($this->columns, $dbIndex->columns) === [];
+               && $this->columns === $dbIndex->columns;
     }
 
     public static function make(string $tableName, array $columns, $type = null, $isUnique = false):DbIndex
