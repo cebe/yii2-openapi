@@ -35,8 +35,8 @@ class ValidatorRulesBuilderTest extends TestCase
                                                     ->setDbType('string')->setRequired()->setDefault('xxx'),
             ],
             'indexes' => [
-                'dummy_title_active_key' => DbIndex::make('dummy', ['title', 'active'], null, true)
-            ]
+                'dummy_title_active_key' => DbIndex::make('dummy', ['title', 'active'], null, true),
+            ],
         ]);
         $expected = [
             'trim' => new ValidationRule([
@@ -50,7 +50,10 @@ class ValidatorRulesBuilderTest extends TestCase
             'required' => new ValidationRule(['title', 'category_id'], 'required'),
             'category_id_integer' => new ValidationRule(['category_id'], 'integer'),
             'category_id_exist' => new ValidationRule(['category_id'], 'exist', ['targetRelation' => 'Category']),
-            'title_active_unique' => new ValidationRule(['title', 'active'], 'unique'),
+            'title_active_unique' => new ValidationRule(['title', 'active'], 'unique', [
+                'targetAttribute' =>
+                    ['title', 'active'],
+            ]),
             'title_string' => new ValidationRule(['title'], 'string', ['max' => 60]),
             'article_string' => new ValidationRule(['article'], 'string'),
             'active_boolean' => new ValidationRule(['active'], 'boolean'),

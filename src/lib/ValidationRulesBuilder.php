@@ -7,7 +7,6 @@
 
 namespace cebe\yii2openapi\lib;
 
-use a;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
@@ -74,7 +73,8 @@ class ValidationRulesBuilder
 
     private function addUniqueRule(array $columns)
     {
-        $this->rules[implode('_', $columns).'_unique'] = new ValidationRule($columns, 'unique');
+        $params = \count($columns) > 1 ? ['targetAttribute' => $columns] : [];
+        $this->rules[implode('_', $columns) . '_unique'] = new ValidationRule($columns, 'unique', $params);
     }
 
     private function resolveAttributeRules(Attribute $attribute):void
@@ -83,12 +83,12 @@ class ValidationRulesBuilder
             return;
         }
         if ($attribute->phpType === 'bool') {
-            $this->rules[$attribute->columnName.'_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
+            $this->rules[$attribute->columnName . '_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
             return;
         }
 
         if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
-            $key = $attribute->columnName.'_'.$attribute->dbType;
+            $key = $attribute->columnName . '_' . $attribute->dbType;
             $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
             return;
         }
@@ -100,8 +100,9 @@ class ValidationRulesBuilder
             $this->addStringRule($attribute);
         }
         if (!empty($attribute->enumValues)) {
-            $key = $attribute->columnName.'_in';
-            $this->rules[$key] = new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
+            $key = $attribute->columnName . '_in';
+            $this->rules[$key] =
+                new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
             return;
         }
         $this->addRulesByAttributeName($attribute);
@@ -112,11 +113,11 @@ class ValidationRulesBuilder
         //@TODO: probably also patterns for file, image
         $patterns = [
             '~e?mail~i' => 'email',
-            '~(url|site|website|href|link)~i' => 'url'
+            '~(url|site|website|href|link)~i' => 'url',
         ];
         foreach ($patterns as $pattern => $validator) {
             if (preg_match($pattern, strtolower($attribute->columnName))) {
-                $key = $attribute->columnName.'_'.$validator;
+                $key = $attribute->columnName . '_' . $validator;
                 $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator);
                 return;
             }
@@ -134,7 +135,7 @@ class ValidationRulesBuilder
             } elseif ($attribute->phpType === 'string') {
                 $this->addStringRule($attribute);
             }
-            $this->rules[$attribute->columnName.'_exist'] = new ValidationRule(
+            $this->rules[$attribute->columnName . '_exist'] = new ValidationRule(
                 [$attribute->columnName],
                 'exist',
                 ['targetRelation' => $attribute->camelName()]
@@ -155,7 +156,7 @@ class ValidationRulesBuilder
                 $params['max'] = $attribute->maxLength;
             }
         }
-        $key = $attribute->columnName.'_string';
+        $key = $attribute->columnName . '_string';
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
     }
 
@@ -169,7 +170,7 @@ class ValidationRulesBuilder
             $params['max'] = $attribute->limits['max'];
         }
         $validator = $attribute->phpType === 'int' ? 'integer' : 'double';
-        $key = $attribute->columnName.'_'.$validator;
+        $key = $attribute->columnName . '_' . $validator;
         $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
 
@@ -179,7 +180,7 @@ class ValidationRulesBuilder
             if ($attribute->isReadOnly()) {
                 continue;
             }
-            if ($attribute->defaultValue===null && $attribute->isRequired()) {
+            if ($attribute->defaultValue === null && $attribute->isRequired()) {
                 $this->typeScope['required'][$attribute->columnName] = $attribute->columnName;
             }
 
