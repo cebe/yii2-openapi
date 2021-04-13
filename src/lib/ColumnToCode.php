@@ -110,10 +110,15 @@ class ColumnToCode
         return $quoted ? "'" . $code . "'" : $code;
     }
 
-    public function getTypeAndNullState():string
+    public function getAlterExpression(bool $addUsingExpression = false):string
     {
         if ($this->isEnum() && $this->isPostgres()) {
             return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
+        }
+
+        if ($this->isPostgres() && $addUsingExpression) {
+            return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
+                .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize()."'";
         }
 
         return $this->isBuiltinType
@@ -299,6 +304,11 @@ class ColumnToCode
     {
         $type = strtolower($this->column->dbType);
         return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
+    }
+
+    private function typeWithoutSize():string
+    {
+       return preg_replace('~(.*)(\(\d+\))~', '$1', $this->rawParts['type']);
     }
 
     private function isPostgres():bool

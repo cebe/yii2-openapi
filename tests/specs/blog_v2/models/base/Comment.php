@@ -9,6 +9,7 @@ namespace app\models\base;
  * @property int $post_id A blog post (uid used as pk for test purposes)
  * @property int $user_id The User
  * @property string $message
+ * @property string $meta_data
  * @property string $created_at
  *
  * @property \app\models\Post $post
@@ -24,13 +25,14 @@ abstract class Comment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['message', 'created_at'], 'trim'],
+            'trim' => [['message', 'meta_data', 'created_at'], 'trim'],
             'required' => [['post_id', 'message', 'created_at'], 'required'],
             'post_id_integer' => [['post_id'], 'integer'],
             'post_id_exist' => [['post_id'], 'exist', 'targetRelation' => 'Post'],
             'user_id_integer' => [['user_id'], 'integer'],
             'user_id_exist' => [['user_id'], 'exist', 'targetRelation' => 'User'],
             'message_string' => [['message'], 'string'],
+            'meta_data_string' => [['meta_data'], 'string', 'min' => 1, 'max' => 300],
             'created_at_datetime' => [['created_at'], 'datetime'],
         ];
     }

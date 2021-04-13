@@ -9,6 +9,7 @@ namespace app\models\base;
  * @property int $post_id A blog post (uid used as pk for test purposes)
  * @property int $author_id The User
  * @property array $message
+ * @property array $meta_data
  * @property int $created_at
  *
  * @property \app\models\Post $post
@@ -30,7 +31,7 @@ abstract class Comment extends \yii\db\ActiveRecord
             'author_id_integer' => [['author_id'], 'integer'],
             'author_id_exist' => [['author_id'], 'exist', 'targetRelation' => 'Author'],
             'created_at_integer' => [['created_at'], 'integer'],
-            'safe' => [['message'], 'safe'],
+            'safe' => [['message', 'meta_data'], 'safe'],
         ];
     }
 

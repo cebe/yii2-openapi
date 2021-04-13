@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\lib;
 
 use yii\db\ColumnSchema;
 use yii\db\Schema;
+use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function implode;
 use function sprintf;
@@ -75,16 +76,16 @@ class MigrationRecordBuilder
     }
 
 
-    public function alterColumnType(string $tableAlias, ColumnSchema $column):string
+    public function alterColumnType(string $tableAlias, ColumnSchema $column, bool $addUsing = false):string
     {
         $converter = $this->columnToCode($column, false);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
 
-    public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column):string
+    public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column, bool $addUsing = false) :string
     {
         $converter = $this->columnToCode($column, true);
-        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getTypeAndNullState());
+        return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
@@ -103,6 +104,9 @@ class MigrationRecordBuilder
         $default = $converter->getDefaultValue();
         if ($default === null) {
             return '';
+        }
+        if (StringHelper::startsWith($default, "\\'")) {
+            $default = \preg_replace("~\\\'(.*)\\\'~", "'$1'", $default);
         }
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET DEFAULT '.$default.'"');
     }
