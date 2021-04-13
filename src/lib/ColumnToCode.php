@@ -308,7 +308,7 @@ class ColumnToCode
 
     private function typeWithoutSize():string
     {
-       return preg_replace('~(.*)(\(\d+\))~', '$1', $this->rawParts['type']);
+        return preg_replace('~(.*)(\(\d+\))~', '$1', $this->rawParts['type']);
     }
 
     private function isPostgres():bool

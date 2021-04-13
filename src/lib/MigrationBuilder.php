@@ -329,23 +329,17 @@ class MigrationBuilder
     private function isNeedUsingExpression(string $fromType, string $toType): bool
     {
         $strings = ['string', 'text', 'char'];
-        if(in_array($fromType, $strings) && in_array($toType, $strings)){
+        if (in_array($fromType, $strings) && in_array($toType, $strings)) {
             return false;
         }
         $ints = ['smallint', 'integer', 'bigint', 'float', 'decimal'];
-        if(in_array($fromType, $ints) && in_array($toType, $ints)){
+        if (in_array($fromType, $ints) && in_array($toType, $ints)) {
             return false;
         }
         $dates = ['date', 'timestamp'];
-        if(in_array($fromType, $dates) && in_array($toType, $dates)){
+        if (in_array($fromType, $dates) && in_array($toType, $dates)) {
             return false;
         }
-        //casts dates to ints impossible anywhere
-//        if((in_array($fromType, $dates) && in_array($toType, $ints))
-//           || (in_array($fromType, $ints) && in_array($toType, $dates))){
-//            return false;
-//        }
-
         return true;
     }
 
