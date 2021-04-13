@@ -116,6 +116,8 @@ return [
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json']))
                 ->setRequired()->setDefault([])->setFakerStub('[]'),
+            'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json']))
+                ->setDefault([])->setFakerStub('[]'),
             'created_at' => (new Attribute('created_at',['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()->setFakerStub('$faker->unixTime'),
         ],

@@ -17,6 +17,7 @@ class CommentFaker
         $model = new Comment();
         //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->message = [];
+        $model->meta_data = [];
         $model->created_at = $faker->unixTime;
         return $model;
     }

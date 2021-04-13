@@ -377,6 +377,12 @@ components:
           $ref: "#/components/schemas/User"
         message:
           type: string
+        meta_data:
+          type: string
+          example: "type=='ticket' && status=='closed'"
+          minLength: 1
+          maxLength: 300
+          default: ''
         created_at:
           type: string
           format: date-time

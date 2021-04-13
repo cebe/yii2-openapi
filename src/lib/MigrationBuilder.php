@@ -293,8 +293,9 @@ class MigrationBuilder
             $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
         }
         if (!empty(array_intersect(['type', 'size'], $changes))) {
+            $addUsing = $this->isNeedUsingExpression($desired->type, $current->type);
             $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired));
-            $this->migration->addDownCode($this->recordBuilder->alterColumnTypeFromDb($tableName, $current));
+            $this->migration->addDownCode($this->recordBuilder->alterColumnTypeFromDb($tableName, $current, $addUsing));
         }
         if (in_array('allowNull', $changes, true)) {
             if ($desired->allowNull === true) {
@@ -323,6 +324,23 @@ class MigrationBuilder
         if ($isChangeToEnum) {
             $this->migration->addDownCode($this->recordBuilder->dropEnum($current->name), true);
         }
+    }
+
+    private function isNeedUsingExpression(string $fromType, string $toType): bool
+    {
+        $strings = ['string', 'text', 'char'];
+        if (in_array($fromType, $strings) && in_array($toType, $strings)) {
+            return false;
+        }
+        $ints = ['smallint', 'integer', 'bigint', 'float', 'decimal'];
+        if (in_array($fromType, $ints) && in_array($toType, $ints)) {
+            return false;
+        }
+        $dates = ['date', 'timestamp'];
+        if (in_array($fromType, $dates) && in_array($toType, $dates)) {
+            return false;
+        }
+        return true;
     }
 
     private function buildRelationsForJunction(ManyToManyRelation $relation):void

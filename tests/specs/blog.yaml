@@ -176,6 +176,12 @@ components:
           type: string
           x-db-type: json
           default: '{}'
+        meta_data:
+          type: array
+          x-db-type: json
+          default: [ ]
+          items:
+            type: object
         created_at:
           type: integer
           format: int32

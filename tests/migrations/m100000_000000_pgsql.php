@@ -59,6 +59,7 @@ class m100000_000000_pgsql extends Migration
                 'post_id' => $this->bigInteger()->notNull(),
                 'author_id' => $this->integer()->notNull(),
                 'message' => $this->json()->notNull()->defaultValue('{}'),
+                'meta_data' => $this->json()->notNull()->defaultValue('[]'),
                 'created_at' => $this->integer()->notNull(),
             ]);
         $this->addForeignKey('fk_v2_comments_post_id_v2_posts_uid',
