@@ -207,7 +207,9 @@ class MigrationBuilder
         } else {
             $this->buildRelations();
         }
-        $this->buildIndexChanges();
+        if (!$relation) {
+            $this->buildIndexChanges();
+        }
         return $this->migration;
     }
 
