@@ -143,7 +143,7 @@ class MigrationRecordBuilder
 
     public function addIndex(string $tableAlias, string $indexName, array $columns, ?string $using = null):string
     {
-        $indexType = $using === null ? 'false' : "'".$using."'";
+        $indexType = $using === null ? 'false' : "'".ColumnToCode::escapeQuotes($using)."'";
         return sprintf(self::ADD_INDEX, $indexName, $tableAlias, implode(',', $columns), $indexType);
     }
 

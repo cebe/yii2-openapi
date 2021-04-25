@@ -115,7 +115,9 @@ class ColumnToCode
         if ($this->isEnum() && $this->isPostgres()) {
             return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
         }
-
+        if ($this->column->dbType === 'tsvector') {
+            return "'" . $this->rawParts['type'] . "'";
+        }
         if ($this->isPostgres() && $addUsingExpression) {
             return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize()."'";
@@ -303,6 +305,9 @@ class ColumnToCode
     private function isDefaultAllowed():bool
     {
         $type = strtolower($this->column->dbType);
+        if ($type === 'tsvector') {
+            return false;
+        }
         return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
     }
 

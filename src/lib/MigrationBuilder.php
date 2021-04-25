@@ -97,7 +97,7 @@ class MigrationBuilder
         $this->migration = new MigrationModel($this->model, true, $relation);
         $builder = $this->recordBuilder;
         $tableAlias = $relation->getViaTableAlias();
-        $this->migration->addUpCode($builder->createTable($tableAlias, $relation->columnSchema, []))
+        $this->migration->addUpCode($builder->createTable($tableAlias, $relation->columnSchema))
                         ->addDownCode($builder->dropTable($tableAlias));
         $this->migration->addUpCode($builder->addPrimaryKey($tableAlias, array_keys($relation->columnSchema)))
                         ->addDownCode($builder->dropPrimaryKey($tableAlias, array_keys($relation->columnSchema)));

@@ -46,8 +46,9 @@ class DbIndex extends BaseObject
         if ($type === 'btree') {
             $type = null; //Default type
         }
+        $typeName = isset($type) ? '_'.explode('(', $type)[0]: '';
         $name = $isUnique !== false ? $tableName . '_'  . implode('_', $columns).'_key'
-            : $tableName . '_' . implode('_', $columns) . (isset($type) ? '_' . $type : '') . '_index';
+            : $tableName . '_' . implode('_', $columns) . $typeName . '_index';
         return new static([
             'name' => substr($name, 0, 63),
             'columns' => $columns,

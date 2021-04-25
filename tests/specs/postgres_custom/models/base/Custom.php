@@ -12,6 +12,7 @@ namespace app\models\base;
  * @property array $json3
  * @property array $json4
  * @property string $status
+ * @property string $search
  *
  */
 abstract class Custom extends \yii\db\ActiveRecord
