@@ -6,7 +6,7 @@ use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\MigrationModel;
-use cebe\yii2openapi\lib\MigrationRecordBuilder;
+use cebe\yii2openapi\lib\migrations\MigrationRecordBuilder;
 use cebe\yii2openapi\lib\MigrationsGenerator;
 use tests\TestCase;
 use yii\db\Schema;

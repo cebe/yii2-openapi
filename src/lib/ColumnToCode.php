@@ -118,9 +118,9 @@ class ColumnToCode
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
         }
-        if ($this->isPostgres() && $addUsingExpression) {
+        if ($addUsingExpression && $this->isPostgres()) {
             return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
-                .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize()."'";
+                .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
         }
 
         return $this->isBuiltinType
@@ -179,8 +179,7 @@ class ColumnToCode
 
     private function resolve():void
     {
-        $dbType = strtolower($this->column->dbType);
-        $dbType = preg_replace('~(.+)\(\d+\)~', '$1', $dbType);
+        $dbType = $this->typeWithoutSize(strtolower($this->column->dbType));
         $type = $this->column->type;
         //Primary Keys
         if (array_key_exists($type, self::PK_TYPE_MAP)) {
@@ -288,7 +287,7 @@ class ColumnToCode
             default:
                 $isExpression = StringHelper::startsWith($value, 'CURRENT')
                     || StringHelper::startsWith($value, 'LOCAL')
-                    || substr($value, -1, 1) === ')';
+                    || $value[strlen($value) - 1] === ')';
                 if ($isExpression) {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                 } else {
@@ -311,9 +310,9 @@ class ColumnToCode
         return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
     }
 
-    private function typeWithoutSize():string
+    private function typeWithoutSize(string $type):string
     {
-        return preg_replace('~(.*)(\(\d+\))~', '$1', $this->rawParts['type']);
+        return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
     }
 
     private function isPostgres():bool

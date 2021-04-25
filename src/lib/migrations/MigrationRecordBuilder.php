@@ -5,17 +5,19 @@
  * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
  */
 
-namespace cebe\yii2openapi\lib;
+namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\lib\ColumnToCode;
 use yii\db\ColumnSchema;
 use yii\db\Schema;
 use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function implode;
+use function preg_replace;
 use function sprintf;
 use function str_replace;
 
-class MigrationRecordBuilder
+final class MigrationRecordBuilder
 {
     public const INDENT = '        ';
     public const DROP_INDEX = MigrationRecordBuilder::INDENT . "\$this->dropIndex('%s', '%s');";
@@ -106,7 +108,7 @@ class MigrationRecordBuilder
             return '';
         }
         if (StringHelper::startsWith($default, "\\'")) {
-            $default = \preg_replace("~\\\'(.*)\\\'~", "'$1'", $default);
+            $default = preg_replace("~\\\'(.*)\\\'~", "'$1'", $default);
         }
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET DEFAULT '.$default.'"');
     }
@@ -147,13 +149,13 @@ class MigrationRecordBuilder
         return sprintf(self::ADD_INDEX, $indexName, $tableAlias, implode(',', $columns), $indexType);
     }
 
-    public function addPrimaryKey(string $tableAlias, array $columns)
+    public function addPrimaryKey(string $tableAlias, array $columns):string
     {
         $name = 'pk_'. implode('_', $columns);
         return sprintf(self::ADD_PK, $name, $tableAlias, implode(',', $columns));
     }
 
-    public function dropPrimaryKey(string $tableAlias, array $columns)
+    public function dropPrimaryKey(string $tableAlias, array $columns):string
     {
         $name = 'pk_'. implode('_', $columns);
         return sprintf(self::DROP_PK, $name, $tableAlias);
