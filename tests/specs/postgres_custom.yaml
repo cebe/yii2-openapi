@@ -34,6 +34,8 @@ components:
     schemas:
         Custom:
             x-table: v3_pgcustom
+            x-indexes:
+               - "gin(to_tsvector('english', status)):search"
             required:
                 - id
             properties:
@@ -70,3 +72,8 @@ components:
                         - draft
                         - pending
                         - active
+                search:
+                  type: string
+                  x-db-type: tsvector
+                  readOnly: true
+                  x-faker: false

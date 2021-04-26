@@ -7,11 +7,16 @@
 
 namespace cebe\yii2openapi\lib;
 
+use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\MigrationModel;
+use cebe\yii2openapi\lib\migrations\BaseMigrationBuilder;
+use cebe\yii2openapi\lib\migrations\MysqlMigrationBuilder;
+use cebe\yii2openapi\lib\migrations\PostgresMigrationBuilder;
 use Exception;
 use yii\base\Component;
 use yii\db\Connection;
 use yii\di\Instance;
+use function in_array;
 use function ksort;
 
 class MigrationsGenerator extends Component
@@ -26,7 +31,7 @@ class MigrationsGenerator extends Component
     **/
     private $migrations;
     /**
-     * @var MigrationModel[]
+     * @var MigrationModel[]|bool[]
      **/
     private $sorted;
 
@@ -45,15 +50,15 @@ class MigrationsGenerator extends Component
     {
         $junctions = [];
         foreach ($models as $model) {
-            $migration = (new MigrationBuilder($this->db, $model))->build();
+            $migration = $this->createBuilder($model)->build();
             if ($migration->notEmpty()) {
                 $this->migrations[$model->tableAlias] = $migration;
             }
             foreach ($model->many2many as $relation) {
-                if ($relation->hasViaModel === true || \in_array($relation->viaTableName, $junctions, true)) {
+                if ($relation->hasViaModel === true || in_array($relation->viaTableName, $junctions, true)) {
                     continue;
                 }
-                $migration = (new MigrationBuilder($this->db, $model))->buildJunction($relation);
+                $migration = $this->createBuilder($model)->buildJunction($relation);
                 if ($migration->notEmpty()) {
                     $this->migrations[$relation->viaTableAlias] = $migration;
                 }
@@ -61,6 +66,17 @@ class MigrationsGenerator extends Component
             }
         }
         return !empty($this->migrations) ? $this->sortMigrationsByDeps() : [];
+    }
+
+    /**
+     * @throws \yii\base\NotSupportedException
+     */
+    private function createBuilder(DbModel $model):BaseMigrationBuilder
+    {
+        if ($this->db->getDriverName() === 'pgsql') {
+            return new PostgresMigrationBuilder($this->db, $model);
+        }
+        return new MysqlMigrationBuilder($this->db, $model);
     }
 
     /**
