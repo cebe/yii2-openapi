@@ -15,6 +15,19 @@ use function strpos;
 
 class MultiDbSecondaryMigrationTest extends DbTestCase
 {
+    public function testPostgresCustom()
+    {
+        $dbName = 'pgsql';
+        Yii::$app->set('db', Yii::$app->pgsql);
+        $this->assertInstanceOf(PgSqlSchema::class, Yii::$app->db->schema);
+        $testFile = Yii::getAlias('@specs/postgres_custom.php');
+        $this->runGenerator($testFile, $dbName);
+        $expectedFiles = $this->findExpectedFiles($testFile, $dbName);
+        $actualFiles = $this->findActualFiles();
+        $this->assertEquals($expectedFiles, $actualFiles);
+        $this->compareFiles($expectedFiles, $testFile);
+    }
+
     public function testMaria()
     {
         $dbName = 'maria';

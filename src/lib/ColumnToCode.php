@@ -71,16 +71,23 @@ class ColumnToCode
     private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null];
 
     /**
+     * @var bool
+     */
+    private $alter;
+
+    /**
      * ColumnToCode constructor.
      * @param \yii\db\Schema       $dbSchema
      * @param \yii\db\ColumnSchema $column
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
+     * @param bool                 $alter (flag for resolve quotes that is different for create and alter)
      */
-    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false)
+    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false, bool $alter = false)
     {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;
+        $this->alter = $alter;
         $this->resolve();
     }
 
@@ -167,12 +174,15 @@ class ColumnToCode
         return implode(', ', array_map('self::wrapQuotes', $enum));
     }
 
-    private static function defaultValueJson(array $value):string
+    private function defaultValueJson(array $value):string
     {
+        if ($this->alter === true) {
+            return "'" . str_replace('"', '\"', Json::encode($value)). "'";
+        }
         return "\\'" . new Expression(Json::encode($value)) . "\\'";
     }
 
-    private static function defaultValueArray(array $value):string
+    private function defaultValueArray(array $value):string
     {
         return "'{" . str_replace('"', "\"", trim(Json::encode($value), '[]')) . "}'";
     }
@@ -269,10 +279,10 @@ class ColumnToCode
             case 'object':
                 if ($value instanceof JsonExpression) {
                     $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
-                    $this->rawParts['default'] = self::defaultValueJson($value->getValue());
+                    $this->rawParts['default'] = $this->defaultValueJson($value->getValue());
                 } elseif ($value instanceof ArrayExpression) {
                     $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
-                    $this->rawParts['default'] = self::defaultValueArray($value->getValue());
+                    $this->rawParts['default'] = $this->defaultValueArray($value->getValue());
                 } else {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                     $this->rawParts['default'] = self::escapeQuotes((string)$value);
@@ -281,8 +291,8 @@ class ColumnToCode
             case 'array':
                 $this->fluentParts['default'] = "defaultValue('" . Json::encode($value) . "')";
                 $this->rawParts['default'] = $this->isJson()
-                    ? self::defaultValueJson($value)
-                    : self::defaultValueArray($value);
+                    ? $this->defaultValueJson($value)
+                    : $this->defaultValueArray($value);
                 break;
             default:
                 $isExpression = StringHelper::startsWith($value, 'CURRENT')
