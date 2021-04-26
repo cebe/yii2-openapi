@@ -21,12 +21,12 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     {
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
+            if ($column->dbType === 'enum') {
+                $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
+                                ->addDownCode($this->recordBuilder->dropEnum($column->name));
+            }
             $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
-            if ($column->dbType === 'enum') {
-                $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues), true)
-                                ->addDownCode($this->recordBuilder->dropEnum($column->name), true);
-            }
         }
     }
 
@@ -109,6 +109,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
             $desired->size = $current->size;
         }
+
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
             if ($current->$attr !== $desired->$attr) {
                 $changedAttributes[] = $attr;

@@ -21,7 +21,7 @@ class CustomFaker
         $model->json2 = [];
         $model->json3 = [];
         $model->json4 = [];
-        $model->status = $faker->randomElement(['draft','pending','active']);
+        $model->status = $faker->randomElement(['active','draft']);
         return $model;
     }
 

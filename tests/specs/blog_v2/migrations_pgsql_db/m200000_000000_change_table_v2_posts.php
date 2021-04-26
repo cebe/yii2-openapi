@@ -7,8 +7,8 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
 {
     public function safeUp()
     {
-        $this->execute('CREATE TYPE enum_lang AS ENUM(\'ru\', \'eng\')');
         $this->addColumn('{{%v2_posts}}', 'id', $this->bigPrimaryKey());
+        $this->execute('CREATE TYPE enum_lang AS ENUM(\'ru\', \'eng\')');
         $this->addColumn('{{%v2_posts}}', 'lang', 'enum_lang NULL DEFAULT \'ru\'');
         $this->dropColumn('{{%v2_posts}}', 'uid');
         $this->alterColumn('{{%v2_posts}}', 'active', "DROP DEFAULT");
@@ -24,8 +24,8 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
         $this->alterColumn('{{%v2_posts}}', 'category_id', $this->integer()->notNull());
         $this->addColumn('{{%v2_posts}}', 'uid', $this->bigInteger()->notNull());
         $this->dropColumn('{{%v2_posts}}', 'lang');
-        $this->dropColumn('{{%v2_posts}}', 'id');
         $this->execute('DROP TYPE enum_lang');
+        $this->dropColumn('{{%v2_posts}}', 'id');
         $this->alterColumn('{{%v2_posts}}', 'active', "SET DEFAULT 'f'");
     }
 }

@@ -253,6 +253,9 @@ class Attribute extends BaseObject
         if (stripos($type, 'varchar') === 0) {
             return 'string';
         }
+        if (stripos($type, 'tsvector') === 0) {
+            return 'string';
+        }
         if (stripos($type, 'json') === 0) {
             return 'json';
         }

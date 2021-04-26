@@ -174,6 +174,10 @@ abstract class BaseMigrationBuilder
                 // do not adjust existing primary keys
                 continue;
             }
+            if (!empty($current->enumValues)) {
+                $current->type = 'enum';
+                $current->dbType = 'enum';
+            }
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
                 continue;

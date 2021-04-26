@@ -92,7 +92,7 @@ final class MigrationRecordBuilder
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false);
+        $converter = $this->columnToCode($column, false, true);
         $default = $converter->getDefaultValue();
         if ($default === null) {
             return '';
@@ -102,13 +102,10 @@ final class MigrationRecordBuilder
 
     public function setColumnDefaultFromDb(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, true);
+        $converter = $this->columnToCode($column, true, true);
         $default = $converter->getDefaultValue();
         if ($default === null) {
             return '';
-        }
-        if (StringHelper::startsWith($default, "\\'")) {
-            $default = preg_replace("~\\\'(.*)\\\'~", "'$1'", $default);
         }
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET DEFAULT '.$default.'"');
     }
@@ -186,8 +183,8 @@ final class MigrationRecordBuilder
         return sprintf(self::DROP_INDEX, $indexName, $tableAlias);
     }
 
-    private function columnToCode(ColumnSchema $column, bool $fromDb = false): ColumnToCode
+    private function columnToCode(ColumnSchema $column, bool $fromDb = false, bool $alter = false): ColumnToCode
     {
-        return new ColumnToCode($this->dbSchema, $column, $fromDb);
+        return new ColumnToCode($this->dbSchema, $column, $fromDb, $alter);
     }
 }
