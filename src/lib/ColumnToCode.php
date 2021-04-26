@@ -287,7 +287,7 @@ class ColumnToCode
             default:
                 $isExpression = StringHelper::startsWith($value, 'CURRENT')
                     || StringHelper::startsWith($value, 'LOCAL')
-                    || $value[strlen($value) - 1] === ')';
+                    || substr($value, -1, 1) === ')';
                 if ($isExpression) {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                 } else {
