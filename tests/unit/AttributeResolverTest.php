@@ -62,7 +62,7 @@ class AttributeResolverTest extends TestCase
         self::assertEquals($expected->tableName, $model->tableName);
         self::assertEquals($expected->description, $model->description);
         self::assertEquals($expected->tableAlias, $model->tableAlias);
-        VarDumper::dump($model->indexes);
+        //VarDumper::dump($model->indexes);
         self::assertEquals($expected->indexes, $model->indexes);
         foreach ($model->relations as $name => $relation) {
             self::assertTrue(isset($expected->relations[$name]));

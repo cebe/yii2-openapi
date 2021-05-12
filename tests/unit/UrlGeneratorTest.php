@@ -26,7 +26,7 @@ class UrlGeneratorTest extends TestCase
         $openApi = $this->getOpenApiSchema($schemaFile);
         $result = (new UrlGenerator($openApi, $modelNs, []))->generate();
         foreach ($result as $i => $data) {
-            echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
+            //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
     }
@@ -45,7 +45,7 @@ class UrlGeneratorTest extends TestCase
         $openApi = $this->getOpenApiSchema($schemaFile);
         $result = (new UrlGenerator($openApi, $modelNs, $namingMap))->generate();
         foreach ($result as $i => $data) {
-            echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
+            //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
     }

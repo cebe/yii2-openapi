@@ -28,7 +28,7 @@ class FractalGeneratorTest extends TestCase
         $openApi = $this->getOpenApiSchema($schemaFile);
         $result = (new FractalGenerator($openApi, $modelNs, [], $transformerNs))->generate();
         foreach ($result as $i => $data) {
-            echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
+            //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
     }
@@ -49,7 +49,7 @@ class FractalGeneratorTest extends TestCase
         $openApi = $this->getOpenApiSchema($schemaFile);
         $result = (new FractalGenerator($openApi, $modelNs, $namingMap, $transformerNs))->generate();
         foreach ($result as $i => $data) {
-            echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
+            //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
     }
