@@ -534,6 +534,13 @@ PHP;
         }
         $models = $this->prepareModels();
         $modelPath = $this->getPathFromNamespace($this->modelNamespace);
+        if ($this->generateModelFaker) {
+            $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
+            $files[] = new CodeFile(
+                Yii::getAlias("$fakerPath/BaseModelFaker.php"),
+                $this->render('basefaker.php', ['namespace' => $this->fakerNamespace])
+            );
+        }
         foreach ($models as $modelName => $model) {
             $className = $model->getClassName();
             if ($model instanceof DbModel) {
@@ -550,10 +557,6 @@ PHP;
                 );
                 if ($this->generateModelFaker) {
                     $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
-                    $files[] = new CodeFile(
-                        Yii::getAlias("$fakerPath/BaseModelFaker.php"),
-                        $this->render('basefaker.php', ['namespace' => $this->fakerNamespace])
-                    );
                     $files[] = new CodeFile(
                         Yii::getAlias("$fakerPath/{$className}Faker.php"),
                         $this->render(
