@@ -1,53 +1,53 @@
 <?php
-
 namespace app\models;
-
-use Faker\Factory as FakerFactory;
-use Faker\UniqueGenerator;
 
 /**
  * Fake data generator for PostsAttaches
  */
-class PostsAttachesFaker
+class PostsAttachesFaker extends BaseModelFaker
 {
+
+    /**
+     * @return PostsAttaches|\yii\db\ActiveRecord
+    **/
     public function generateModel()
     {
-        $faker = FakerFactory::create(str_replace('-', '_', \Yii::$app->language));
-        $uniqueFaker = new UniqueGenerator($faker);
+        $faker = $this->faker;
+        $uniqueFaker = $this->uniqueFaker;
         $model = new PostsAttaches();
         //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         return $model;
     }
 
     /**
-     * @param array $attributes
+     * @param array|callable $attributes
      * @param bool  $save
-     * @return \yii\db\ActiveRecordInterface
+     * @return PostsAttaches|\yii\db\ActiveRecord
+     * @example MyFaker::makeOne(['user_id' => 1, 'title' => 'foo']);
+     * @example MyFaker::makeOne( function($model, $faker) {
+     *        $model->scenario = 'create';
+     *        $model->setAttributes(['user_id' => 1, 'title' => $faker->sentence]);
+     *        return $model;
+     *  }, true);
      */
-    public static function makeOne(array $attributes, bool $save = false)
+    public static function makeOne($attributes = [], bool $save = false)
     {
-        $model = (new static())->generateModel();
-        $model->setAttributes($attributes, false);
-        if ($save === true) {
-            $model->save();
-        }
-        return $model;
+        return parent::makeOne($attributes, $save);
     }
 
     /**
-     * @param       $number
-     * @param array $commonAttributes
+     * @param int $number
+     * @param array|callable $commonAttributes
      * @param bool  $save
-     * @return \yii\db\ActiveRecordInterface[]|array
+     * @return array|\yii\db\ActiveRecord[]|PostsAttaches[]
      * @example TaskFaker::make(5, ['project_id'=>1, 'user_id' => 2]);
+     * @example TaskFaker::make(5, function($model, $faker, $uniqueFaker) {
+     *       $model->setAttributes(['name' => $uniqueFaker->username, 'state'=>$faker->boolean(20)]);
+     *       return $model;
+     * });
      */
-    public static function make($number, array $commonAttributes, bool $save = false):array
+    public static function make(int $number, $commonAttributes = [], bool $save = false):array
     {
-        if ($number < 1) {
-            return [];
-        }
-        return array_map(function () use ($commonAttributes, $save) {
-            return static::makeOne($commonAttributes, $save);
-        }, range(0, $number -1));
+        return parent::make($number, $commonAttributes, $save);
     }
 }
