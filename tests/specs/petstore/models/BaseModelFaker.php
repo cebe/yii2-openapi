@@ -26,7 +26,7 @@ abstract class BaseModelFaker
         $this->uniqueFaker = new UniqueGenerator($this->faker);
     }
 
-    abstract public function generateModel();
+    abstract public function generateModel($attributes = []);
 
     public function getFaker():Generator
     {
@@ -49,36 +49,50 @@ abstract class BaseModelFaker
     }
 
     /**
+     * Generate and return model
      * @param array|callable $attributes
-     * @param bool  $save
+     * @param UniqueGenerator|null $uniqueFaker
      * @return \yii\db\ActiveRecord
      * @example MyFaker::makeOne(['user_id' => 1, 'title' => 'foo']);
      * @example MyFaker::makeOne( function($model, $faker) {
      *        $model->scenario = 'create';
      *        $model->setAttributes(['user_id' => 1, 'title' => $faker->sentence]);
      *        return $model;
-     *  }, true);
+     *  });
      */
-    public static function makeOne($attributes = [], bool $save = false)
+    public static function makeOne($attributes = [], ?UniqueGenerator $uniqueFaker = null)
     {
         $fakeBuilder = new static();
-        $model = $fakeBuilder->generateModel();
-        if (!is_callable($attributes)) {
-            $model->setAttributes($attributes, false);
-        } else {
-            $model = $attributes($model, $fakeBuilder->getFaker(), $fakeBuilder->getUniqueFaker());
+        if ($uniqueFaker !== null) {
+            $fakeBuilder->setUniqueFaker($uniqueFaker);
         }
-
-        if ($save === true) {
-            $model->save();
-        }
+        $model = $fakeBuilder->generateModel($attributes);
         return $model;
     }
 
     /**
+     * Generate, save and return model
+     * @param array|callable $attributes
+     * @param UniqueGenerator|null $uniqueFaker
+     * @return \yii\db\ActiveRecord
+     * @example MyFaker::saveOne(['user_id' => 1, 'title' => 'foo']);
+     * @example MyFaker::saveOne( function($model, $faker) {
+     *        $model->scenario = 'create';
+     *        $model->setAttributes(['user_id' => 1, 'title' => $faker->sentence]);
+     *        return $model;
+     *  });
+     */
+    public static function saveOne($attributes = [], ?UniqueGenerator $uniqueFaker = null)
+    {
+        $model = static::makeOne($attributes, $uniqueFaker);
+        $model->save();
+        return $model;
+    }
+
+    /**
+     * Generate and return multiple models
      * @param int $number
      * @param array|callable $commonAttributes
-     * @param bool  $save
      * @return \yii\db\ActiveRecord[]|array
      * @example TaskFaker::make(5, ['project_id'=>1, 'user_id' => 2]);
      * @example TaskFaker::make(5, function($model, $faker, $uniqueFaker) {
@@ -86,22 +100,44 @@ abstract class BaseModelFaker
      *       return $model;
      * });
      */
-    public static function make(int $number, $commonAttributes = [], bool $save = false):array
+    public static function make(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null):array
     {
         if ($number < 1) {
             return [];
         }
         $fakeBuilder = new static();
-        return array_map(function () use ($commonAttributes, $save, $fakeBuilder) {
-            $model = $fakeBuilder->generateModel();
-            if (!is_callable($commonAttributes)) {
-                $model->setAttributes($commonAttributes, false);
-            } else {
-                $model = $commonAttributes($model, $fakeBuilder->getFaker(), $fakeBuilder->getUniqueFaker());
-            }
-            if ($save === true) {
-                $model->save();
-            }
+        if ($uniqueFaker !== null) {
+            $fakeBuilder->setUniqueFaker($uniqueFaker);
+        }
+        return array_map(function () use ($commonAttributes, $fakeBuilder) {
+            $model = $fakeBuilder->generateModel($commonAttributes);
+            return $model;
+        }, range(0, $number -1));
+    }
+
+    /**
+     * Generate, save and return multiple models
+     * @param int $number
+     * @param array|callable $commonAttributes
+     * @return \yii\db\ActiveRecord[]|array
+     * @example TaskFaker::save(5, ['project_id'=>1, 'user_id' => 2]);
+     * @example TaskFaker::save(5, function($model, $faker, $uniqueFaker) {
+     *       $model->setAttributes(['name' => $uniqueFaker->username, 'state'=>$faker->boolean(20)]);
+     *       return $model;
+     * });
+     */
+    public static function save(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null):array
+    {
+        if ($number < 1) {
+            return [];
+        }
+        $fakeBuilder = new static();
+        if ($uniqueFaker !== null) {
+            $fakeBuilder->setUniqueFaker($uniqueFaker);
+        }
+        return array_map(function () use ($commonAttributes, $fakeBuilder) {
+            $model = $fakeBuilder->generateModel($commonAttributes);
+            $model->save();
             return $model;
         }, range(0, $number -1));
     }
