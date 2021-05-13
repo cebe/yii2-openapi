@@ -362,6 +362,7 @@ class ApiGenerator extends Generator
             $required[] = 'model.php';
         }
         if ($this->generateModelFaker) {
+            $required[] = 'basefaker.php';
             $required[] = 'faker.php';
         }
         if ($this->generateMigrations) {
@@ -533,6 +534,13 @@ PHP;
         }
         $models = $this->prepareModels();
         $modelPath = $this->getPathFromNamespace($this->modelNamespace);
+        if ($this->generateModelFaker) {
+            $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
+            $files[] = new CodeFile(
+                Yii::getAlias("$fakerPath/BaseModelFaker.php"),
+                $this->render('basefaker.php', ['namespace' => $this->fakerNamespace])
+            );
+        }
         foreach ($models as $modelName => $model) {
             $className = $model->getClassName();
             if ($model instanceof DbModel) {

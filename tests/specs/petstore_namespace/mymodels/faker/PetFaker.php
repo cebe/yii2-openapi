@@ -1,56 +1,43 @@
 <?php
-
 namespace app\mymodels\faker;
 
-use Faker\Factory as FakerFactory;
 use Faker\UniqueGenerator;
 use app\mymodels\Pet;
 
 /**
  * Fake data generator for Pet
+ * @method static \app\mymodels\Pet makeOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
+ * @method static \app\mymodels\Pet saveOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
+ * @method static \app\mymodels\Pet[] make(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
+ * @method static \app\mymodels\Pet[] save(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
  */
-class PetFaker
+class PetFaker extends BaseModelFaker
 {
-    public function generateModel()
+
+    /**
+     * @param array|callable $attributes
+     * @return \app\mymodels\Pet|\yii\db\ActiveRecord
+     * @example
+     *  $model = (new PostFaker())->generateModels(['author_id' => 1]);
+     *  $model = (new PostFaker())->generateModels(function($model, $faker, $uniqueFaker) {
+     *            $model->scenario = 'create';
+     *            $model->author_id = 1;
+     *            return $model;
+     *  });
+    **/
+    public function generateModel($attributes = [])
     {
-        $faker = FakerFactory::create(str_replace('-', '_', \Yii::$app->language));
-        $uniqueFaker = new UniqueGenerator($faker);
+        $faker = $this->faker;
+        $uniqueFaker = $this->uniqueFaker;
         $model = new Pet();
         //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->name = $faker->sentence;
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
-        return $model;
-    }
-
-    /**
-     * @param array $attributes
-     * @param bool  $save
-     * @return \yii\db\ActiveRecordInterface
-     */
-    public static function makeOne(array $attributes, bool $save = false)
-    {
-        $model = (new static())->generateModel();
-        $model->setAttributes($attributes, false);
-        if ($save === true) {
-            $model->save();
+        if (!is_callable($attributes)) {
+            $model->setAttributes($attributes, false);
+        } else {
+            $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
-    }
-
-    /**
-     * @param       $number
-     * @param array $commonAttributes
-     * @param bool  $save
-     * @return \yii\db\ActiveRecordInterface[]|array
-     * @example TaskFaker::make(5, ['project_id'=>1, 'user_id' => 2]);
-     */
-    public static function make($number, array $commonAttributes, bool $save = false):array
-    {
-        if ($number < 1) {
-            return [];
-        }
-        return array_map(function () use ($commonAttributes, $save) {
-            return static::makeOne($commonAttributes, $save);
-        }, range(0, $number -1));
     }
 }

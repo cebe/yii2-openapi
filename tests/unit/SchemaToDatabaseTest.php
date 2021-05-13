@@ -19,8 +19,8 @@ class SchemaToDatabaseTest extends TestCase
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
         $result = (new SchemaToDatabase())->findJunctionSchemas($openApi);
-        VarDumper::dump($result->indexByJunctionRef());
-        VarDumper::dump($result->indexByJunctionSchema());
+        //VarDumper::dump($result->indexByJunctionRef());
+        //VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
         self::assertEqualsCanonicalizing(
             ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
