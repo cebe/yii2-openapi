@@ -112,6 +112,12 @@ components:
         tag:
           type: string
           x-faker: "$faker->randomElement(['one', 'two', 'three', 'four'])"
+        duplicates:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Pet/properties/tag"
+
     Pets:
       type: array
       items:

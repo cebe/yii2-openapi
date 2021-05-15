@@ -47,10 +47,18 @@ class <?=$transformer->name?> extends TransformerAbstract
         if ($relation === null) {
             return $this->null();
         }
-        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
-        return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+<?php if ($relation->getClassName() === $transformer->dbModel->getClassName()):?>
+        $transformer = new static();
 <?php else:?>
         $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
+<?php endif;?>
+        return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+<?php else:?>
+<?php if ($relation->getClassName() === $transformer->dbModel->getClassName()):?>
+        $transformer = new static();
+<?php else:?>
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
+<?php endif;?>
         return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
 <?php endif;?>
     }

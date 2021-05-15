@@ -10,5 +10,5 @@ return [
     'generateControllers' => true,
     'useJsonApi' => true,
     'extendableTransformers' => false,
-    'generateMigrations' => false,
+    'generateMigrations' => true,
 ];
