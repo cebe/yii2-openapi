@@ -18,4 +18,4 @@
 <?php else:?>
         $transformer = Yii::createObject(['class'=>\insolita\fractal\DefaultTransformer::class]);
 <?php endif;?>
-        return new \League\Fractal\Resource\Item(\$model, $transformer, '<?=$action->getResourceKey()?>');
+        return new \League\Fractal\Resource\Item($model, $transformer, '<?=$action->getResourceKey()?>');
