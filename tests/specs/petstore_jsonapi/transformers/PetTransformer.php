@@ -6,11 +6,18 @@ use app\models\Pet;
 
 class PetTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = [];
+    protected $availableIncludes = ['duplicates'];
     protected $defaultIncludes = [];
 
     public function transform(Pet $model)
     {
         return $model->getAttributes();
+    }
+
+    public function includeDuplicates(Pet $model)
+    {
+        $relation = $model->duplicates;
+        $transformer = new static();
+        return $this->collection($relation, $transformer, 'pets');
     }
 }

@@ -9,6 +9,7 @@ namespace app\models\base;
  * @property string $name
  * @property string $tag
  *
+ * @property array|\app\models\Pet[] $duplicates
  */
 abstract class Pet extends \yii\db\ActiveRecord
 {
@@ -25,5 +26,10 @@ abstract class Pet extends \yii\db\ActiveRecord
             'name_string' => [['name'], 'string'],
             'tag_string' => [['tag'], 'string'],
         ];
+    }
+
+    public function getDuplicates()
+    {
+        return $this->hasMany(\app\models\Pet::class, ['tag' => 'tag']);
     }
 }

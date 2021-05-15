@@ -255,10 +255,17 @@ class AttributeResolver
             //self relation
             if (strpos($refPointer, '/properties/') !== false) {
                 $relatedClassName = Inflector::id2camel($this->schemaName, '_');
+                $attribute->setPhpType($relatedClassName . '[]');
                 $relatedTableName = $this->tableName;
                 $foreignAttr = str_replace(self::REFERENCE_PATH . $relatedClassName . '/properties/', '', $refPointer);
+                $foreignProperty = $this->componentSchema->properties[$foreignAttr] ?? null;
+                if ($foreignProperty && ! $foreignProperty instanceof Reference && !StringHelper::endsWith($foreignAttr, '_id')) {
+                    $this->relations[$propertyName] =
+                        (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
+                            ->asHasMany([$foreignAttr => $foreignAttr])->asSelfReference();
+                    return;
+                }
                 $foreignPk = Inflector::camel2id($foreignAttr, '_') . '_id';
-                $attribute->setPhpType($relatedClassName . '[]');
                 $this->relations[$propertyName] =
                     (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
                         ->asHasMany([$foreignPk => $this->primaryKey]);

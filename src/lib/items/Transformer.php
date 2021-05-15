@@ -9,6 +9,8 @@ namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
+use yii\helpers\StringHelper;
+use function array_filter;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -75,9 +77,12 @@ class Transformer extends BaseObject
 
     public function getUniqueTransformerClasses(): array
     {
+        $dbRelations = array_filter($this->dbModel->relations, function (AttributeRelation $rel) {
+            return $rel->getClassName() !== $this->dbModel->getClassName();
+        });
         $relations = array_map(function (AttributeRelation $relation) {
             return Inflector::singularize($relation->getClassName()).'Transformer';
-        }, $this->dbModel->relations);
+        }, $dbRelations);
 
         $relationsMany = array_map(function (ManyToManyRelation $relation) {
             return Inflector::singularize($relation->getRelatedClassName()).'Transformer';
