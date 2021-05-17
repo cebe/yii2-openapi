@@ -128,5 +128,4 @@ abstract class PostController extends JsonApiController
     abstract public function checkAccess($action, $model = null, $params = []);
 
     abstract public function actionUpdateUploadCover($id);
-
 }
