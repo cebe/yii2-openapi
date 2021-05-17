@@ -46,10 +46,7 @@ abstract class PetController extends JsonApiController
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
 
     public function actionView($petId)
     {
@@ -58,7 +55,6 @@ abstract class PetController extends JsonApiController
         $transformer = Yii::createObject(['class'=>\app\transformers\PetTransformer::class]);
         return new \League\Fractal\Resource\Item($model, $transformer, 'pets');
     }
-
     public function actionDelete($petId)
     {
         $model = $this->findPetModel($petId);
@@ -68,7 +64,6 @@ abstract class PetController extends JsonApiController
         }
         Yii::$app->getResponse()->setStatusCode(204);
     }
-
     public function actionUpdate($petId)
     {
         $model = $this->findPetModel($petId);

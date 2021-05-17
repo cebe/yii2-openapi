@@ -11,6 +11,11 @@ class ReplyController extends \app\controllers\base\ReplyController
         return $actions;
     }
 
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        //TODO implement checkAccess
+    }
+
 
 }
 

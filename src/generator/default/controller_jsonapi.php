@@ -44,17 +44,19 @@ abstract class <?= $className ?> extends JsonApiController
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
+
 <?php foreach ($actions as $action): ?>
 <?php if (!$action->shouldUseTemplate()):?>
-
+<?php if (!$action->shouldBeAbstract()):?>
     public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>)
     {
 <?=$action->getImplementation()?>
     }
+<?php else:?>
+    abstract public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>);
+
+<?php endif;?>
 <?php endif;?>
 <?php endforeach;?>
 <?php foreach ($actions as $action): ?>

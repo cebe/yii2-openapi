@@ -12,6 +12,7 @@ use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\FractalGenerator;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\FractalAction;
+use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\MigrationsGenerator;
 use cebe\yii2openapi\lib\PathAutoCompletion;
 use cebe\yii2openapi\lib\SchemaToDatabase;
@@ -20,6 +21,8 @@ use cebe\yii2openapi\lib\UrlGenerator;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
 use Laminas\Code\Generator\MethodGenerator;
+use Laminas\Code\Generator\ParameterGenerator;
+use Laminas\Code\Generator\ValueGenerator;
 use Yii;
 use yii\di\Instance;
 use yii\gii\CodeFile;
@@ -31,7 +34,6 @@ use yii\helpers\StringHelper;
 use function array_filter;
 use function array_map;
 use function array_merge;
-use function array_unique;
 use const YII_ENV_TEST;
 
 class ApiGenerator extends Generator
@@ -64,7 +66,7 @@ class ApiGenerator extends Generator
 
     /**
      * @var bool use actions that return responses by JsonApi spec instead of default yii rest
-    */
+     */
     public $useJsonApi = false;
 
     /**
@@ -122,7 +124,7 @@ class ApiGenerator extends Generator
      *      'User' => 'Profile',  //use ProfileController for User model
      *      'File' => 'Upload',   //use UploadController for File model
      *  ]
-    **/
+     **/
     public $controllerModelMap = [];
 
     /**
@@ -166,12 +168,12 @@ class ApiGenerator extends Generator
 
     /**
      * @var DbModel[]
-    **/
+     **/
     private $preparedModels;
 
     /**
      * @var \cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction
-    **/
+     **/
     private $preparedActions;
 
     /**
@@ -266,7 +268,7 @@ class ApiGenerator extends Generator
                     ['transformerNamespace'],
                     'required',
                     'when' => function (ApiGenerator $model) {
-                        return (bool)$model->generateControllers && (bool) $model->useJsonApi;
+                        return (bool)$model->generateControllers && (bool)$model->useJsonApi;
                     },
                 ],
             ]
@@ -279,7 +281,7 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    public function validateSpec($attribute):void
+    public function validateSpec($attribute): void
     {
         if ($this->ignoreSpecErrors) {
             return;
@@ -302,7 +304,7 @@ class ApiGenerator extends Generator
                 'openApiPath' => 'OpenAPI 3 Spec file',
                 'generateUrls' => 'Generate URL Rules',
                 'generateModelsOnlyXTable' => 'Generate DB Models and Tables only for schemas that include `x-table` property',
-                'skipUnderscoredSchemas'=>'Generate DB Models and Tables only for schemas that not starts with underscore'
+                'skipUnderscoredSchemas' => 'Generate DB Models and Tables only for schemas that not starts with underscore'
             ]
         );
     }
@@ -398,7 +400,7 @@ class ApiGenerator extends Generator
      * @return CodeFile[] a list of code files to be created.
      * @throws \Exception
      */
-    public function generate():array
+    public function generate(): array
     {
         return array_merge(
             $this->generateUrls(),
@@ -436,13 +438,13 @@ class ApiGenerator extends Generator
     protected function generateControllers(): array
     {
         $files = [];
-        if (! $this->generateControllers) {
+        if (!$this->generateControllers) {
             return $files;
         }
         $controllers = $this->prepareControllers();
         $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
         $controllerPath = $this->getPathFromNamespace($controllerNamespace);
-        $templateName = $this->useJsonApi? 'controller_jsonapi.php': 'controller.php';
+        $templateName = $this->useJsonApi ? 'controller_jsonapi.php' : 'controller.php';
 
         foreach ($controllers as $controller => $actions) {
             $className = Inflector::id2camel($controller) . 'Controller';
@@ -459,22 +461,7 @@ class ApiGenerator extends Generator
             );
             // only generate custom classes if they do not exist, do not override
             if (!file_exists(Yii::getAlias("$controllerPath/$className.php"))) {
-                $classFileGenerator = new FileGenerator();
-                $reflection = new ClassGenerator(
-                    $className,
-                    $controllerNamespace,
-                    null,
-                    $controllerNamespace . '\\base\\' . $className
-                );
-
-                if ($this->useJsonApi) {
-                    $body = <<<'PHP'
-$actions = parent::actions();
-return $actions;
-PHP;
-                    $reflection->addMethod('actions', [], MethodGenerator::FLAG_PUBLIC, $body);
-                }
-                $classFileGenerator->setClasses([$reflection]);
+                $classFileGenerator = $this->makeCustomController($className, $controllerNamespace, $actions);
                 $files[] = new CodeFile(
                     Yii::getAlias("$controllerPath/$className.php"),
                     $classFileGenerator->generate()
@@ -660,7 +647,7 @@ PHP;
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    protected function getOpenApi():OpenApi
+    protected function getOpenApi(): OpenApi
     {
         if ($this->_openApi === null) {
             $file = Yii::getAlias($this->openApiPath);
@@ -679,7 +666,7 @@ PHP;
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    protected function getOpenApiWithoutReferences():OpenApi
+    protected function getOpenApiWithoutReferences(): OpenApi
     {
         if ($this->_openApiWithoutRef === null) {
             $file = Yii::getAlias($this->openApiPath);
@@ -697,7 +684,7 @@ PHP;
      * @throws \yii\base\InvalidConfigException
      * @throws \Exception
      */
-    protected function prepareActions():array
+    protected function prepareActions(): array
     {
         if (!$this->preparedActions) {
             $generator = $this->useJsonApi
@@ -718,7 +705,7 @@ PHP;
      * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction[]
      * @throws \Exception
      */
-    protected function prepareControllers():array
+    protected function prepareControllers(): array
     {
         $actions = $this->prepareActions();
 
@@ -732,7 +719,7 @@ PHP;
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
-    protected function prepareModels():array
+    protected function prepareModels(): array
     {
         if (!$this->preparedModels) {
             $converter = Yii::createObject([
@@ -756,7 +743,7 @@ PHP;
         });
         $generator = new TransformerGenerator(
             $models,
-            $this->transformerNamespace.($this->extendableTransformers? '\\base': ''),
+            $this->transformerNamespace . ($this->extendableTransformers ? '\\base' : ''),
             $this->modelNamespace,
             $this->singularResourceKeys
         );
@@ -770,5 +757,52 @@ PHP;
     private function getPathFromNamespace(string $namespace)
     {
         return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
+    }
+
+    /**
+     * @param string $className
+     * @param string $controllerNamespace
+     * @param RestAction[]|FractalAction[] $actions
+     * @return FileGenerator
+     */
+    protected function makeCustomController(string $className, string $controllerNamespace, array $actions): FileGenerator
+    {
+        $classFileGenerator = new FileGenerator();
+        $reflection = new ClassGenerator(
+            $className,
+            $controllerNamespace,
+            null,
+            $controllerNamespace . '\\base\\' . $className
+        );
+        /**@var FractalAction[]|RestAction[] $abstractActions * */
+        $abstractActions = array_filter($actions, function ($action) {
+            return $action->shouldBeAbstract();
+        });
+        if ($this->useJsonApi) {
+            $body = <<<'PHP'
+$actions = parent::actions();
+return $actions;
+PHP;
+            $reflection->addMethod('actions', [], MethodGenerator::FLAG_PUBLIC, $body);
+        }
+        $params = [
+            new ParameterGenerator('action'),
+            new ParameterGenerator('model', null, new ValueGenerator(null)),
+            new ParameterGenerator('params', null, new ValueGenerator([]))
+        ];
+        $reflection->addMethod('checkAccess', $params, MethodGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
+        foreach ($abstractActions as $action) {
+            $params = array_map(function ($param) {
+                return ['name' => $param];
+            }, $action->getParamNames());
+            $reflection->addMethod(
+                $action->actionMethodName,
+                $params,
+                MethodGenerator::FLAG_PUBLIC,
+                '//TODO implement ' . $action->actionMethodName
+            );
+        }
+        $classFileGenerator->setClasses([$reflection]);
+        return $classFileGenerator;
     }
 }
