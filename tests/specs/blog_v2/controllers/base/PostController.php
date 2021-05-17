@@ -49,23 +49,12 @@ abstract class PostController extends \yii\rest\Controller
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
 
-    public function actionViewRelatedCategory($id)
-    {
-        // TODO implement actionViewRelatedCategory
-    }
+    abstract public function actionViewRelatedCategory($id);
 
-    public function actionListRelatedComments($id)
-    {
-        // TODO implement actionListRelatedComments
-    }
+    abstract public function actionListRelatedComments($id);
 
-    public function actionViewForCategory($categoryId, $id)
-    {
-        // TODO implement actionViewForCategory
-    }
+    abstract public function actionViewForCategory($categoryId, $id);
+
 }

@@ -25,13 +25,8 @@ abstract class PetDetailController extends \yii\rest\Controller
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
 
-    public function actionList()
-    {
-        // TODO implement actionList
-    }
+    abstract public function actionList();
+
 }

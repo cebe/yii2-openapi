@@ -11,6 +11,11 @@ class PetController extends \app\controllers\base\PetController
         return $actions;
     }
 
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        //TODO implement checkAccess
+    }
+
 
 }
 

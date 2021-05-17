@@ -27,28 +27,14 @@ abstract class AuthController extends JsonApiController
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
 
-    public function actionPasswordRecovery()
-    {
-        // TODO implement actionPasswordRecovery
-    }
+    abstract public function actionPasswordRecovery();
 
-    public function actionCreatePasswordRecovery()
-    {
-        // TODO implement actionCreatePasswordRecovery
-    }
+    abstract public function actionCreatePasswordRecovery();
 
-    public function actionPasswordConfirmRecovery($token)
-    {
-        // TODO implement actionPasswordConfirmRecovery
-    }
+    abstract public function actionPasswordConfirmRecovery($token);
 
-    public function actionCreateNewPassword()
-    {
-        // TODO implement actionCreateNewPassword
-    }
+    abstract public function actionCreateNewPassword();
+
 }

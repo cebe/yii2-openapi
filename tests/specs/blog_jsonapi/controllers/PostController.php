@@ -11,6 +11,16 @@ class PostController extends \app\controllers\base\PostController
         return $actions;
     }
 
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        //TODO implement checkAccess
+    }
+
+    public function actionUpdateUploadCover($id)
+    {
+        //TODO implement actionUpdateUploadCover
+    }
+
 
 }
 

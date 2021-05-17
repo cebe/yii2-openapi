@@ -18,7 +18,7 @@ class ActionTemplates
         'view' => [
             'class' => '\yii\rest\ViewAction::class',
             'implementation' => <<<'PHP'
-    $model = $this->findModel($id);
+        $model = $this->findModel($id);
         $this->checkAccess(ACTION_ID, $model);
         return $model;
 PHP
@@ -30,7 +30,7 @@ PHP
         'update' => [
             'class' => '\yii\rest\UpdateAction::class',
             'implementation' => <<<'PHP'
-    $model = $this->findModel($id);
+        $model = $this->findModel($id);
         $this->checkAccess(ACTION_ID, $model);
 
         $model->load(Yii::$app->getRequest()->getBodyParams(), '');
@@ -45,7 +45,7 @@ PHP
         'delete' => [
             'class' => '\yii\rest\DeleteAction::class',
             'implementation' => <<<'PHP'
-    $model = $this->findModel($id);
+        $model = $this->findModel($id);
         $this->checkAccess(ACTION_ID, $model);
 
         if ($model->delete() === false) {

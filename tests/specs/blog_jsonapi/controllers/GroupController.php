@@ -11,6 +11,11 @@ class GroupController extends \app\controllers\base\GroupController
         return $actions;
     }
 
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        //TODO implement checkAccess
+    }
+
 
 }
 

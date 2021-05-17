@@ -161,18 +161,25 @@ PHP;
         return null;
     }
 
-    public function getImplementation():?string
+    public function shouldBeAbstract(): bool
     {
         if (!$this->modelName || !$this->hasTemplate()) {
-            return "    // TODO implement {$this->actionMethodName}";
+            return true;
         }
+
         if ($this->hasStandardId()) {
-            return null; //Default template action used
+            return false; //Default template action used
         }
 
         if (!ActionTemplates::hasImplementation($this->id)) {
-            return "    // TODO implement {$this->actionMethodName}";
+            return true;
         }
+
+        return false;
+    }
+
+    public function getImplementation():?string
+    {
         $template = ActionTemplates::getTemplate($this->id);
         return strtr(
             $template['implementation'],

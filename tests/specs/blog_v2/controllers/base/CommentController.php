@@ -25,33 +25,16 @@ abstract class CommentController extends \yii\rest\Controller
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    public function checkAccess($action, $model = null, $params = [])
-    {
-        // TODO implement checkAccess
-    }
+    abstract public function checkAccess($action, $model = null, $params = []);
 
-    public function actionListForPost($postId)
-    {
-        // TODO implement actionListForPost
-    }
+    abstract public function actionListForPost($postId);
 
-    public function actionCreateForPost($postId)
-    {
-        // TODO implement actionCreateForPost
-    }
+    abstract public function actionCreateForPost($postId);
 
-    public function actionViewForPost($slug, $id)
-    {
-        // TODO implement actionViewForPost
-    }
+    abstract public function actionViewForPost($slug, $id);
 
-    public function actionDeleteForPost($slug, $id)
-    {
-        // TODO implement actionDeleteForPost
-    }
+    abstract public function actionDeleteForPost($slug, $id);
 
-    public function actionUpdateForPost($slug, $id)
-    {
-        // TODO implement actionUpdateForPost
-    }
+    abstract public function actionUpdateForPost($slug, $id);
+
 }

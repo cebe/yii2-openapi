@@ -11,6 +11,11 @@ class MeController extends \app\controllers\base\MeController
         return $actions;
     }
 
+    public function checkAccess($action, $model = null, $params = [])
+    {
+        //TODO implement checkAccess
+    }
+
 
 }
 

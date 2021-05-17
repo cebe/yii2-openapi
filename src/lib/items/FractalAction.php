@@ -189,20 +189,22 @@ final class FractalAction extends BaseObject
         return $this->templateFactory()->getTemplate();
     }
 
-
-    public function getImplementation():?string
+    public function shouldBeAbstract(): bool
     {
         $maybeImplemented = [RouteData::TYPE_PROFILE, RouteData::TYPE_DEFAULT, RouteData::TYPE_RESOURCE_OPERATION];
         if ((!$this->modelName || !$this->hasTemplate()) && !in_array($this->type, $maybeImplemented, true)) {
-            return "        // TODO implement {$this->actionMethodName}\n";
+            return true;
         }
         if ($this->hasStandardId() && !in_array($this->type, $maybeImplemented, true)) {
-            return null; //Default template action used
+            return false; //Default template action used
         }
-
         if (!$this->templateFactory()->hasImplementation()) {
-            return "        // TODO implement {$this->actionMethodName}\n";
+            return true;
         }
+        return false;
+    }
+    public function getImplementation():?string
+    {
         return $this->templateFactory()->getImplementation();
     }
 
