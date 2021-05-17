@@ -37,5 +37,4 @@ abstract class PostController extends JsonApiController
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
     abstract public function checkAccess($action, $model = null, $params = []);
-
 }

@@ -55,6 +55,7 @@ abstract class PetController extends JsonApiController
         $transformer = Yii::createObject(['class'=>\app\transformers\PetTransformer::class]);
         return new \League\Fractal\Resource\Item($model, $transformer, 'pets');
     }
+
     public function actionDelete($petId)
     {
         $model = $this->findPetModel($petId);
@@ -64,6 +65,7 @@ abstract class PetController extends JsonApiController
         }
         Yii::$app->getResponse()->setStatusCode(204);
     }
+
     public function actionUpdate($petId)
     {
         $model = $this->findPetModel($petId);
@@ -89,7 +91,7 @@ abstract class PetController extends JsonApiController
     public function findPetModel($id)
     {
         $model = \app\models\Pet::findOne($id);
-        if (!$model){
+        if (!$model) {
             throw new \yii\web\NotFoundHttpException("Object not found: $id");
         }
         return $model;

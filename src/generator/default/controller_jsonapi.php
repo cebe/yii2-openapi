@@ -45,17 +45,17 @@ abstract class <?= $className ?> extends JsonApiController
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
     abstract public function checkAccess($action, $model = null, $params = []);
-
 <?php foreach ($actions as $action): ?>
 <?php if (!$action->shouldUseTemplate()):?>
 <?php if (!$action->shouldBeAbstract()):?>
+
     public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>)
     {
 <?=$action->getImplementation()?>
     }
 <?php else:?>
-    abstract public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>);
 
+    abstract public function <?= $action->actionMethodName ?>(<?= $action->parameterList ?>);
 <?php endif;?>
 <?php endif;?>
 <?php endforeach;?>
@@ -72,7 +72,7 @@ abstract class <?= $className ?> extends JsonApiController
     public function <?= $action->findModelMethodName ?>($id)
     {
         $model = \<?= $action->modelFqn ?>::findOne($id);
-        if (!$model){
+        if (!$model) {
             throw new \yii\web\NotFoundHttpException("Object not found: $id");
         }
         return $model;
@@ -84,7 +84,7 @@ abstract class <?= $className ?> extends JsonApiController
     public function <?= $action->findModelForMethodName ?>($id, $parentId)
     {
         $model = \<?= $action->modelFqn ?>::findOne(['id' => $id, '<?=$action->parentIdAttribute?>' => $parentId]);
-        if (!$model){
+        if (!$model) {
             throw new \yii\web\NotFoundHttpException("Object not found: $id");
         }
         return $model;

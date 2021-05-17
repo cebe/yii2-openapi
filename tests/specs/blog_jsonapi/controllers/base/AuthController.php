@@ -36,5 +36,4 @@ abstract class AuthController extends JsonApiController
     abstract public function actionPasswordConfirmRecovery($token);
 
     abstract public function actionCreateNewPassword();
-
 }
