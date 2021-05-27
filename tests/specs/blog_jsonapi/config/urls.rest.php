@@ -6,6 +6,7 @@
  */
 return [
     'GET me' => 'me/view',
+    'GET user/<username:[\w-]+>' => 'user/view',
     'GET auth/password/recovery' => 'auth/password-recovery',
     'POST auth/password/recovery' => 'auth/create-password-recovery',
     'GET auth/password/confirm-recovery/<token:[\w-]+>' => 'auth/password-confirm-recovery',
@@ -26,6 +27,7 @@ return [
     'GET posts/<id:\d+>/relationships/tags' => 'post/list-related-tags',
     'PATCH posts/<id:\d+>/relationships/tags' => 'post/update-related-tags',
     'me' => 'me/options',
+    'user/<username:[\w-]+>' => 'user/options',
     'auth/password/recovery' => 'auth/options',
     'auth/password/confirm-recovery/<token:[\w-]+>' => 'auth/options',
     'auth/new-password' => 'auth/options',

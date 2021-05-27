@@ -226,4 +226,9 @@ final class FractalAction extends BaseObject
             && !$this->shouldUseTemplate()
             && in_array($this->type, [RouteData::TYPE_RESOURCE_FOR, RouteData::TYPE_COLLECTION_FOR], true);
     }
+
+    public function getIdParamType(): string
+    {
+        return $this->params[$this->idParam]['type'] === 'integer' ? 'int' : 'string';
+    }
 }

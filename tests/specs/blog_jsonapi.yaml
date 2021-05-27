@@ -15,6 +15,20 @@ paths:
           $ref: '#/components/responses/UserResponse'
         default:
           $ref: '#/components/responses/ErrorResponse'
+  /user/{username}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: find user by username
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
   /auth/password/recovery:
     get:
       operationId: requestPasswordRecovery
