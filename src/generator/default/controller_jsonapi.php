@@ -65,11 +65,11 @@ abstract class <?= $className ?> extends JsonApiController
     /**
      * Returns the <?= $action->baseModelName ?> model based on the given attribute.
      * If the data model is not found, a 404 HTTP exception will be raised.
-     * @param string $<?=$action->idParam.PHP_EOL?>
+     * @param <?=$action->getIdParamType()?> $<?=$action->idParam.PHP_EOL?>
      * @return \<?= $action->modelFqn ?> the model found
      * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function <?= $action->findModelMethodName ?>($<?=$action->idParam?>)
+    public function <?= $action->findModelMethodName ?>(<?=$action->getIdParamType()?> $<?=$action->idParam?>)
     {
 <?php if ($action->idParam === 'id'):?>
         $model = \<?= $action->modelFqn ?>::findOne($<?=$action->idParam?>);

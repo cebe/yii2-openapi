@@ -88,7 +88,7 @@ abstract class PetController extends JsonApiController
      * @return \app\models\Pet the model found
      * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function findPetModel($petId)
+    public function findPetModel(string $petId)
     {
         $model = \app\models\Pet::findOne(['petId' => $petId]);
         if (!$model) {

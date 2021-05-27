@@ -43,7 +43,7 @@ abstract class UserController extends JsonApiController
      * @return \app\models\User the model found
      * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function findUserModel($username)
+    public function findUserModel(string $username)
     {
         $model = \app\models\User::findOne(['username' => $username]);
         if (!$model) {
