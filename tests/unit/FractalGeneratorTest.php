@@ -9,6 +9,7 @@ use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\items\RouteData;
 use tests\TestCase;
 use Yii;
+use yii\base\BaseObject;
 use const PHP_EOL;
 
 class FractalGeneratorTest extends TestCase
@@ -111,6 +112,22 @@ class FractalGeneratorTest extends TestCase
                 'idParam' => null,
                 'parentIdParam' => null,
                 'params' => [],
+                'modelName' => 'User',
+                'modelFqn' => 'app\models\User',
+                'transformerFqn' => 'app\transformers\UserTransformer',
+                'expectedRelations' => [],
+                'relatedModel' => null,
+            ]),
+            new FractalAction([
+                'id' => 'view',
+                'type' => RouteData::TYPE_RESOURCE,
+                'urlPath' => '/user/{username}',
+                'requestMethod' => 'GET',
+                'urlPattern' => 'user/<username:[\w-]+>',
+                'controllerId' => 'user',
+                'idParam' => 'username',
+                'parentIdParam' => null,
+                'params' => ['username' => ['type' => 'string']],
                 'modelName' => 'User',
                 'modelFqn' => 'app\models\User',
                 'transformerFqn' => 'app\transformers\UserTransformer',
@@ -462,6 +479,22 @@ class FractalGeneratorTest extends TestCase
                 'idParam' => null,
                 'parentIdParam' => null,
                 'params' => [],
+                'modelName' => 'User',
+                'modelFqn' => 'app\models\User',
+                'transformerFqn' => 'app\transformers\UserTransformer',
+                'expectedRelations' => [],
+                'relatedModel' => null,
+            ]),
+            new FractalAction([
+                'id' => 'view',
+                'type' => RouteData::TYPE_RESOURCE,
+                'urlPath' => '/user/{username}',
+                'requestMethod' => 'GET',
+                'urlPattern' => 'user/<username:[\w-]+>',
+                'controllerId' => 'user',
+                'idParam' => 'username',
+                'parentIdParam' => null,
+                'params' => ['username' => ['type' => 'string']],
                 'modelName' => 'User',
                 'modelFqn' => 'app\models\User',
                 'transformerFqn' => 'app\transformers\UserTransformer',

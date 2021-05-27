@@ -63,17 +63,21 @@ abstract class <?= $className ?> extends JsonApiController
 <?php if ($action->shouldUseCustomFindModel() && !in_array($action->findModelMethodName, $findModels, true)):?>
 <?php $findModels[] = $action->findModelMethodName;?>
     /**
-     * Returns the <?= $action->baseModelName ?> model based on the primary key given.
+     * Returns the <?= $action->baseModelName ?> model based on the given attribute.
      * If the data model is not found, a 404 HTTP exception will be raised.
-     * @param string $id the ID of the model to be loaded.
+     * @param string $<?=$action->idParam.PHP_EOL?>
      * @return \<?= $action->modelFqn ?> the model found
      * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function <?= $action->findModelMethodName ?>($id)
+    public function <?= $action->findModelMethodName ?>($<?=$action->idParam?>)
     {
-        $model = \<?= $action->modelFqn ?>::findOne($id);
+<?php if ($action->idParam === 'id'):?>
+        $model = \<?= $action->modelFqn ?>::findOne($<?=$action->idParam?>);
+<?php else:?>
+        $model = \<?= $action->modelFqn ?>::findOne(['<?=$action->idParam?>' => $<?=$action->idParam?>]);
+<?php endif;?>
         if (!$model) {
-            throw new \yii\web\NotFoundHttpException("Object not found: $id");
+            throw new \yii\web\NotFoundHttpException("Object not found: $<?=$action->idParam?>");
         }
         return $model;
     }

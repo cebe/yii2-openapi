@@ -82,17 +82,17 @@ abstract class PetController extends JsonApiController
         return new \League\Fractal\Resource\Item($model, $transformer, 'pets');
     }
     /**
-     * Returns the Pet model based on the primary key given.
+     * Returns the Pet model based on the given attribute.
      * If the data model is not found, a 404 HTTP exception will be raised.
-     * @param string $id the ID of the model to be loaded.
+     * @param string $petId
      * @return \app\models\Pet the model found
      * @throws \yii\web\NotFoundHttpException if the model cannot be found.
      */
-    public function findPetModel($id)
+    public function findPetModel($petId)
     {
-        $model = \app\models\Pet::findOne($id);
+        $model = \app\models\Pet::findOne(['petId' => $petId]);
         if (!$model) {
-            throw new \yii\web\NotFoundHttpException("Object not found: $id");
+            throw new \yii\web\NotFoundHttpException("Object not found: $petId");
         }
         return $model;
     }
