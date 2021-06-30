@@ -40,8 +40,9 @@ class SchemaTypeResolver
 
     public static function referenceToDbType(Schema $property):string
     {
+        $format = $property->format ?? null;
         if ($property->type === 'integer') {
-            return $property->format === 'int64' ? YiiDbSchema::TYPE_BIGINT : YiiDbSchema::TYPE_INTEGER;
+            return $format === 'int64' ? YiiDbSchema::TYPE_BIGINT : YiiDbSchema::TYPE_INTEGER;
         }
         return $property->type;
     }
@@ -57,35 +58,36 @@ class SchemaTypeResolver
                 return $customDbType;
             }
         }
+        $format = $property->format ?? null;
         if ($isPrimary && $property->type === 'integer') {
-            return $property->format === 'int64' ? YiiDbSchema::TYPE_BIGPK : YiiDbSchema::TYPE_PK;
+            return $format === 'int64' ? YiiDbSchema::TYPE_BIGPK : YiiDbSchema::TYPE_PK;
         }
 
         switch ($property->type) {
             case 'boolean':
                 return $property->type;
             case 'number': // can be double and float
-                return $property->format ?? 'float';
+                return $format ?? 'float';
             case 'integer':
-                if ($property->format === 'int64') {
+                if ($format === 'int64') {
                     return YiiDbSchema::TYPE_BIGINT;
                 }
-                if ($property->format === 'int32') {
+                if ($format === 'int32') {
                     return YiiDbSchema::TYPE_INTEGER;
                 }
                 return YiiDbSchema::TYPE_INTEGER;
             case 'string':
-                if (in_array($property->format, ['date', 'time', 'binary'])) {
-                    return $property->format;
+                if (in_array($format, ['date', 'time', 'binary'])) {
+                    return $format;
                 }
                 if ($property->maxLength && $property->maxLength < 2049) {
                     //What if we want to restrict length of text column?
                     return YiiDbSchema::TYPE_STRING;
                 }
-                if ($property->format === 'date-time' || $property->format === 'datetime') {
+                if ($format === 'date-time' || $format === 'datetime') {
                     return YiiDbSchema::TYPE_DATETIME;
                 }
-                if (in_array($property->format, ['email', 'url', 'phone', 'password'])) {
+                if (in_array($format, ['email', 'url', 'phone', 'password'])) {
                     return YiiDbSchema::TYPE_STRING;
                 }
                 if (isset($property->enum) && !empty($property->enum)) {
