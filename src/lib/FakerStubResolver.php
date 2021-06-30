@@ -67,11 +67,13 @@ class FakerStubResolver
             'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
             'email' => '$faker->safeEmail',
         ];
-        if ($this->property->format && isset($formats[$this->property->format])) {
-            return $formats[$this->property->format];
+        $format = $this->property->format ?? null;
+        if ($format && isset($formats[$format])) {
+            return $formats[$format];
         }
-        if (!empty($this->property->enum) && is_array($this->property->enum)) {
-            $items = \str_replace([PHP_EOL, '  ',',]'], ['', '', ']'], VarDumper::export($this->property->enum));
+        $enum = $this->property->enum ?? null;
+        if (!empty($enum) && is_array($enum)) {
+            $items = \str_replace([PHP_EOL, '  ',',]'], ['', '', ']'], VarDumper::export($enum));
             return '$faker->randomElement(' . $items . ')';
         }
         if ($this->attribute->columnName === 'title'
