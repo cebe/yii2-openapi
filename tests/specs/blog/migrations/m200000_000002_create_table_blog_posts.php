@@ -8,7 +8,7 @@ class m200000_000002_create_table_blog_posts extends \yii\db\Migration
     public function up()
     {
         $this->createTable('{{%blog_posts}}', [
-            'uid' => $this->bigPrimaryKey(),
+            'uid' => $this->string(255)->notNull(),
             'title' => $this->string(255)->notNull(),
             'slug' => $this->string(200)->null()->defaultValue(null),
             'category_id' => $this->integer()->notNull(),
@@ -16,6 +16,7 @@ class m200000_000002_create_table_blog_posts extends \yii\db\Migration
             'created_at' => $this->date()->null()->defaultValue(null),
             'created_by_id' => $this->integer()->null()->defaultValue(null),
         ]);
+        $this->addPrimaryKey('pk_uid', '{{%blog_posts}}', 'uid');
         $this->addForeignKey('fk_blog_posts_category_id_categories_id', '{{%blog_posts}}', 'category_id', '{{%categories}}', 'id');
         $this->addForeignKey('fk_blog_posts_created_by_id_users_id', '{{%blog_posts}}', 'created_by_id', '{{%users}}', 'id');
         $this->createIndex('blog_posts_title_key', '{{%blog_posts}}', 'title', true);
@@ -28,6 +29,7 @@ class m200000_000002_create_table_blog_posts extends \yii\db\Migration
         $this->dropIndex('blog_posts_title_key', '{{%blog_posts}}');
         $this->dropForeignKey('fk_blog_posts_created_by_id_users_id', '{{%blog_posts}}');
         $this->dropForeignKey('fk_blog_posts_category_id_categories_id', '{{%blog_posts}}');
+        $this->dropPrimaryKey('pk_uid', '{{%blog_posts}}');
         $this->dropTable('{{%blog_posts}}');
     }
 }

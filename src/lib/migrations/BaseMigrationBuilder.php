@@ -106,6 +106,18 @@ abstract class BaseMigrationBuilder
 
         $this->migration->addUpCode($builder->createTable($tableName, $this->newColumns))
                         ->addDownCode($builder->dropTable($tableName));
+        $nonAutoincrementPk = false;
+        foreach ($this->newColumns as $col) {
+            if ($col->isPrimaryKey && !$col->autoIncrement) {
+                $nonAutoincrementPk = $col;
+                break;
+            }
+        }
+        if ($nonAutoincrementPk) {
+            $this->migration
+                ->addUpCode($builder->addPrimaryKey($tableName, [$nonAutoincrementPk->name]))
+                ->addDownCode($builder->dropPrimaryKey($tableName, [$nonAutoincrementPk->name]));
+        }
         $this->createEnumMigrations();
         if (!empty($this->model->junctionCols) && !isset($this->model->attributes[$this->model->pkName])) {
             $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
@@ -214,6 +226,10 @@ abstract class BaseMigrationBuilder
     {
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
+            if ($column->isPrimaryKey && !$column->autoIncrement) {
+                $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name]))
+                    ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name]));
+            }
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
         }

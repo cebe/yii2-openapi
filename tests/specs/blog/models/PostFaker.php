@@ -29,7 +29,7 @@ class PostFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Post();
-        //$model->uid = $uniqueFaker->numberBetween(0, 2147483647);
+        $model->uid = substr($faker->text(255), 0, 255);
         $model->title = substr($faker->sentence, 0, 255);
         $model->slug = substr($uniqueFaker->slug, 0, 200);
         $model->active = $faker->boolean;

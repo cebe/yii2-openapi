@@ -127,8 +127,9 @@ components:
         - active
       properties:
         uid:
-          type: integer
-          format: int64
+          type: string
+          maxLength: 255
+          x-db-type: varchar
           readOnly: True
         title:
           type: string

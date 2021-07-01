@@ -5,7 +5,7 @@ namespace app\models\base;
 /**
  * A blog post (uid used as pk for test purposes)
  *
- * @property int $uid
+ * @property string $uid
  * @property string $title
  * @property string $slug
  * @property int $category_id Category of posts
