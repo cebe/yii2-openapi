@@ -128,7 +128,7 @@ components:
       properties:
         uid:
           type: string
-          maxLength: 255
+          maxLength: 128
           x-db-type: varchar
           readOnly: True
         title:

@@ -204,6 +204,9 @@ class AttributeResolver
                     $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
                               ->setDbType($this->guessDbType($foreignPkProperty, true, true));
+                    $attribute->setSize($foreignPkProperty->maxLength ?? null);
+                    [$min, $max] = $this->guessMinMax($foreignPkProperty);
+                    $attribute->setLimits($min, $max, $foreignPkProperty->minLength ?? null);
 
                     $relation = (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
                         ->asHasOne([$foreignPk => $attribute->columnName])->asSelfReference();
@@ -227,7 +230,9 @@ class AttributeResolver
                     $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
                               ->setDbType($this->guessDbType($foreignPkProperty, true, true));
-
+                    $attribute->setSize($foreignPkProperty->maxLength ?? null);
+                    [$min, $max] = $this->guessMinMax($foreignPkProperty);
+                    $attribute->setLimits($min, $max, $foreignPkProperty->minLength ?? null);
                     $relation = (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
                         ->asHasOne([$foreignPk => $attribute->columnName]);
                     $this->relations[$propertyName] = $relation;
