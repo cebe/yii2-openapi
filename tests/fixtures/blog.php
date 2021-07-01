@@ -60,8 +60,8 @@ return [
         'tableName' => 'blog_posts',
         'description' => 'A blog post (uid used as pk for test purposes)',
         'attributes' => [
-            'uid' => (new Attribute('uid', ['phpType' => 'int', 'dbType' => 'bigpk']))
-                ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string']))
+                ->setReadOnly()->setRequired()->setIsPrimary()->setSize(255)->setFakerStub('substr($faker->text(255), 0, 255)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'slug' => (new Attribute('slug', ['phpType' => 'string', 'dbType' => 'string']))
@@ -104,11 +104,11 @@ return [
                 ->setRequired(true)
                 ->setIsPrimary(true)
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
-            'post' => (new Attribute('post', ['phpType' => 'int', 'dbType' => 'bigint']))
+            'post' => (new Attribute('post', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()
                 ->asReference('Post')
                 ->setDescription('A blog post (uid used as pk for test purposes)')
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'author' => (new Attribute('author', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()
                 ->asReference('User')

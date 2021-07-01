@@ -226,6 +226,8 @@ class Attribute extends BaseObject
             'allowNull' => !$this->isRequired(),
             'size' => $this->size > 0 ? $this->size : null,
         ]);
+        $column->isPrimaryKey = $this->primary;
+        $column->autoIncrement = $this->primary && $this->phpType === 'int';
         if ($column->type === 'json') {
             $column->allowNull = false;
         }
