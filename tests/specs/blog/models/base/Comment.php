@@ -27,7 +27,7 @@ abstract class Comment extends \yii\db\ActiveRecord
         return [
             'trim' => [['post_id'], 'trim'],
             'required' => [['post_id', 'author_id', 'created_at'], 'required'],
-            'post_id_string' => [['post_id'], 'string'],
+            'post_id_string' => [['post_id'], 'string', 'max' => 128],
             'post_id_exist' => [['post_id'], 'exist', 'targetRelation' => 'Post'],
             'author_id_integer' => [['author_id'], 'integer'],
             'author_id_exist' => [['author_id'], 'exist', 'targetRelation' => 'Author'],

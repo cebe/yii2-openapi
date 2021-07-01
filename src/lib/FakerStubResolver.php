@@ -81,6 +81,10 @@ class FakerStubResolver
             && $this->attribute->size < 10) {
             return '$faker->title';
         }
+        if ($this->attribute->primary || $this->attribute->isReference()) {
+            $size = $this->attribute->size ?? 255;
+            return 'substr($uniqueFaker->sha256, 0, ' . $size . ')';
+        }
 
         $patterns = [
             '~_id$~' => '$uniqueFaker->numberBetween(0, 1000000)',

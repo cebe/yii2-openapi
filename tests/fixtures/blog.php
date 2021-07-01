@@ -61,7 +61,8 @@ return [
         'description' => 'A blog post (uid used as pk for test purposes)',
         'attributes' => [
             'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setReadOnly()->setRequired()->setIsPrimary()->setSize(255)->setFakerStub('substr($faker->text(255), 0, 255)'),
+                ->setReadOnly()->setRequired()->setIsPrimary()->setSize(128)
+                ->setFakerStub('substr($uniqueFaker->sha256, 0, 128)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'slug' => (new Attribute('slug', ['phpType' => 'string', 'dbType' => 'string']))
@@ -106,9 +107,10 @@ return [
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
             'post' => (new Attribute('post', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()
+                ->setSize(128)
                 ->asReference('Post')
                 ->setDescription('A blog post (uid used as pk for test purposes)')
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
+                ->setFakerStub('substr($uniqueFaker->sha256, 0, 128)'),
             'author' => (new Attribute('author', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()
                 ->asReference('User')
