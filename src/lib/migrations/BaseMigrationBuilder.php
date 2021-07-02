@@ -114,9 +114,10 @@ abstract class BaseMigrationBuilder
             }
         }
         if ($nonAutoincrementPk) {
+            $pkName = 'pk_'.$this->model->tableName.'_'.$nonAutoincrementPk->name;
             $this->migration
-                ->addUpCode($builder->addPrimaryKey($tableName, [$nonAutoincrementPk->name]))
-                ->addDownCode($builder->dropPrimaryKey($tableName, [$nonAutoincrementPk->name]));
+                ->addUpCode($builder->addPrimaryKey($tableName, [$nonAutoincrementPk->name], $pkName))
+                ->addDownCode($builder->dropPrimaryKey($tableName, [$nonAutoincrementPk->name], $pkName));
         }
         $this->createEnumMigrations();
         if (!empty($this->model->junctionCols) && !isset($this->model->attributes[$this->model->pkName])) {
@@ -227,8 +228,9 @@ abstract class BaseMigrationBuilder
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
             if ($column->isPrimaryKey && !$column->autoIncrement) {
-                $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name]))
-                    ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name]));
+                $pkName = 'pk_'.$this->model->tableName.'_'.$column->name;
+                $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name], $pkName))
+                    ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name], $pkName));
             }
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
