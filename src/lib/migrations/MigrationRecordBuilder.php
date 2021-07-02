@@ -146,16 +146,16 @@ final class MigrationRecordBuilder
         return sprintf(self::ADD_INDEX, $indexName, $tableAlias, implode(',', $columns), $indexType);
     }
 
-    public function addPrimaryKey(string $tableAlias, array $columns):string
+    public function addPrimaryKey(string $tableAlias, array $columns, string $pkName= null):string
     {
-        $name = 'pk_'. implode('_', $columns);
-        return sprintf(self::ADD_PK, $name, $tableAlias, implode(',', $columns));
+        $pkName = $pkName ?? 'pk_'. implode('_', $columns);
+        return sprintf(self::ADD_PK, $pkName, $tableAlias, implode(',', $columns));
     }
 
-    public function dropPrimaryKey(string $tableAlias, array $columns):string
+    public function dropPrimaryKey(string $tableAlias, array $columns, string $pkName = null):string
     {
-        $name = 'pk_'. implode('_', $columns);
-        return sprintf(self::DROP_PK, $name, $tableAlias);
+        $pkName = $pkName ?? 'pk_'. implode('_', $columns);
+        return sprintf(self::DROP_PK, $pkName, $tableAlias);
     }
 
     public function dropTable(string $tableAlias):string
