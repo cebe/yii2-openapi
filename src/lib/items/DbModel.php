@@ -64,10 +64,10 @@ class DbModel extends BaseObject
 
     /**
      * @var \cebe\yii2openapi\lib\items\DbIndex[]|array
-    */
+     */
     public $indexes = [];
 
-    public function getTableAlias():string
+    public function getTableAlias(): string
     {
         return '{{%' . $this->tableName . '}}';
     }
@@ -77,20 +77,20 @@ class DbModel extends BaseObject
         return Inflector::id2camel($this->name, '_');
     }
 
-    public function getValidationRules():string
+    public function getValidationRules(): string
     {
         $rules = (new ValidationRulesBuilder($this))->build();
         $rules = array_map(function ($rule) {
-            return (string) $rule;
+            return (string)$rule;
         }, $rules);
         $rules = VarDumper::export($rules);
-        return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL.'        ', "'", '[[', '],'], $rules);
+        return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL . '        ', "'", '[[', '],'], $rules);
     }
 
     /**
      * @return \cebe\yii2openapi\lib\items\AttributeRelation[]|array
      */
-    public function getHasOneRelations():array
+    public function getHasOneRelations(): array
     {
         return array_filter(
             $this->relations,
@@ -100,7 +100,7 @@ class DbModel extends BaseObject
         );
     }
 
-    public function getPkAttribute():Attribute
+    public function getPkAttribute(): Attribute
     {
         return $this->attributes[$this->pkName];
     }
@@ -108,12 +108,14 @@ class DbModel extends BaseObject
     /**
      * @return ColumnSchema[]
      */
-    public function attributesToColumnSchema():array
+    public function attributesToColumnSchema(): array
     {
         return array_reduce(
             $this->attributes,
             static function ($acc, Attribute $attribute) {
-                $acc[$attribute->columnName] = $attribute->toColumnSchema();
+                if (!$attribute->isVirtual) {
+                    $acc[$attribute->columnName] = $attribute->toColumnSchema();
+                }
                 return $acc;
             },
             []
@@ -123,13 +125,34 @@ class DbModel extends BaseObject
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
-    public function getEnumAttributes():array
+    public function getEnumAttributes(): array
     {
         return array_filter(
             $this->attributes,
             function (Attribute $attribute) {
-                return StringHelper::startsWith($attribute->dbType, 'enum') && !empty($attribute->enumValues);
+                return !$attribute->isVirtual && StringHelper::startsWith($attribute->dbType, 'enum')
+                    && !empty($attribute->enumValues);
             }
         );
+    }
+
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\Attribute[]
+     */
+    public function virtualAttributes(): array
+    {
+        return array_filter($this->attributes, function (Attribute $attribute) {
+            return $attribute->isVirtual;
+        });
+    }
+
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\Attribute[]
+     */
+    public function dbAttributes(): array
+    {
+        return array_filter($this->attributes, function (Attribute $attribute) {
+            return !$attribute->isVirtual;
+        });
     }
 }

@@ -32,6 +32,7 @@ class PetFaker extends BaseModelFaker
         //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
         $model->name = $faker->sentence;
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
+        $model->petCode = substr($faker->text(50), 0, 50);
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {

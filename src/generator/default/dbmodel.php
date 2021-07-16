@@ -17,7 +17,7 @@ namespace <?= $namespace ?>;
  *<?= empty($model->description) ? '' : str_replace("\n", "\n * ", ' ' . trim($model->description)) ?>
 
  *
-<?php foreach ($model->attributes as $attribute): ?>
+<?php foreach ($model->dbAttributes() as $attribute): ?>
  * @property <?= $attribute->getFormattedDescription() ?>
 
 <?php endforeach; ?>
@@ -37,10 +37,38 @@ namespace <?= $namespace ?>;
  */
 abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 {
+<?php if (count($model->virtualAttributes())):?>
+    protected $virtualAttributes = ['<?=implode("', '", array_map(function ($attr) {
+    return $attr->columnName;
+}, $model->virtualAttributes()))?>'];
+
+<?php foreach ($model->virtualAttributes() as $attribute): ?>
+    /**
+     * @var <?=$attribute->phpType.PHP_EOL?>
+    */
+    public $<?= $attribute->columnName ?>;
+
+<?php endforeach; ?>
+<?php endif;?>
     public static function tableName()
     {
         return <?= var_export($model->getTableAlias()) ?>;
     }
+<?php if (count($model->virtualAttributes())):?>
+
+    public function attributes()
+    {
+        return array_merge(parent::attributes(), $this->virtualAttributes);
+    }
+
+    public function afterFind()
+    {
+        parent::afterFind();
+        foreach ($this->virtualAttributes as $attr) {
+            $this->$attr = $this->getAttribute($attr);
+        }
+    }
+<?php endif;?>
 
     public function rules()
     {

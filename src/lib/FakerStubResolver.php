@@ -42,6 +42,9 @@ class FakerStubResolver
         if (isset($this->property->{CustomSpecAttr::FAKER})) {
             return $this->property->{CustomSpecAttr::FAKER};
         }
+        if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {
+            return null;
+        }
         $limits = $this->attribute->limits;
         switch ($this->attribute->phpType) {
             case 'bool':

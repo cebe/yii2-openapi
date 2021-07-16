@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'openApiPath' => '@specs/petstore_arrayref.yaml',
+    'openApiPath' => '@specs/petstore_jsonapi.yaml',
     'generateUrls' => true,
     'generateModels' => true,
     'excludeModels' => [
