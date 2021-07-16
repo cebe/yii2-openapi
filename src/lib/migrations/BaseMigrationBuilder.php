@@ -392,7 +392,7 @@ abstract class BaseMigrationBuilder
         if (in_array($fromType, $ints) && in_array($toType, $ints)) {
             return false;
         }
-        $dates = ['date', 'timestamp'];
-        return !(in_array($fromType, $dates) && in_array($toType, $dates));
+        $specific = ['json', 'jsonb', 'date', 'timestamp'];
+        return !(in_array($fromType, $specific) && in_array($toType, $specific));
     }
 }
