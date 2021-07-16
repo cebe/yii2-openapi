@@ -93,6 +93,11 @@ class Attribute extends BaseObject
      **/
     public $fakerStub;
 
+    /**
+     * @var bool
+     **/
+    public $isVirtual = false;
+
     public function __construct(string $propertyName, array $config = [])
     {
         $this->propertyName = $propertyName;
@@ -172,6 +177,12 @@ class Attribute extends BaseObject
         return $this;
     }
 
+    public function setIsVirtual(): Attribute
+    {
+        $this->isVirtual = true;
+        return $this;
+    }
+
 
     public function asReference(string $relatedClass):Attribute
     {
@@ -192,6 +203,11 @@ class Attribute extends BaseObject
     public function isRequired():bool
     {
         return $this->required;
+    }
+
+    public function isVirtual():bool
+    {
+        return $this->isVirtual;
     }
 
     public function camelName():string

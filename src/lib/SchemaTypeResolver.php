@@ -49,7 +49,7 @@ class SchemaTypeResolver
 
     public static function schemaToDbType(Schema $property, bool $isPrimary = false):string
     {
-        if (isset($property->{CustomSpecAttr::DB_TYPE})) {
+        if (isset($property->{CustomSpecAttr::DB_TYPE}) && $property->{CustomSpecAttr::DB_TYPE} !== false) {
             $customDbType = strtolower($property->{CustomSpecAttr::DB_TYPE});
             if ($customDbType === 'varchar') {
                 return YiiDbSchema::TYPE_STRING;
@@ -94,6 +94,9 @@ class SchemaTypeResolver
                     return YiiDbSchema::TYPE_STRING;
                 }
                 return YiiDbSchema::TYPE_TEXT;
+            case 'object': {
+                return YiiDbSchema::TYPE_JSON;
+            }
 //            case 'array':
 //                Need schema example for this case if it possible
 //                return $this->typeForArray();

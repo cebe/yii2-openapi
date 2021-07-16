@@ -113,6 +113,8 @@ Explicitly specify primary key name for table, if it is different from "id"
 ### `x-db-type`
 
 Explicitly specify the database type for a column. (MUST contains only db type! (json, jsonb, uuid, varchar etc))
+If x-db-type sets as false, property will be processed as virtual;
+It will be added in model as public property, but skipped for migrations generation
 
 ### `x-indexes`
 Specify table indexes

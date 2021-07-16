@@ -94,7 +94,7 @@ class AttributeResolver
      * @return \cebe\yii2openapi\lib\items\DbModel
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      */
-    public function resolve():DbModel
+    public function resolve(): DbModel
     {
         $requiredProps = $this->componentSchema->required ?? [];
         foreach ($this->componentSchema->properties as $propertyName => $property) {
@@ -122,7 +122,7 @@ class AttributeResolver
         ]);
     }
 
-    public static function tableNameBySchema(string $schemaName):string
+    public static function tableNameBySchema(string $schemaName): string
     {
         return Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_');
     }
@@ -133,12 +133,12 @@ class AttributeResolver
             $junkAttribute = $this->junctions->byJunctionSchema($this->schemaName)[$propertyName];
             $attribute = new Attribute($propertyName);
             $attribute->setRequired($isRequired)
-                      ->setDescription($property->description ?? '')
-                      ->setReadOnly($property->readOnly ?? false)
-                      ->setIsPrimary($propertyName === $this->primaryKey)
-                      ->asReference($junkAttribute['relatedClassName'])
-                      ->setPhpType($junkAttribute['phpType'])
-                      ->setDbType($junkAttribute['dbType']);
+                ->setDescription($property->description ?? '')
+                ->setReadOnly($property->readOnly ?? false)
+                ->setIsPrimary($propertyName === $this->primaryKey)
+                ->asReference($junkAttribute['relatedClassName'])
+                ->setPhpType($junkAttribute['phpType'])
+                ->setDbType($junkAttribute['dbType']);
             $relation = (new AttributeRelation($propertyName, $junkAttribute['relatedTableName'], $junkAttribute['relatedClassName']))
                 ->asHasOne([$junkAttribute['foreignPk'] => $attribute->columnName]);
             $this->relations[$propertyName] = $relation;
@@ -176,7 +176,7 @@ class AttributeResolver
 
             $this->relations[Inflector::pluralize($junkRef)] =
                 (new AttributeRelation($junkRef, $junkAttribute['junctionTable'], $viaModel))
-                    ->asHasMany([$junkAttribute['pairProperty'].'_id' => $this->primaryKey]);
+                    ->asHasMany([$junkAttribute['pairProperty'] . '_id' => $this->primaryKey]);
             return;
         }
 
@@ -187,9 +187,9 @@ class AttributeResolver
     {
         $attribute = new Attribute($propertyName);
         $attribute->setRequired($isRequired)
-                  ->setDescription($property->description ?? '')
-                  ->setReadOnly($property->readOnly ?? false)
-                  ->setIsPrimary($propertyName === $this->primaryKey);
+            ->setDescription($property->description ?? '')
+            ->setReadOnly($property->readOnly ?? false)
+            ->setIsPrimary($propertyName === $this->primaryKey);
         if ($property instanceof Reference) {
             $refPointer = $property->getJsonReference()->getJsonPointer()->getPointer();
             $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
@@ -203,7 +203,7 @@ class AttributeResolver
                     $relatedTableName = $this->tableName;
                     $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
-                              ->setDbType($this->guessDbType($foreignPkProperty, true, true));
+                        ->setDbType($this->guessDbType($foreignPkProperty, true, true));
                     $attribute->setSize($foreignPkProperty->maxLength ?? null);
                     [$min, $max] = $this->guessMinMax($foreignPkProperty);
                     $attribute->setLimits($min, $max, $foreignPkProperty->minLength ?? null);
@@ -229,7 +229,7 @@ class AttributeResolver
                     }
                     $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
                     $attribute->setPhpType($phpType)
-                              ->setDbType($this->guessDbType($foreignPkProperty, true, true));
+                        ->setDbType($this->guessDbType($foreignPkProperty, true, true));
                     $attribute->setSize($foreignPkProperty->maxLength ?? null);
                     [$min, $max] = $this->guessMinMax($foreignPkProperty);
                     $attribute->setLimits($min, $max, $foreignPkProperty->minLength ?? null);
@@ -243,12 +243,19 @@ class AttributeResolver
         if (!$attribute->isReference()) {
             /**@var Schema $property */
             $phpType = SchemaTypeResolver::schemaToPhpType($property);
+            if (isset($property->{CustomSpecAttr::DB_TYPE}) && $property->{CustomSpecAttr::DB_TYPE} === false) {
+                if ($attribute->primary === true) {
+                    throw new InvalidDefinitionException("Primary key can't be virtual attribute");
+                }
+                $attribute->setIsVirtual();
+            }
             $attribute->setPhpType($phpType)
-                      ->setDbType($this->guessDbType($property, ($propertyName === $this->primaryKey)))
-                      ->setSize($property->maxLength ?? null);
-            $attribute->setDefault($this->guessDefault($property, $attribute));
+                ->setDbType($this->guessDbType($property, ($propertyName === $this->primaryKey)))
+                ->setSize($property->maxLength ?? null)
+                ->setDefault($this->guessDefault($property, $attribute));
             [$min, $max] = $this->guessMinMax($property);
             $attribute->setLimits($min, $max, $property->minLength ?? null);
+
             if (isset($property->enum) && is_array($property->enum)) {
                 $attribute->setEnumValues($property->enum);
             }
@@ -257,6 +264,9 @@ class AttributeResolver
         // has Many relation
         $refPointer = $this->getHasManyReference($property);
         if ($refPointer !== null) {
+            if ($attribute->isVirtual) {
+                throw new InvalidDefinitionException('References not supported for virtual attributes');
+            }
             //self relation
             if (strpos($refPointer, '/properties/') !== false) {
                 $relatedClassName = Inflector::id2camel($this->schemaName, '_');
@@ -264,7 +274,7 @@ class AttributeResolver
                 $relatedTableName = $this->tableName;
                 $foreignAttr = str_replace(self::REFERENCE_PATH . $relatedClassName . '/properties/', '', $refPointer);
                 $foreignProperty = $this->componentSchema->properties[$foreignAttr] ?? null;
-                if ($foreignProperty && ! $foreignProperty instanceof Reference && !StringHelper::endsWith($foreignAttr, '_id')) {
+                if ($foreignProperty && !$foreignProperty instanceof Reference && !StringHelper::endsWith($foreignAttr, '_id')) {
                     $this->relations[$propertyName] =
                         (new AttributeRelation($propertyName, $relatedTableName, $relatedClassName))
                             ->asHasMany([$foreignAttr => $foreignAttr])->asSelfReference();
@@ -300,9 +310,9 @@ class AttributeResolver
      * Check and register many-to-many relation
      * - property name for many-to-many relation should be equal lower-cased, pluralized schema name
      * - referenced schema should contains mirrored reference to current schema
-     * @param string                    $propertyName
-     * @param string                    $relatedSchemaName
-     * @param string                    $relatedTableName
+     * @param string $propertyName
+     * @param string $relatedSchemaName
+     * @param string $relatedTableName
      * @param \cebe\openapi\spec\Schema $relatedSchema
      * @return bool
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
@@ -312,7 +322,7 @@ class AttributeResolver
         string $relatedSchemaName,
         string $relatedTableName,
         Schema $relatedSchema
-    ):bool {
+    ): bool {
         if (strtolower(Inflector::id2camel($propertyName, '_'))
             !== strtolower(Inflector::pluralize($relatedSchemaName))) {
             return false;
@@ -339,7 +349,7 @@ class AttributeResolver
         return true;
     }
 
-    protected function getHasManyReference(SpecObjectInterface $property):?string
+    protected function getHasManyReference(SpecObjectInterface $property): ?string
     {
         if ($property instanceof Reference) {
             return null;
@@ -353,7 +363,7 @@ class AttributeResolver
         return null;
     }
 
-    protected function guessMinMax(SpecObjectInterface $property):array
+    protected function guessMinMax(SpecObjectInterface $property): array
     {
         $min = $property->minimum ?? null;
         $max = $property->maximum ?? null;
@@ -366,13 +376,13 @@ class AttributeResolver
         return [$min, $max];
     }
 
-    protected function guessFakerStub(Attribute $attribute, SpecObjectInterface $property):?string
+    protected function guessFakerStub(Attribute $attribute, SpecObjectInterface $property): ?string
     {
         $resolver = Yii::createObject(['class' => FakerStubResolver::class], [$attribute, $property]);
         return $resolver->resolve();
     }
 
-    protected function guessDbType(Schema $property, bool $isPk, bool $isReference = false):string
+    protected function guessDbType(Schema $property, bool $isPk, bool $isReference = false): string
     {
         if ($isReference === true) {
             return SchemaTypeResolver::referenceToDbType($property);
@@ -430,7 +440,7 @@ class AttributeResolver
             $columns = [];
             foreach ($props as $prop) {
                 if (!isset($this->attributes[$prop])) {
-                    throw new InvalidDefinitionException('Invalid index definition - property '.$prop.' not declared');
+                    throw new InvalidDefinitionException('Invalid index definition - property ' . $prop . ' not declared');
                 }
                 $columns[] = $this->attributes[$prop]->columnName;
             }
