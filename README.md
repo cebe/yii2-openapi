@@ -218,6 +218,34 @@ User:
  - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)
  
 
+## Things to keep in mind
+
+### Adding columns to existing tables
+
+When adding new fields in the API models, new migrations will be generated to add these fields to the table.
+For a project that is already in production, it should be considered to adjust the generated migration to add default
+values for existing data records.
+
+One case where this is important is the addition of a new column with `NOT NULL` contraint, which does not provide a default value.
+Such a migration will fail when the table is not empty:
+
+```php
+$this->addColumn('{{%company}}', 'name', $this->string(128)->notNull());
+```
+
+Fail on a PostgreSQL database with 
+
+> add column name string(128) NOT NULL to table {{%company}} ...Exception: SQLSTATE[23502]: Not null violation: 7 ERROR:  column "name" contains null values
+
+The solution would be to create the column, allowing NULL, set the value to a default and add the null constraint later.
+
+```php
+$this->addColumn('{{%company}}', 'name', $this->string(128)->null());
+$this->update('{{%company}}', ['name' => 'No name']);
+$this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
+```
+
+
 ## Screenshots
 
 Gii Generator Form:
