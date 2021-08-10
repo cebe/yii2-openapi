@@ -3,7 +3,7 @@
 ?>
         $model = $this-><?=$action->findModelMethodName?>($<?=$action->idParam?>);
         $model->scenario = 'default';
-        $this->checkAccess('<?=$action->id?>', $model);
+        $this->checkAccess($action, $model);
         $model->load(Yii::$app->getRequest()->getBodyParams()['data']['attributes'] ?? [], '');
         if ($model->save() === false && !$model->hasErrors()) {
             throw new \yii\web\ServerErrorHttpException('Failed to update the object for unknown reason.');
