@@ -14,7 +14,6 @@ echo '<?php';?>
 namespace <?= $namespace ?>;
 
 use insolita\fractal\JsonApiController;
-use insolita\fractal\actions\JsonApiAction;
 use Yii;
 
 abstract class <?= $className ?> extends JsonApiController
@@ -40,12 +39,12 @@ abstract class <?= $className ?> extends JsonApiController
      * to run the specified action against the specified data model.
      * If the user does not have access, a [[ForbiddenHttpException]] should be thrown.
      *
-     * @param JsonApiAction $action the ID of the action to be executed
+     * @param string $action the ID of the action to be executed
      * @param object $model the model to be accessed. If null, it means no specific model is being accessed.
      * @param array $params additional parameters
      * @throws \yii\web\ForbiddenHttpException if the user does not have access
      */
-    abstract public function checkAccess(JsonApiAction $action, $model = null, $params = []);
+    abstract public function checkAccess($action, $model = null, $params = []);
 <?php foreach ($actions as $action): ?>
 <?php if (!$action->shouldUseTemplate()):?>
 <?php if (!$action->shouldBeAbstract()):?>

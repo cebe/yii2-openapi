@@ -3,7 +3,7 @@
 
 ?>
         $model = $this-><?=$action->findModelMethodName?>($<?=$action->idParam?>);
-        $this->checkAccess($action, $model);
+        $this->checkAccess('<?=$action->id?>', $model);
 <?php if ($action->transformerFqn):?>
         $transformer = Yii::createObject(['class'=>\<?=$action->transformerFqn?>::class]);
 <?php else:?>
