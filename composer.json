@@ -24,7 +24,7 @@
 		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0 | ~2.2.0",
 		"fzaninotto/faker": "^1.8",
 		"laminas/laminas-code": "^3.4",
-		"insolita/yii2-fractal": "^1.0.0"
+		"insolita/yii2-fractal": "^2.0.0"
 	},
 	"require-dev": {
 		"cebe/indent": "*",
