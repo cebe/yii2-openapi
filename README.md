@@ -32,7 +32,7 @@ This library is currently work in progress, current features are checked here wh
 
 ## Install
 
-    composer require cebe/yii2-openapi:@beta cebe/php-openapi:@beta
+    composer require cebe/yii2-openapi:^2.0@alpha
 
 ## Usage
 
