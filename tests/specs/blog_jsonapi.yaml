@@ -1,0 +1,950 @@
+openapi: "3.0.0"
+info:
+  version: 3.0.0
+  title: Simple schema followed Json-Api
+  license:
+    name: MIT
+servers:
+  - url: http://blog.dummy.io/v3
+paths:
+  /me:
+    get:
+      operationId: show current user
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /user/{username}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: find user by username
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/password/recovery:
+    get:
+      operationId: requestPasswordRecovery
+      responses:
+        '200':
+            description: Null Response
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      operationId: requestRecoveryForEmail
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  required:
+                     - email
+                     - type
+                  properties:
+                    type:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+      responses:
+        '200':
+           description: Null response
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/password/confirm-recovery/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: confirmPasswordRecovery
+      responses:
+        '200':
+          description: Null Response
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /auth/new-password:
+    post:
+      operationId: setNewPassword
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: object
+                  required:
+                    - password
+                    - password-compare
+                  properties:
+                    password:
+                      type: string
+                    password-compare:
+                      type: string
+      responses:
+        '200':
+          description: Null Response
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /categories:
+    get:
+      summary: Show categoreies with pagination
+      operationId: listCategories
+      parameters:
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Fields'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          $ref: '#/components/responses/CategoryListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      summary: Create a category
+      operationId: createCategory
+      responses:
+        '201':
+          $ref: '#/components/responses/CategoryResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /categories/{categoryId}/posts:
+    parameters:
+      - name: categoryId
+        in: path
+        required: true
+        description: The id of the category to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Show posts from category with pagination
+      operationId: listPostsForCategory
+      parameters:
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Fields'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          $ref: '#/components/responses/PostListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      summary: Create post for category
+      operationId: createPostForCategory
+      responses:
+        '201':
+           $ref: '#/components/responses/PostCreatedResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /posts:
+    get:
+      summary: Show posts with pagination
+      operationId: listPosts
+      parameters:
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/Fields'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+           $ref: '#/components/responses/PostListResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      summary: Create a post
+      operationId: createPost
+      responses:
+        '201':
+          $ref: '#/components/responses/PostResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /posts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Info for a specific post
+      operationId: showPostById
+      parameters:
+        - $ref: '#/components/parameters/Fields'
+        - $ref: '#/components/parameters/Includes'
+      tags:
+        - posts
+      responses:
+        '200':
+          $ref: '#/components/responses/PostResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      summary: Update post
+      operationId: updatePostbyId
+      requestBody:
+        $ref: '#/components/requestBodies/PostRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/PostResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    delete:
+      summary: DeletePost
+      operationId: deletePostById
+      responses:
+        '200':
+          description: Post deleted
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /posts/{id}/upload/cover:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    put:
+      summary: upload cover
+      description: https://www.drupal.org/project/drupal/issues/2958554,https://github.com/json-api/json-api/issues/246
+      operationId: UploadPostCover
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Images uploaded
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /posts/{id}/relationships/author:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Show post's author id
+      operationId: showPostAuthor
+      responses:
+        '200':
+          $ref: '#/components/responses/UserResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /post/{postId}/comments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of comments to retrieve
+        schema:
+          type: integer
+      - name: postId
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Show comment by post
+      operationId: showPostComment
+      responses:
+        '200':
+          $ref: '#/components/responses/CommentResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+
+  /posts/{id}/relationships/comments:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Show post's comments ids
+      operationId: showPostComments
+      responses:
+        '200':
+          $ref: '#/components/responses/CommentRelationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /posts/{id}/relationships/tags:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: The id of the post to retrieve
+        schema:
+          type: integer
+    get:
+      summary: Show post's tags
+      operationId: showPostTags
+      responses:
+        '200':
+          $ref: '#/components/responses/TagRelationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    patch:
+      summary: Update post tags
+      operationId: updatePostTags
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/_TagResource'
+      responses:
+        '200':
+          $ref: '#/components/responses/TagRelationResponse'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  parameters:
+      Sort:
+        name: sort
+        in: query
+        description: abstract query sort param
+        style: form
+        explode: false
+        schema:
+          type: array
+      Filter:
+        name: filter
+        in: query
+        description: abstract query filter param
+        style: deepObject
+        explode: true
+        allowReserved: true
+        schema:
+          type: object
+      Fields:
+        name: fields
+        in: query
+        description: abstract query fields param
+        style: deepObject
+        explode: true
+        allowReserved: true
+        schema:
+          type: object
+      Includes:
+        name: include
+        in: query
+        description: abstract query include param
+        style: form
+        explode: false
+        schema:
+          type: object
+      Page:
+        name: page
+        in: query
+        description: query-based page switcher
+        style: deepObject
+        explode: true
+        schema:
+          type: object
+          properties:
+            size:
+              description: Number if items per page
+              type: integer
+            number:
+              description: Current page number
+              type: integer
+
+  schemas:
+    _Links:
+      type: object
+      additionalProperties:
+        oneOf:
+            - type: string
+            - type: object
+              properties:
+                href:
+                  type: string
+                meta:
+                  type: object
+    _Meta:
+      type: object
+      description: Abstract meta data
+    _MetaPagination:
+      type: object
+      description: Meta Data for pagination
+      properties:
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            count:
+              type: integer
+            per_page:
+              type: integer
+            current_page:
+              type: integer
+            total_pages:
+              type: integer
+    _ModelError:
+      type: object
+      description: Yii-like model errors
+    _ErrorItem:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        code:
+          type: string
+        status:
+          type: string
+        details:
+          type: string
+        links:
+          type: object
+        source:
+          type: object
+    _Errors:
+      type: array
+      items:
+        anyOf:
+          - $ref: '#/components/schemas/_ErrorItem'
+          - $ref: '#/components/schemas/_ModelError'
+    User:
+      description: The User
+      x-table: v2_users
+      x-indexes:
+        - unique:login
+        - unique:email
+      required:
+        - id
+        - login
+        - email
+        - password
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        login:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+          format: password
+          writeOnly: true
+    _UserResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/User'
+        links:
+          $ref: '#/components/schemas/_Links'
+        relationships:
+          type: object
+    Users:
+      type: array
+      items:
+        $ref: "#/components/schemas/User"
+    Category:
+      x-table: v2_categories
+      description: Category of posts
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+          x-db-unique: true
+          maxLength: 100
+        posts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+    _CategoryResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Category'
+        relationships:
+          type: object
+          properties:
+            posts:
+              type: object
+    Categories:
+      type: array
+      items:
+        $ref: "#/components/schemas/Category"
+    Post:
+      x-table: v2_posts
+      x-indexes:
+        - 'unique:title'
+      description: A blog post (uid used as pk for test purposes)
+      required:
+        - id
+        - title
+        - category
+        - author
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+          x-db-type: VARCHAR
+          maxLength: 255
+        category:
+          $ref: "#/components/schemas/Category"
+        author:
+          $ref: "#/components/schemas/User"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        post_tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post_tag"
+    _PostResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Post'
+        links:
+          $ref: '#/components/schemas/_Links'
+        relationships:
+          type: object
+          properties:
+            author:
+              type: object
+            category:
+              type: object
+            comments:
+              type: object
+    Posts:
+      type: array
+      items:
+        $ref: "#/components/schemas/Post"
+    Comment:
+      x-table: v2_comments
+      required:
+        - id
+        - post
+        - message
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        post:
+          $ref: "#/components/schemas/Post"
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+    _CommentResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Comment'
+        links:
+          $ref: '#/components/schemas/_Links'
+        relationships:
+          type: object
+          properties:
+            user:
+              type: object
+            post:
+              type: object
+    Comments:
+      type: array
+      items:
+        $ref: "#/components/schemas/Comment"
+    Tag:
+      x-table: v2_tags
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        name:
+          type: string
+          x-db-type: VARCHAR
+          x-db-unique: true
+          maxLength: 100
+        post_tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post_tag"
+    Tags:
+      type: array
+      items:
+        $ref: "#/components/schemas/Tag"
+    _TagResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Tag'
+        links:
+          $ref: '#/components/schemas/_Links'
+        relationships:
+          type: object
+    Post_tag:
+      x-table: v2_post_tag
+      required:
+        - id
+        - post
+        - tag
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        post:
+          $ref: "#/components/schemas/Post"
+        tag:
+          $ref: "#/components/schemas/Tag"
+    PostTags:
+      type: array
+      items:
+        $ref: "#/components/schemas/Post_tag"
+
+  responses:
+    UserResponse:
+      description: Single user info
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_UserResource'
+    CategoryResponse:
+      description: Single category info
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_CategoryResource'
+              included:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/_PostResource'
+    CategoryCreatedResponse:
+      description: Single category info
+      headers:
+        Location:
+          description: Link to created resource
+          schema:
+            type: string
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_CategoryResource'
+    PostCreatedResponse:
+      description: Single post created
+      headers:
+        Location:
+          description: Link to created resource
+          schema:
+            type: string
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_PostResource'
+    CommentResponse:
+      description: Single comment
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_CommentResource'
+              included:
+                type: array
+                items:
+                  - $ref: '#/components/responses/UserResponse'
+    PostResponse:
+      description: Single post
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_PostResource'
+              included:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: '#/components/schemas/_UserResource'
+                    - $ref: '#/components/schemas/_CategoryResource'
+                    - $ref: '#/components/schemas/_CommentResource'
+    TagResponse:
+      description: Single tag
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  type:
+                    type: string
+                  attributes:
+                    $ref: '#/components/schemas/Tag'
+                  links:
+                    $ref: '#/components/schemas/_Links'
+                  relationships:
+                    type: object
+                    properties:
+                      posts:
+                        type: object
+    UserListResponse:
+      description: Users List
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_UserResource'
+              links:
+                $ref: '#/components/schemas/_Links'
+              meta:
+                $ref: '#/components/schemas/_MetaPagination'
+    CategoryListResponse:
+      description: List categories with pagination
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_CategoryResource'
+              links:
+                $ref: '#/components/schemas/_Links'
+              meta:
+                $ref: '#/components/schemas/_MetaPagination'
+              included:
+                type: array
+                items:
+                  allOf:
+                    - $ref: '#/components/schemas/_PostResource'
+    PostListResponse:
+      description: List posts with pagination
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_PostResource'
+              links:
+                $ref: '#/components/schemas/_Links'
+              meta:
+                $ref: '#/components/schemas/_MetaPagination'
+              included:
+                type: array
+                items:
+                  anyOf:
+                    - $ref: '#/components/schemas/_UserResource'
+                    - $ref: '#/components/schemas/_CategoryResource'
+                    - $ref: '#/components/schemas/_CommentResource'
+    TagListResponse:
+      description: List tags
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_TagResource'
+              links:
+                $ref: '#/components/schemas/_Links'
+              meta:
+                $ref: '#/components/schemas/_MetaPagination'
+    TagRelationResponse:
+      description: List related tag ids
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_TagResource'
+    CommentRelationResponse:
+      description: Related comments ids
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_CommentResource'
+    CommentListResponse:
+      description: List comments
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_CommentResource'
+              links:
+                $ref: '#/components/schemas/_Links'
+              meta:
+                $ref: '#/components/schemas/_MetaPagination'
+    ErrorResponse:
+      description: Error response
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - errors
+            properties:
+              errors:
+                $ref: '#/components/schemas/_Errors'
+              meta:
+                $ref: '#/components/schemas/_Meta'
+  requestBodies:
+    CategoryRequest:
+      required: true
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  type:
+                    type: string
+                  attributes:
+                    $ref: '#/components/schemas/Category'
+    PostRequest:
+      required: true
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  type:
+                    type: string
+                  attributes:
+                    $ref: '#/components/schemas/Post'
+
+    TagRequest:
+      required: true
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  type:
+                    type: string
+                  attributes:
+                    $ref: '#/components/schemas/Tag'

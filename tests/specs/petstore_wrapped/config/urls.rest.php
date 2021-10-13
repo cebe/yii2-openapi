@@ -4,10 +4,10 @@
  *
  * This file is auto generated.
  */
-return array (
-  'GET pets' => 'pet/index',
-  'POST pets' => 'pet/create',
-  'GET pets/<petId>' => 'pet/view',
-  'pets' => 'pet/options',
-  'pets/<petId>' => 'pet/options',
-);
+return [
+    'GET pets' => 'pet/list',
+    'POST pets' => 'pet/create',
+    'GET pets/<petId>' => 'pet/view',
+    'pets' => 'pet/options',
+    'pets/<petId>' => 'pet/options',
+];

@@ -1,0 +1,167 @@
+openapi: "3.0.0"
+info:
+  version: 2.0.0
+  title: Blog prototype for test migrations. Modify columns, remove log_records table, added tags, post_tag tables
+  license:
+    name: MIT
+servers:
+  - url: http://blog.dummy.io/v2
+paths:
+  /posts:
+    get:
+      summary: dummy path
+      operationId: showDummy
+      responses:
+        '200':
+          $ref: '#/components/responses/PostListResponse'
+components:
+  schemas:
+    Post:
+      x-table: posts
+      description: A blog post
+      required:
+        - id
+        - title
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        attaches:
+          type: array
+          items:
+            $ref: '#/components/schemas/Photo'
+        posts_attaches:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsAttaches'
+        posts_gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsGallery'
+        posts_photos:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_Photos2Posts'
+    Tag:
+      x-table: tags
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        name:
+          type: string
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+    Photo:
+      x-table: photo
+      required:
+        - id
+        - filename
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        filename:
+          type: string
+        targets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+        posts_attaches:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsAttaches'
+        posts_gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_PostsGallery'
+        photos_posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/junction_Photos2Posts'
+
+    junction_Photos2Posts:
+      x-table: photos2posts
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        photo:
+          $ref: '#/components/schemas/Photo'
+        post:
+          $ref: '#/components/schemas/Post'
+
+    junction_PostsGallery:
+      x-table: posts_gallery
+      properties:
+        image:
+          $ref: '#/components/schemas/Photo'
+        article:
+          $ref: '#/components/schemas/Post'
+        is_cover:
+          type: bool
+
+    junction_PostsAttaches:
+      x-table: posts_attaches
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        attach:
+          $ref: '#/components/schemas/Photo'
+        target:
+          $ref: '#/components/schemas/Post'
+
+    _PostResource:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        type:
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Post'
+        links:
+          type: object
+        relationships:
+          type: object
+  responses:
+    PostResponse:
+      description: Single post info
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/_PostResource'
+    PostListResponse:
+      description: Posts List
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/_PostResource'

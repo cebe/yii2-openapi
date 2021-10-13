@@ -5,4 +5,5 @@
  *
  * This file is auto generated.
  */
-return <?= var_export($urls); ?>;
+<?php $rules = \yii\helpers\VarDumper::export($urls);?>
+return <?= str_replace('\\\\', '\\', $rules); ?>;

@@ -8,6 +8,7 @@ return [
     'urlConfigFile' => '@app/config/rest-urls.php',
     'generateModels' => true,
     'modelNamespace' => 'app\\mymodels',
+    'fakerNamespace' => 'app\\mymodels\\faker',
     'excludeModels' => [
         'Error',
     ],
