@@ -5,6 +5,7 @@ REST API application generator for Yii2, openapi 3.0 YAML -> Yii2.
 Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/extension/yiisoft/yii2-gii).
 
 [![Latest Stable Version](https://poser.pugx.org/cebe/yii2-openapi/v/stable)](https://packagist.org/packages/cebe/yii2-openapi)
+[![Latest Alpha Version](https://poser.pugx.org/cebe/yii2-openapi/v/unstable)](https://packagist.org/packages/cebe/yii2-openapi)
 [![Total Downloads](https://poser.pugx.org/cebe/yii2-openapi/downloads)](https://packagist.org/packages/cebe/yii2-openapi)
 [![License](https://poser.pugx.org/cebe/yii2-openapi/license)](https://packagist.org/packages/cebe/yii2-openapi)
 ![yii2-openapi](https://github.com/cebe/yii2-openapi/workflows/yii2-openapi/badge.svg?branch=wip)
