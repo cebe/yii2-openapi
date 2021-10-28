@@ -29,12 +29,12 @@ class UserFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new User();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->username = substr($faker->userName, 0, 200);
         $model->email = substr($faker->safeEmail, 0, 200);
         $model->password = $faker->password;
         $model->role = $faker->randomElement(['admin', 'editor', 'reader']);
-        $model->flags = $faker->numberBetween(0, 2147483647);
+        $model->flags = $faker->numberBetween(0, 1000000);
         $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);

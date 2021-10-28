@@ -30,7 +30,7 @@ class PetFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Pet();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
         if (!is_callable($attributes)) {

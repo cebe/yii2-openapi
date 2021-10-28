@@ -29,7 +29,7 @@ class MenuFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Menu();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = substr($faker->text(100), 0, 100);
         $model->args = [];
         $model->kwargs = [];

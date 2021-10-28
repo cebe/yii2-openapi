@@ -29,7 +29,7 @@ class CommentFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Comment();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->message = $faker->sentence;
         $model->meta_data = substr($faker->text(300), 0, 300);
         $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);

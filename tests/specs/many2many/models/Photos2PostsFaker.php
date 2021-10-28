@@ -29,7 +29,7 @@ class Photos2PostsFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Photos2Posts();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {
