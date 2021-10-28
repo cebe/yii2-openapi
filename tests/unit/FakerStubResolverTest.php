@@ -33,12 +33,12 @@ class FakerStubResolverTest extends TestCase
             [
                 (new Attribute('id'))->setPhpType('int')->setDbType(YiiDbSchema::TYPE_BIGPK),
                 $schema->properties['id'],
-                '$uniqueFaker->numberBetween(0, 2147483647)',
+                '$uniqueFaker->numberBetween(0, 1000000)',
             ],
             [
                 (new Attribute('someint'))->setPhpType('int')->setDbType(YiiDbSchema::TYPE_BIGPK),
                 $schema->properties['id'],
-                '$faker->numberBetween(0, 2147483647)',
+                '$faker->numberBetween(0, 1000000)',
             ],
             [
                 (new Attribute('active'))->setPhpType('bool')->setDbType(YiiDbSchema::TYPE_BOOLEAN),
@@ -68,7 +68,7 @@ class FakerStubResolverTest extends TestCase
                 (new Attribute('int_simple'))
                     ->setPhpType('int')->setDbType(YiiDbSchema::TYPE_INTEGER),
                 $schema->properties['int_simple'],
-                '$faker->numberBetween(0, 2147483647)',
+                '$faker->numberBetween(0, 1000000)',
             ],
             [
                 (new Attribute('int_created_at'))
@@ -81,7 +81,7 @@ class FakerStubResolverTest extends TestCase
                     ->setPhpType('int')->setDbType(YiiDbSchema::TYPE_INTEGER)
                     ->setLimits(5, null, null),
                 $schema->properties['int_min'],
-                '$faker->numberBetween(5, 2147483647)',
+                '$faker->numberBetween(5, 1000000)',
             ],
             [
                 (new Attribute('int_max'))

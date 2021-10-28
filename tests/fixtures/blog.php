@@ -12,7 +12,7 @@ return [
         'description' => 'The User',
         'attributes' => [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
-                ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'username' => (new Attribute('username', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
@@ -24,7 +24,7 @@ return [
                 ->setDefault('reader')
                 ->setFakerStub('$faker->randomElement([\'admin\', \'editor\', \'reader\'])'),
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
-            ('$faker->numberBetween(0, 2147483647)'),
+            ('$faker->numberBetween(0, 1000000)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
                 ->setDefault('CURRENT_TIMESTAMP')->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
         ],
@@ -41,7 +41,7 @@ return [
         'description' => 'Category of posts',
         'attributes' => [
             'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
-                ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setSize(255)->setFakerStub('substr($faker->sentence, 0, 255)'),
             'active' => (new Attribute('active', ['phpType' => 'bool', 'dbType' => 'boolean']))
@@ -73,13 +73,13 @@ return [
                 ->asReference('Category')
                 ->setRequired()
                 ->setDescription('Category of posts')
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'date']))
                ->setFakerStub('$faker->dateTimeThisCentury->format(\'Y-m-d\')'),
             'created_by' => (new Attribute('created_by', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->asReference('User')
                 ->setDescription('The User')
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
         ],
         'relations' => [
             'category' => new AttributeRelation('category',
@@ -104,7 +104,7 @@ return [
                 ->setReadOnly(true)
                 ->setRequired(true)
                 ->setIsPrimary(true)
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'post' => (new Attribute('post', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()
                 ->setSize(128)
@@ -115,7 +115,7 @@ return [
                 ->setRequired()
                 ->asReference('User')
                 ->setDescription('The User')
-                ->setFakerStub('$uniqueFaker->numberBetween(0, 2147483647)'),
+                ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
             'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json']))
                 ->setRequired()->setDefault([])->setFakerStub('[]'),
             'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json']))

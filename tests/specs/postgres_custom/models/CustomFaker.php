@@ -29,8 +29,8 @@ class CustomFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Custom();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
-        $model->num = $faker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
+        $model->num = $faker->numberBetween(0, 1000000);
         $model->json1 = [];
         $model->json2 = [];
         $model->json3 = [];

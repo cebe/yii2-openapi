@@ -29,7 +29,7 @@ class CategoryFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new Category();
-        //$model->id = $uniqueFaker->numberBetween(0, 2147483647);
+        //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->title = substr($faker->sentence, 0, 255);
         $model->active = $faker->boolean;
         if (!is_callable($attributes)) {

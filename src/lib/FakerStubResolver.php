@@ -19,8 +19,7 @@ use const PHP_EOL;
  **/
 class FakerStubResolver
 {
-    // 2^31-1 PHP_MAX_INT may be 64bit and too big in some cases
-    public const MAX_INT = 2147483647;
+    public const MAX_INT = 1000000;
     /**
      * @var \cebe\yii2openapi\lib\items\Attribute
      */
