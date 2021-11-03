@@ -63,7 +63,7 @@ class <?= $className ?> extends Model
         echo "            [['" . implode("', '", $integerAttributes) . "'], 'integer'],\n";
     }
     if (!empty($safeAttributes)) {
-        echo "            // TODO define more concreate validation rules!\n";
+        echo "            // TODO define more concrete validation rules!\n";
         echo "            [['" . implode("','", $safeAttributes) . "'], 'safe'],\n";
     }
 
