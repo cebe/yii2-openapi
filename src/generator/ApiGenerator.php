@@ -34,6 +34,7 @@ use yii\helpers\StringHelper;
 use function array_filter;
 use function array_map;
 use function array_merge;
+use function get_object_vars;
 use const YII_ENV_TEST;
 
 class ApiGenerator extends Generator
@@ -73,10 +74,17 @@ class ApiGenerator extends Generator
      * @var bool if true, transformers will be generate in base subdirectory and overridable classes will extend it
      */
     public $extendableTransformers = true;
+
     /**
      * @var bool if true singular resource keys will be used /post/{id}, plural by default
      */
     public $singularResourceKeys = false;
+
+    /**
+     * @var bool if true "Id" suffixes for foreignKeys and junction tables will be generated in camelCase like userId
+     * postId, by default snake case used - user_id,post_id
+     */
+    public $camelCaseColumnNames = false;
 
     /**
      * @var string namespace to create controllers in. This must be resolvable via Yii alias.
@@ -177,6 +185,11 @@ class ApiGenerator extends Generator
     private $preparedActions;
 
     /**
+     * @var \cebe\yii2openapi\generator\Configurator $configurator
+     **/
+    private $configurator;
+
+    /**
      * @return string name of the code generator
      */
     public function getName()
@@ -228,7 +241,8 @@ class ApiGenerator extends Generator
                         'skipUnderscoredSchemas',
                         'useJsonApi',
                         'extendableTransformers',
-                        'singularResourceKeys'
+                        'singularResourceKeys',
+                        'camelCaseColumnNames',
                     ],
                     'boolean',
                 ],
@@ -239,35 +253,35 @@ class ApiGenerator extends Generator
                 [
                     ['urlConfigFile'],
                     'required',
-                    'when' => function (ApiGenerator $model) {
+                    'when' => function(ApiGenerator $model) {
                         return (bool)$model->generateUrls;
                     },
                 ],
                 [
                     ['modelNamespace'],
                     'required',
-                    'when' => function (ApiGenerator $model) {
+                    'when' => function(ApiGenerator $model) {
                         return (bool)$model->generateModels;
                     },
                 ],
                 [
                     ['fakerNamespace'],
                     'required',
-                    'when' => function (ApiGenerator $model) {
+                    'when' => function(ApiGenerator $model) {
                         return (bool)$model->generateModelFaker;
                     },
                 ],
                 [
                     ['migrationPath'],
                     'required',
-                    'when' => function (ApiGenerator $model) {
+                    'when' => function(ApiGenerator $model) {
                         return (bool)$model->generateMigrations;
                     },
                 ],
                 [
                     ['transformerNamespace'],
                     'required',
-                    'when' => function (ApiGenerator $model) {
+                    'when' => function(ApiGenerator $model) {
                         return (bool)$model->generateControllers && (bool)$model->useJsonApi;
                     },
                 ],
@@ -281,13 +295,13 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    public function validateSpec($attribute): void
+    public function validateSpec($attribute):void
     {
         if ($this->ignoreSpecErrors) {
             return;
         }
-
-        $openApi = $this->getOpenApiWithoutReferences();
+        $configurator = $this->makeConfigurator();
+        $openApi = $configurator->getOpenApiWithoutReferences();
         if (!$openApi->validate()) {
             $this->addError($attribute, 'Failed to validate OpenAPI spec:' . Html::ul($openApi->getErrors()));
         }
@@ -304,7 +318,7 @@ class ApiGenerator extends Generator
                 'openApiPath' => 'OpenAPI 3 Spec file',
                 'generateUrls' => 'Generate URL Rules',
                 'generateModelsOnlyXTable' => 'Generate DB Models and Tables only for schemas that include `x-table` property',
-                'skipUnderscoredSchemas' => 'Generate DB Models and Tables only for schemas that not starts with underscore'
+                'skipUnderscoredSchemas' => 'Generate DB Models and Tables only for schemas that not starts with underscore',
             ]
         );
     }
@@ -328,7 +342,8 @@ class ApiGenerator extends Generator
                 'useJsonApi' => 'use actions that return responses followed JsonApi specification',
                 'singularResourceKeys' => 'Use singular resource keys (/post/{id}) (Plural by defaut : /posts/{id})',
                 'transformerNamespace' => 'Namespace to create fractal transformers',
-                'extendableTransformers' => 'If checked, transformers will be generate in base subdirectory and overridable classes will extend it, otherwise it will be autogenerated only'
+                'extendableTransformers' => 'If checked, transformers will be generate in base subdirectory and overridable classes will extend it, otherwise it will be autogenerated only',
+                'camelCaseColumnNames' => 'If checked, foreign keys will be generated in camelCase like userId, postId. Snake case by default (user_id, post_id)',
             ]
         );
     }
@@ -392,6 +407,16 @@ class ApiGenerator extends Generator
         );
     }
 
+    private function makeConfigurator():Configurator
+    {
+        if (!$this->configurator) {
+            $props = get_object_vars($this);
+            unset($props['ignoreSpecErrors']);
+            $this->configurator = new Configurator($props);
+        }
+        return $this->configurator;
+    }
+
     /**
      * Generates the code based on the current user input and the specified code template files.
      * This is the main method that child classes should implement.
@@ -400,7 +425,7 @@ class ApiGenerator extends Generator
      * @return CodeFile[] a list of code files to be created.
      * @throws \Exception
      */
-    public function generate(): array
+    public function generate():array
     {
         return array_merge(
             $this->generateUrls(),
@@ -414,7 +439,7 @@ class ApiGenerator extends Generator
      * @return array|\yii\gii\CodeFile[]
      * @throws \Exception
      */
-    protected function generateUrls(): array
+    protected function generateUrls():array
     {
         if (!$this->generateUrls) {
             return [];
@@ -435,7 +460,7 @@ class ApiGenerator extends Generator
      * @return array|CodeFile[]
      * @throws \Exception
      */
-    protected function generateControllers(): array
+    protected function generateControllers():array
     {
         $files = [];
         if (!$this->generateControllers) {
@@ -479,7 +504,7 @@ class ApiGenerator extends Generator
                         'namespace' => $this->transformerNamespace . ($this->extendableTransformers ? '\\base' : ''),
                         'mainNamespace' => $this->transformerNamespace,
                         'extendable' => $this->extendableTransformers,
-                        'transformer' => $transformer
+                        'transformer' => $transformer,
                     ])
                 );
 
@@ -513,7 +538,7 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
-    protected function generateModels(): array
+    protected function generateModels():array
     {
         $files = [];
         if (!$this->generateModels) {
@@ -596,7 +621,7 @@ class ApiGenerator extends Generator
      * @throws \yii\base\InvalidConfigException
      * @throws \Exception
      */
-    protected function generateMigrations(): array
+    protected function generateMigrations():array
     {
         $files = [];
         if (!$this->generateMigrations) {
@@ -606,7 +631,7 @@ class ApiGenerator extends Generator
         /** @var $migrationGenerator MigrationsGenerator */
         $migrationGenerator = Instance::ensure($this->migrationGenerator, MigrationsGenerator::class);
         $migrationModels = $migrationGenerator->generate(
-            array_filter($models, function ($model) {
+            array_filter($models, function($model) {
                 return $model instanceof DbModel;
             })
         );
@@ -647,7 +672,7 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    protected function getOpenApi(): OpenApi
+    protected function getOpenApi():OpenApi
     {
         if ($this->_openApi === null) {
             $file = Yii::getAlias($this->openApiPath);
@@ -666,7 +691,7 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    protected function getOpenApiWithoutReferences(): OpenApi
+    protected function getOpenApiWithoutReferences():OpenApi
     {
         if ($this->_openApiWithoutRef === null) {
             $file = Yii::getAlias($this->openApiPath);
@@ -684,7 +709,7 @@ class ApiGenerator extends Generator
      * @throws \yii\base\InvalidConfigException
      * @throws \Exception
      */
-    protected function prepareActions(): array
+    protected function prepareActions():array
     {
         if (!$this->preparedActions) {
             $generator = $this->useJsonApi
@@ -705,7 +730,7 @@ class ApiGenerator extends Generator
      * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction[]
      * @throws \Exception
      */
-    protected function prepareControllers(): array
+    protected function prepareControllers():array
     {
         $actions = $this->prepareActions();
 
@@ -719,7 +744,7 @@ class ApiGenerator extends Generator
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
-    protected function prepareModels(): array
+    protected function prepareModels():array
     {
         if (!$this->preparedModels) {
             $converter = Yii::createObject([
@@ -736,9 +761,9 @@ class ApiGenerator extends Generator
     /**
      * @return array|\cebe\yii2openapi\lib\items\Transformer[]
      */
-    protected function prepareTransformers(): array
+    protected function prepareTransformers():array
     {
-        $models = array_filter($this->prepareModels(), function ($model) {
+        $models = array_filter($this->prepareModels(), function($model) {
             return $model instanceof DbModel;
         });
         $generator = new TransformerGenerator(
@@ -765,8 +790,8 @@ class ApiGenerator extends Generator
      * @param RestAction[]|FractalAction[] $actions
      * @return FileGenerator
      */
-    protected function makeCustomController(string $className, string $controllerNamespace, array $actions): FileGenerator
-    {
+    protected function makeCustomController(string $className, string $controllerNamespace, array $actions
+    ):FileGenerator {
         $classFileGenerator = new FileGenerator();
         $reflection = new ClassGenerator(
             $className,
@@ -775,7 +800,7 @@ class ApiGenerator extends Generator
             $controllerNamespace . '\\base\\' . $className
         );
         /**@var FractalAction[]|RestAction[] $abstractActions * */
-        $abstractActions = array_filter($actions, function ($action) {
+        $abstractActions = array_filter($actions, function($action) {
             return $action->shouldBeAbstract();
         });
         if ($this->useJsonApi) {
@@ -788,11 +813,11 @@ PHP;
         $params = [
             new ParameterGenerator('action'),
             new ParameterGenerator('model', null, new ValueGenerator(null)),
-            new ParameterGenerator('params', null, new ValueGenerator([]))
+            new ParameterGenerator('params', null, new ValueGenerator([])),
         ];
         $reflection->addMethod('checkAccess', $params, MethodGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
         foreach ($abstractActions as $action) {
-            $params = array_map(function ($param) {
+            $params = array_map(function($param) {
                 return ['name' => $param];
             }, $action->getParamNames());
             $reflection->addMethod(
