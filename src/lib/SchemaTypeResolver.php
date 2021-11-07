@@ -13,8 +13,15 @@ use yii\helpers\StringHelper;
 use function in_array;
 use function strtolower;
 
+/**
+ * @deprecated
+**/
 class SchemaTypeResolver
 {
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessPhpType()
+     */
     public static function schemaToPhpType(Schema $property):string
     {
         $customDbType = isset($property->{CustomSpecAttr::DB_TYPE})
@@ -38,6 +45,10 @@ class SchemaTypeResolver
         }
     }
 
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessDbType()
+    **/
     public static function referenceToDbType(Schema $property):string
     {
         $format = $property->format ?? null;
@@ -47,6 +58,10 @@ class SchemaTypeResolver
         return $property->type;
     }
 
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessDbType()
+     **/
     public static function schemaToDbType(Schema $property, bool $isPrimary = false):string
     {
         if (isset($property->{CustomSpecAttr::DB_TYPE}) && $property->{CustomSpecAttr::DB_TYPE} !== false) {

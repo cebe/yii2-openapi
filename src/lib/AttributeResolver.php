@@ -363,6 +363,10 @@ class AttributeResolver
         return null;
     }
 
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessMinMax()
+     **/
     protected function guessMinMax(SpecObjectInterface $property): array
     {
         $min = $property->minimum ?? null;
@@ -382,6 +386,10 @@ class AttributeResolver
         return $resolver->resolve();
     }
 
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessDbType()
+     **/
     protected function guessDbType(Schema $property, bool $isPk, bool $isReference = false): string
     {
         if ($isReference === true) {
@@ -390,6 +398,10 @@ class AttributeResolver
         return SchemaTypeResolver::schemaToDbType($property, $isPk);
     }
 
+    /**
+     * @deprecated
+     * @see \cebe\yii2openapi\lib\openapi\PropertyReader::guessDefault()
+     **/
     protected function guessDefault(Schema $property, Attribute $attribute)
     {
         if (!isset($property->default)) {
