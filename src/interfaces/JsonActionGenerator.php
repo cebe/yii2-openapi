@@ -4,7 +4,7 @@ namespace cebe\yii2openapi\interfaces;
 
 use cebe\yii2openapi\lib\items\FractalAction;
 
-interface JsonApiActionGenerator
+interface JsonActionGenerator
 {
     /**
      * @return array|FractalAction[]

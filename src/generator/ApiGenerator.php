@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\generator;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use cebe\yii2openapi\lib\Configurator;
 use cebe\yii2openapi\lib\FractalGenerator;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\FractalAction;
@@ -185,7 +186,7 @@ class ApiGenerator extends Generator
     private $preparedActions;
 
     /**
-     * @var \cebe\yii2openapi\generator\Configurator $configurator
+     * @var \cebe\yii2openapi\lib\Configurator $configurator
      **/
     private $configurator;
 

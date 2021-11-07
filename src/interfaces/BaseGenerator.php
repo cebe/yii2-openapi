@@ -2,7 +2,7 @@
 
 namespace cebe\yii2openapi\interfaces;
 
-use cebe\yii2openapi\generator\GeneratorResult;
+use cebe\yii2openapi\lib\GeneratorResult;
 
 interface BaseGenerator
 {

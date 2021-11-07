@@ -1,22 +1,22 @@
 <?php
 
-namespace cebe\yii2openapi\generator;
+namespace cebe\yii2openapi\lib;
 
 class GeneratorResult
 {
     /**
-     * @var \cebe\yii2openapi\generator\PreparedData
+     * @var \cebe\yii2openapi\lib\PreparedData
      */
-    private PreparedData $data;
+    private $data;
 
     /**
      * @var array|\yii\gii\CodeFile[]
      */
-    private array $files;
+    private $files;
 
     /**
-     * @param \cebe\yii2openapi\generator\PreparedData $data
-     * @param array|\yii\gii\CodeFile[]                $files
+     * @param \cebe\yii2openapi\lib\PreparedData $data
+     * @param array|\yii\gii\CodeFile[]          $files
      */
     public function __construct(PreparedData $data, array $files) {
 
@@ -25,7 +25,7 @@ class GeneratorResult
     }
 
     /**
-     * @return \cebe\yii2openapi\generator\PreparedData
+     * @return \cebe\yii2openapi\lib\PreparedData
      */
     public function getData():PreparedData
     {

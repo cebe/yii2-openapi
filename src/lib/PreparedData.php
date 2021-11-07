@@ -1,6 +1,6 @@
 <?php
 
-namespace cebe\yii2openapi\generator;
+namespace cebe\yii2openapi\lib;
 
 use yii\base\BaseObject;
 
