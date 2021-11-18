@@ -21,7 +21,7 @@ class SchemaReaderTest extends TestCase
         self::assertTrue($schema->hasProperties());
         self::assertEquals('id', $schema->getPkName());
         self::assertEquals(['id', 'username', 'email', 'password'], $schema->getRequiredProperties());
-        self::assertEquals('users', $schema->getTableName('User'));
+        self::assertEquals('users', $schema->resolveTableName('User'));
         self::assertTrue($schema->hasProperty('email'));
         self::assertInstanceOf(PropertyReader::class, $schema->getProperty('username'));
         foreach ($schema->getProperties() as $prop) {
@@ -37,7 +37,7 @@ class SchemaReaderTest extends TestCase
         self::assertTrue($schema->isObjectSchema());
         self::assertEquals('id', $schema->getPkName());
         self::assertTrue($schema->isReference());
-        self::assertEquals('categories', $schema->getTableName('Category'));
+        self::assertEquals('categories', $schema->resolveTableName('Category'));
         self::assertTrue($schema->hasProperties());
         self::assertTrue($schema->hasProperty('title'));
     }

@@ -4,9 +4,11 @@ namespace tests\unit;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use cebe\yii2openapi\lib\openapi\PropertyReader;
 use cebe\yii2openapi\lib\openapi\SchemaReader;
 use tests\TestCase;
 use Yii;
+use const PHP_EOL;
 
 class PropertyReaderTest extends TestCase
 {
@@ -51,21 +53,103 @@ class PropertyReaderTest extends TestCase
         $prop = $schema->getProperty('category');
         self::assertFalse($prop->isPrimaryKey());
         self::assertFalse($prop->isVirtual());
+        self::assertEquals('category', $prop->getName());
         self::assertTrue($prop->isReference());
+        self::assertEquals('Category', $prop->getRefSchemaName());
+        self::assertEquals('Category', $prop->getRefClassName());
         self::assertTrue($prop->isRefPointerToSchema());
         self::assertFalse($prop->isRefPointerToSelf());
         self::assertFalse($prop->hasItems());
         self::assertFalse($prop->hasRefItems());
-        self::assertEquals('category', $prop->getName());
-        self::assertEquals('Category', $prop->getSchemaNameByReference());
-        self::assertEquals('Category', $prop->getClassNameByReference());
-        $ref = $prop->getRefSchema();
-        self::assertInstanceOf(SchemaReader::class, $ref);
+
+        $refSchema = $prop->getRefSchema();
+        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertTrue($refSchema->hasProperties());
+        $fkProperty = $prop->getTargetProperty();
+        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertEquals('id', $fkProperty->getName());
+        self::assertTrue($fkProperty->isPrimaryKey());
+        self::assertTrue($fkProperty->isReadonly());
+        self::assertFalse($fkProperty->isRefPointerToSchema());
+        self::assertFalse($fkProperty->isRefPointerToSelf());
+        self::assertFalse($fkProperty->isReference());
     }
 
     public function testRefItemsProperty()
     {
+        $schema = $this->getSchema();
+        $prop = $schema->getProperty('comments');
+        self::assertFalse($prop->isPrimaryKey());
+        self::assertFalse($prop->isVirtual());
+        self::assertEquals('comments', $prop->getName());
+        self::assertFalse($prop->isReference());
+        self::assertEquals('Comment', $prop->getRefSchemaName());
+        self::assertEquals('Comment', $prop->getRefClassName());
+        self::assertTrue($prop->isRefPointerToSchema());
+        self::assertFalse($prop->isRefPointerToSelf());
+        self::assertTrue($prop->hasItems());
+        self::assertTrue($prop->hasRefItems());
 
+        $refSchema = $prop->getRefSchema();
+        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertTrue($refSchema->hasProperties());
+
+        $fkProperty = $prop->getTargetProperty();
+        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertEquals('id', $fkProperty->getName());
+        self::assertTrue($fkProperty->isPrimaryKey());
+        self::assertTrue($fkProperty->isReadonly());
+        self::assertFalse($fkProperty->isRefPointerToSchema());
+        self::assertFalse($fkProperty->isRefPointerToSelf());
+        self::assertFalse($fkProperty->isReference());
+    }
+
+    public function testSelfReferencedProperty()
+    {
+        $schemaFile = Yii::getAlias("@specs/menu.yaml");
+        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
+        $schema = new SchemaReader($openApi->components->schemas['Menu']);
+
+        $prop = $schema->getProperty('parent');
+        self::assertFalse($prop->isPrimaryKey());
+        self::assertFalse($prop->isVirtual());
+        self::assertEquals('parent', $prop->getName());
+        self::assertTrue($prop->isReference());
+        self::assertEquals('Menu', $prop->getRefSchemaName());
+        self::assertEquals('Menu', $prop->getRefClassName());
+        self::assertTrue($prop->isRefPointerToSchema());
+        self::assertTrue($prop->isRefPointerToSelf());
+        self::assertFalse($prop->hasItems());
+        self::assertFalse($prop->hasRefItems());
+
+        $refSchema = $prop->getRefSchema();
+        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertTrue($refSchema->hasProperties());
+        self::assertEquals($refSchema, $schema);
+        self::assertEquals('id', $prop->getRefSchema()->getPkName());
+        $fkProperty = $prop->getTargetProperty();
+        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertEquals('id', $fkProperty->getName());
+
+        $prop = $schema->getProperty('childes');
+        self::assertFalse($prop->isPrimaryKey());
+        self::assertFalse($prop->isVirtual());
+        self::assertEquals('childes', $prop->getName());
+        self::assertFalse($prop->isReference());
+        self::assertEquals('Menu', $prop->getRefSchemaName());
+        self::assertEquals('Menu', $prop->getRefClassName());
+        self::assertTrue($prop->isRefPointerToSchema());
+        self::assertTrue($prop->isRefPointerToSelf());
+        self::assertTrue($prop->hasItems());
+        self::assertTrue($prop->hasRefItems());
+
+        $refSchema = $prop->getRefSchema();
+        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertEquals($refSchema, $schema);
+        $fkChildProperty = $prop->getTargetProperty();
+        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertEquals('id', $fkProperty->getName());
+        self::assertEquals($fkChildProperty, $fkProperty);
     }
 
     private function getSchema():SchemaReader

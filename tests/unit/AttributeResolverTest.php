@@ -9,6 +9,7 @@ use cebe\yii2openapi\lib\AttributeResolver;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
+use cebe\yii2openapi\lib\openapi\SchemaReader;
 use tests\TestCase;
 use Yii;
 use yii\helpers\VarDumper;
@@ -20,8 +21,8 @@ class AttributeResolverTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $postModel = (new AttributeResolver('Post', $openApi->components->schemas['Post'], new JunctionSchemas([])))
-            ->resolve();
+        $schema = new SchemaReader($openApi->components->schemas['Post']);
+        $postModel = (new AttributeResolver('Post', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($postModel->many2many);
         $relation = $postModel->many2many['tags'];
         self::assertInstanceOf(ManyToManyRelation::class, $relation);
@@ -32,8 +33,8 @@ class AttributeResolverTest extends TestCase
         self::assertEquals(['id' => 'tag_id'], $relation->getLink());
         self::assertEquals(['post_id' => 'id'], $relation->getViaLink());
 
-        $tagModel = (new AttributeResolver('Tag', $openApi->components->schemas['Tag'], new JunctionSchemas([])))
-            ->resolve();
+        $schema = new SchemaReader($openApi->components->schemas['Tag']);
+        $tagModel = (new AttributeResolver('Tag', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($tagModel->many2many);
         $relation = $tagModel->many2many['posts'];
         self::assertInstanceOf(ManyToManyRelation::class, $relation);
@@ -50,11 +51,12 @@ class AttributeResolverTest extends TestCase
     /**
      * @dataProvider dataProvider
      * @param string                              $schemaName
-     * @param \cebe\openapi\spec\Schema           $schema
+     * @param \cebe\openapi\spec\Schema           $openApiSchema
      * @param \cebe\yii2openapi\lib\items\DbModel $expected
      */
-    public function testResolve(string $schemaName, Schema $schema, DbModel $expected):void
+    public function testResolve(string $schemaName, Schema $openApiSchema, DbModel $expected):void
     {
+        $schema = new SchemaReader($openApiSchema);
         $resolver = new AttributeResolver($schemaName, $schema, new JunctionSchemas([]));
         $model = $resolver->resolve();
         echo $schemaName . PHP_EOL;

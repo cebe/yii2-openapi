@@ -8,6 +8,7 @@ use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\CustomSpecAttr;
 use Generator;
 use InvalidArgumentException;
+use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use function in_array;
@@ -35,17 +36,18 @@ class SchemaReader
     /**@var array* */
     private $indexes;
 
-    public function __construct(SpecObjectInterface $schema)
+    public function __construct(SpecObjectInterface $openApiSchema)
     {
-        if ($schema instanceof Reference) {
+        if ($openApiSchema instanceof Reference) {
             $this->isReference = true;
-            $schema->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $schema = $schema->resolve();
+            $openApiSchema->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
+            $this->schema = $openApiSchema->resolve();
+        } else {
+            $this->schema = $openApiSchema;
         }
-        $this->schema = $schema;
-        $this->pkName = $schema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
-        $this->requiredProps = $schema->required ?? [];
-        $this->indexes = $schema->{CustomSpecAttr::INDEXES} ?? [];
+        $this->pkName = $openApiSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
+        $this->requiredProps = $openApiSchema->required ?? [];
+        $this->indexes = $openApiSchema->{CustomSpecAttr::INDEXES} ?? [];
     }
 
     public function getSchema()
@@ -63,6 +65,11 @@ class SchemaReader
         return (empty($this->schema->type) || $this->schema->type === 'object');
     }
 
+    public function isCompositeSchema():bool
+    {
+        return $this->schema->allOf || $this->schema->anyOf || $this->schema->multipleOf || $this->schema->oneOf;
+    }
+
     public function getPkName():string
     {
         return $this->pkName;
@@ -75,13 +82,28 @@ class SchemaReader
 
     public function isRequiredProperty(string $propName):bool
     {
-        return in_array($propName, $this->requiredProps);
+        return in_array($propName, $this->requiredProps, true);
     }
 
-    public function getTableName(string $schemaName):string
+    public function resolveTableName(string $schemaName):string
     {
         return $this->schema->{CustomSpecAttr::TABLE} ??
             Inflector::camel2id(StringHelper::basename(Inflector::pluralize($schemaName)), '_');
+    }
+
+    public function hasCustomTableName():bool
+    {
+        return isset($this->schema->{CustomSpecAttr::TABLE});
+    }
+
+    public function getIndexes(): array
+    {
+        return $this->schema->{CustomSpecAttr::INDEXES} ?? [];
+    }
+
+    public function getDescription(): string
+    {
+        return $this->schema->description ?? '';
     }
 
     public function hasProperties():bool
@@ -94,18 +116,22 @@ class SchemaReader
         return isset($this->schema->properties[$name]);
     }
 
-    public function getProperty(string $name):PropertyReader
+    public function getProperty(string $name):?PropertyReader
     {
         if (!$this->hasProperty($name)) {
-            throw new InvalidArgumentException("Property '$name' not exists");
+            return null;
         }
-        return new PropertyReader($this->schema->properties[$name], $name, $name === $this->pkName);
+        return Yii::createObject(PropertyReader::class, [$this->schema->properties[$name], $name, $this]);
     }
 
+    /**
+     * @return \Generator|\cebe\yii2openapi\lib\openapi\PropertyReader[]
+     * @throws \yii\base\InvalidConfigException
+     */
     public function getProperties():Generator
     {
         foreach ($this->schema->properties as $name => $property) {
-            yield new PropertyReader($property, $name, $name === $this->pkName);
+            yield Yii::createObject(PropertyReader::class, [$property, $name, $this]);
         }
     }
 }

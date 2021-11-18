@@ -8,10 +8,14 @@ use cebe\openapi\spec\Reference;
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\CustomSpecAttr;
 use Throwable;
+use Yii;
 use yii\db\Schema as YiiDbSchema;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use function is_int;
+use function strpos;
+use function substr;
 
 class PropertyReader
 {
@@ -29,6 +33,9 @@ class PropertyReader
     /**@var bool $isReference * */
     private $isReference = false;
 
+    /**@var bool $isItemsReference * */
+    private $isItemsReference = false;
+
     /**@var string $refPointer * */
     private $refPointer;
 
@@ -40,16 +47,67 @@ class PropertyReader
      */
     private $isPk;
 
-    public function __construct(SpecObjectInterface $property, string $name, bool $isPk = false)
+    /**
+     * @var \cebe\yii2openapi\lib\openapi\SchemaReader
+     */
+    private $schema;
+
+    /**
+     * @param \cebe\openapi\SpecObjectInterface          $property
+     * @param string                                     $name
+     * @param \cebe\yii2openapi\lib\openapi\SchemaReader $schema
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function __construct(SpecObjectInterface $property, string $name, SchemaReader $schema)
     {
-        if ($property instanceof Reference) {
-            $this->refPointer = $property->getJsonReference()->getJsonPointer()->getPointer();
-            $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = new SchemaReader($property->resolve());
-        }
         $this->name = $name;
         $this->property = $property;
-        $this->isPk = $isPk;
+        $this->schema = $schema;
+        $this->isPk = $name === $schema->getPkName();
+
+        if ($property instanceof Reference) {
+            $this->initReference();
+        } elseif (
+            isset($property->type, $property->items) && $property->type === 'array'
+            && $property->items instanceof Reference
+        ) {
+            $this->initItemsReference();
+        }
+        $this->schema = $schema;
+    }
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function initReference():void
+    {
+        $this->isReference = true;
+        $this->refPointer = $this->property->getJsonReference()->getJsonPointer()->getPointer();
+        if ($this->isRefPointerToSelf()) {
+            $this->refSchema = $this->schema;
+        } elseif($this->isRefPointerToSchema()) {
+            $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
+            $this->refSchema = Yii::createObject(SchemaReader::class, [$this->property->resolve()]);
+        }
+    }
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function initItemsReference():void
+    {
+        $this->isItemsReference = true;
+        $items = $this->property->items ?? null;
+        if (!$items) {
+            return;
+        }
+        $this->refPointer = $items->getJsonReference()->getJsonPointer()->getPointer();
+        if ($this->isRefPointerToSelf()) {
+            $this->refSchema = $this->schema;
+        } elseif($this->isRefPointerToSchema()) {
+            $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
+            $this->refSchema = Yii::createObject(SchemaReader::class, [$items->resolve()]);
+        }
     }
 
     public function setName(string $name):void
@@ -57,7 +115,7 @@ class PropertyReader
         $this->name = $name;
     }
 
-    public function getName(): string
+    public function getName():string
     {
         return $this->name;
     }
@@ -74,18 +132,25 @@ class PropertyReader
 
     public function getRefSchema():SchemaReader
     {
-        if (!$this->isReference) {
+        if (!$this->isReference && !$this->isItemsReference) {
             throw new BadMethodCallException('Schema is not reference');
         }
         return $this->refSchema;
     }
 
-    public function getForeighnProperty(): PropertyReader
+    public function getTargetProperty():?PropertyReader
     {
-        if (!$this->isReference) {
-            throw new BadMethodCallException('Schema is not reference');
-        }
         return $this->getRefSchema()->getProperty($this->getRefSchema()->getPkName());
+    }
+
+    public function getSelfTargetProperty():?PropertyReader
+    {
+        if (!$this->isRefPointerToSelf()) {
+            return null;
+        }
+        $propName = str_replace(self::REFERENCE_PATH . $this->getRefClassName() . '/properties/', '',
+            $this->refPointer);
+        return $this->getRefSchema()->getProperty($propName);
     }
 
     public function isRefPointerToSchema():bool
@@ -98,25 +163,30 @@ class PropertyReader
         return $this->isRefPointerToSchema() && strpos($this->refPointer, '/properties/') !== false;
     }
 
-    public function getSchemaNameByReference():string
+
+
+    public function getRefSchemaName():string
     {
-        if (!$this->isReference) {
-            throw new BadMethodCallException('Property should be a reference');
+        if (!$this->isReference && !$this->isItemsReference) {
+            throw new BadMethodCallException('Property should be a reference or contains items with reference');
         }
-        return substr($this->refPointer, self::REFERENCE_PATH_LEN);
+        $name = substr($this->refPointer, self::REFERENCE_PATH_LEN);
+        return $this->isRefPointerToSelf() ? substr($name, 0, strpos($name, '/properties/')) : $name;
     }
 
-    public function getClassNameByReference():string
+    public function getRefClassName():string
     {
-        return Inflector::id2camel($this->getSchemaNameByReference(), '_');
+        return Inflector::id2camel($this->getRefSchemaName(), '_');
     }
 
-    public function getPropertyAttr(string $attrName, $default = null)
+    public function getAttr(string $attrName, $default = null)
     {
-        if ($this->isReference) {
-            throw new BadMethodCallException('Not supported for referenced property');
-        }
-        return isset($this->property->$attrName) ? $this->property->$attrName : $default;
+        return $this->property->$attrName ?? $default;
+    }
+
+    public function hasAttr(string $attrName):bool
+    {
+        return isset($this->property->$attrName);
     }
 
     public function isReference():bool
@@ -126,34 +196,13 @@ class PropertyReader
 
     public function hasItems():bool
     {
-        return !$this->isReference && $this->property->type === 'array' && isset($this->property->items);
+        return !$this->isReference && isset($this->property->items, $this->property->type)
+            && $this->property->type === 'array';
     }
 
     public function hasRefItems():bool
     {
-        return $this->hasItems() && $this->property->items instanceof Reference;
-    }
-
-    public function getItemsRefPointer():string
-    {
-        return $this->hasRefItems() ? $this->property->items->getJsonReference()->getJsonPointer()->getPointer() : '';
-    }
-
-    public function getItemsRefSchema():SchemaReader
-    {
-        if (!$this->hasRefItems()) {
-            throw new BadMethodCallException('Property hasn`t ref items');
-        }
-        $this->property->items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-        return new SchemaReader($this->property->items->resolve());
-    }
-
-    public function getForeighnItemsProperty(): PropertyReader
-    {
-        if (!$this->hasRefItems()) {
-            throw new BadMethodCallException('Schema hasn`t referenced items');
-        }
-        return $this->getItemsRefSchema()->getProperty($this->getItemsRefSchema()->getPkName());
+        return $this->isItemsReference;
     }
 
     public function hasEnum():bool
@@ -166,49 +215,54 @@ class PropertyReader
 
     public function isVirtual():bool
     {
-        if ($this->isReference) {
-            throw new BadMethodCallException('Not supported for referenced property');
-        }
         return isset($this->property->{CustomSpecAttr::DB_TYPE})
             && $this->property->{CustomSpecAttr::DB_TYPE} === false;
     }
 
     public function guessMinMax():array
     {
-        if ($this->isReference) {
-            throw new BadMethodCallException('Not supported for referenced property');
+        $min = $this->getAttr('minimum');
+        $max = $this->getAttr('maximum');
+        $exclusiveMin = $this->getAttr('exclusiveMinimum', false);
+        $exclusiveMax = $this->getAttr('exclusiveMaximum', false);
+        /**
+         * @see OpenApi v.3.0 and v3.1 difference for exclusiveMinimum and exclusiveMaximum
+         * https://apisyouwonthate.com/blog/openapi-v31-and-json-schema
+         * (both variants supported)
+         */
+        if (is_int($exclusiveMin)) {
+            $min = $exclusiveMin;
         }
-        $min = $this->property->minimum ?? null;
-        $max = $this->property->maximum ?? null;
-        if ($min !== null && $this->property->exclusiveMinimum) {
-            $min++; //Need for ensure
+        if (is_int($exclusiveMax)) {
+            $max = $exclusiveMax;
         }
-        if ($max !== null && $this->property->exclusiveMaximum) {
-            $max++;
+        if ($min !== null && $exclusiveMin === true) {
+            $min++;
         }
+        if ($max !== null && $exclusiveMax === true) {
+            $max--;
+        }
+
         return [$min, $max];
     }
 
     public function getMaxLength():?int
     {
-        return $this->getPropertyAttr('maxLength', null);
+        return $this->getAttr('maxLength');
     }
 
     public function getMinLength():?int
     {
-        return $this->getPropertyAttr('minLength', null);
+        return $this->getAttr('minLength');
     }
 
     public function isReadonly():bool
     {
-        return $this->getPropertyAttr('readOnly', false);
+        return $this->getAttr('readOnly', false);
     }
 
     public function guessPhpType():string
     {
-        if ($this->isReference) {
-            throw new BadMethodCallException('Not supported for referenced property');
-        }
         $customDbType = isset($this->property->{CustomSpecAttr::DB_TYPE})
             ? strtolower($this->property->{CustomSpecAttr::DB_TYPE}) : null;
         if ($customDbType !== null
@@ -217,31 +271,34 @@ class PropertyReader
             return 'array';
         }
 
-        switch ($this->property->type) {
+        switch ($this->getAttr('type')) {
             case 'integer':
                 return 'int';
             case 'boolean':
                 return 'bool';
             case 'number': // can be double and float
-                return $this->property->format && $this->property->format === 'double' ? 'double' : 'float';
+                return $this->getAttr('format') === 'double' ? 'double' : 'float';
 //            case 'array':
 //                return $property->type;
             default:
-                return $this->property->type ?? 'string';
+                return $this->getAttr('type', 'string');
         }
     }
 
-    public function guessDbType():string
+    public function guessDbType($forReference = false):string
     {
-        if ($this->isReference) {
-            $format = $this->property->format ?? null;
-            if ($this->property->type === 'integer') {
+        if ($forReference) {
+            $format = $this->getAttr('format');
+            if ($this->getAttr('type') === 'integer') {
                 return $format === 'int64' ? YiiDbSchema::TYPE_BIGINT : YiiDbSchema::TYPE_INTEGER;
             }
-            return $this->property->type;
+            return $this->getAttr('type');
         }
-        if (isset($this->property->{CustomSpecAttr::DB_TYPE}) && $this->property->{CustomSpecAttr::DB_TYPE} !== false) {
-            $customDbType = strtolower($this->property->{CustomSpecAttr::DB_TYPE});
+        if ($this->hasRefItems()) {
+            throw new BadMethodCallException('Not supported for referenced property');
+        }
+        if ($this->hasAttr(CustomSpecAttr::DB_TYPE) && $this->getAttr(CustomSpecAttr::DB_TYPE) !== false) {
+            $customDbType = strtolower($this->getAttr(CustomSpecAttr::DB_TYPE));
             if ($customDbType === 'varchar') {
                 return YiiDbSchema::TYPE_STRING;
             }
@@ -249,29 +306,27 @@ class PropertyReader
                 return $customDbType;
             }
         }
-        $format = $this->property->format ?? null;
-        if ($this->isPk && $this->property->type === 'integer') {
+        $format = $this->getAttr('format');
+        $type = $this->getAttr('type');
+        if ($this->isPk && $type === 'integer') {
             return $format === 'int64' ? YiiDbSchema::TYPE_BIGPK : YiiDbSchema::TYPE_PK;
         }
 
-        switch ($this->property->type) {
+        switch ($type) {
             case 'boolean':
-                return $this->property->type;
+                return $type;
             case 'number': // can be double and float
                 return $format ?? 'float';
             case 'integer':
                 if ($format === 'int64') {
                     return YiiDbSchema::TYPE_BIGINT;
                 }
-                if ($format === 'int32') {
-                    return YiiDbSchema::TYPE_INTEGER;
-                }
                 return YiiDbSchema::TYPE_INTEGER;
             case 'string':
                 if (in_array($format, ['date', 'time', 'binary'])) {
                     return $format;
                 }
-                if ($this->property->maxLength && $this->property->maxLength < 2049) {
+                if ($this->hasAttr('maxLength') && (int)$this->getAttr('maxLength') < 2049) {
                     //What if we want to restrict length of text column?
                     return YiiDbSchema::TYPE_STRING;
                 }
@@ -281,7 +336,7 @@ class PropertyReader
                 if (in_array($format, ['email', 'url', 'phone', 'password'])) {
                     return YiiDbSchema::TYPE_STRING;
                 }
-                if (isset($this->property->enum) && !empty($this->property->enum)) {
+                if (!empty($this->property->enum)) {
                     return YiiDbSchema::TYPE_STRING;
                 }
                 return YiiDbSchema::TYPE_TEXT;
@@ -290,7 +345,7 @@ class PropertyReader
                 return YiiDbSchema::TYPE_JSON;
             }
 //            case 'array':
-//                Need schema example for this case if it possible
+//                Need schema example for this case if it is possible
 //                return $this->typeForArray();
             default:
                 return YiiDbSchema::TYPE_TEXT;
@@ -302,30 +357,28 @@ class PropertyReader
      */
     public function guessDefault()
     {
-        if ($this->isReference) {
-            throw new BadMethodCallException('Not supported for referenced property');
-        }
-        if (!isset($this->property->default)) {
+        if (!$this->hasAttr('default')) {
             return null;
         }
         $phpType = $this->guessPhpType();
         $dbType = $this->guessDbType();
+        $default = $this->getAttr('default');
 
-        if ($phpType === 'array' && in_array($this->property->default, ['{}', '[]'])) {
+        if ($phpType === 'array' && in_array($default, ['{}', '[]'])) {
             return [];
         }
-        if (is_string($this->property->default) && $phpType === 'array' && StringHelper::startsWith($dbType, 'json')) {
+        if (is_string($default) && $phpType === 'array' && StringHelper::startsWith($dbType, 'json')) {
             try {
-                return Json::decode($this->property->default);
+                return Json::decode($default);
             } catch (Throwable $e) {
                 return [];
             }
         }
 
-        if ($phpType === 'integer' && $this->property->default !== null) {
-            return (int)$this->property->default;
+        if ($phpType === 'integer' && $default !== null) {
+            return (int)$default;
         }
 
-        return $this->property->default;
+        return $default;
     }
 }

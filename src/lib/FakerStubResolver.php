@@ -4,13 +4,14 @@
  * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
  * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
  */
-
+/** @noinspection InterfacesAsConstructorDependenciesInspection */
+/** @noinspection PhpUndefinedFieldInspection */
 namespace cebe\yii2openapi\lib;
 
-use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\Attribute;
+use cebe\yii2openapi\lib\openapi\PropertyReader;
 use yii\helpers\VarDumper;
-use const DATE_ATOM;
+use function str_replace;
 use const PHP_EOL;
 
 /**
@@ -26,11 +27,11 @@ class FakerStubResolver
     private $attribute;
 
     /**
-     * @var \cebe\openapi\spec\Schema
+     * @var \cebe\yii2openapi\lib\openapi\PropertyReader
      */
     private $property;
 
-    public function __construct(Attribute $attribute, SpecObjectInterface $property)
+    public function __construct(Attribute $attribute, PropertyReader $property)
     {
         $this->attribute = $attribute;
         $this->property = $property;
@@ -38,8 +39,8 @@ class FakerStubResolver
 
     public function resolve():?string
     {
-        if (isset($this->property->{CustomSpecAttr::FAKER})) {
-            return $this->property->{CustomSpecAttr::FAKER};
+        if ($this->property->hasAttr(CustomSpecAttr::FAKER)) {
+            return $this->property->getAttr(CustomSpecAttr::FAKER);
         }
         if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {
             return null;
@@ -56,7 +57,7 @@ class FakerStubResolver
             case 'double':
                 return $this->fakeForFloat($limits['min'], $limits['max']);
             case 'array':
-                return $this->fakeForArray($this->attribute);
+                return $this->fakeForArray();
             default:
                 return null;
         }
@@ -69,18 +70,18 @@ class FakerStubResolver
             'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
             'email' => '$faker->safeEmail',
         ];
-        $format = $this->property->format ?? null;
+        $format = $this->property->getAttr('format');
         if ($format && isset($formats[$format])) {
             return $formats[$format];
         }
-        $enum = $this->property->enum ?? null;
+        $enum = $this->property->getAttr('enum');
         if (!empty($enum) && is_array($enum)) {
-            $items = \str_replace([PHP_EOL, '  ',',]'], ['', '', ']'], VarDumper::export($enum));
+            $items = str_replace([PHP_EOL, '  ',',]'], ['', '', ']'], VarDumper::export($enum));
             return '$faker->randomElement(' . $items . ')';
         }
         if ($this->attribute->columnName === 'title'
             && $this->attribute->size
-            && $this->attribute->size < 10) {
+            && (int)$this->attribute->size < 10) {
             return '$faker->title';
         }
         if ($this->attribute->primary || $this->attribute->isReference()) {
@@ -184,7 +185,7 @@ class FakerStubResolver
         return '$faker->randomFloat()';
     }
 
-    private function fakeForArray(Attribute $attribute)
+    private function fakeForArray():string
     {
         return '[]';
     }

@@ -177,9 +177,9 @@ class Attribute extends BaseObject
         return $this;
     }
 
-    public function setIsVirtual(): Attribute
+    public function setIsVirtual(bool $isVirtual = true): Attribute
     {
-        $this->isVirtual = true;
+        $this->isVirtual = $isVirtual;
         return $this;
     }
 
