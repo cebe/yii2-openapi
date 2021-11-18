@@ -1,5 +1,7 @@
 <?php
 
+use cebe\yii2openapi\Bootstrap;
+
 return [
     'id' => 'cebe/yii2-openapi',
     'timeZone' => 'UTC',
@@ -10,7 +12,7 @@ return [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
     ],
-    //'bootstrap'=>['log'],
+    'bootstrap'=>[Bootstrap::class],
     'controllerMap' => [
         'migrate' => [
             'class' => \yii\console\controllers\MigrateController::class,
