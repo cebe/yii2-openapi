@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\Config;
@@ -19,8 +24,8 @@ class UrlRulesGenerator
      */
     protected $actions;
 
-    public function __construct(Config $config, array $actions = []) {
-
+    public function __construct(Config $config, array $actions = [])
+    {
         $this->config = $config;
         $this->actions = $actions;
     }

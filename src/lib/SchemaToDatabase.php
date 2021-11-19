@@ -67,8 +67,8 @@ class SchemaToDatabase
      */
     protected $config;
 
-    public function __construct(Config $config) {
-
+    public function __construct(Config $config)
+    {
         $this->config = $config;
     }
 
@@ -87,7 +87,7 @@ class SchemaToDatabase
         $openApi = $this->config->getOpenApi();
         $junctions = $this->findJunctionSchemas();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
-           $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
+            $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
 
             if (!$this->canGenerateModel($schemaName, $schema)) {
                 continue;

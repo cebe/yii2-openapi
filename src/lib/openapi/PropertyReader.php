@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\openapi;
 
 use BadMethodCallException;
@@ -85,7 +90,7 @@ class PropertyReader
         $this->refPointer = $this->property->getJsonReference()->getJsonPointer()->getPointer();
         if ($this->isRefPointerToSelf()) {
             $this->refSchema = $this->schema;
-        } elseif($this->isRefPointerToSchema()) {
+        } elseif ($this->isRefPointerToSchema()) {
             $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $this->refSchema = Yii::createObject(SchemaReader::class, [$this->property->resolve()]);
         }
@@ -104,7 +109,7 @@ class PropertyReader
         $this->refPointer = $items->getJsonReference()->getJsonPointer()->getPointer();
         if ($this->isRefPointerToSelf()) {
             $this->refSchema = $this->schema;
-        } elseif($this->isRefPointerToSchema()) {
+        } elseif ($this->isRefPointerToSchema()) {
             $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $this->refSchema = Yii::createObject(SchemaReader::class, [$items->resolve()]);
         }
@@ -148,8 +153,11 @@ class PropertyReader
         if (!$this->isRefPointerToSelf()) {
             return null;
         }
-        $propName = str_replace(self::REFERENCE_PATH . $this->getRefClassName() . '/properties/', '',
-            $this->refPointer);
+        $propName = str_replace(
+            self::REFERENCE_PATH . $this->getRefClassName() . '/properties/',
+            '',
+            $this->refPointer
+        );
         return $this->getRefSchema()->getProperty($propName);
     }
 

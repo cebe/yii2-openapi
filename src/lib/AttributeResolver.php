@@ -195,7 +195,7 @@ class AttributeResolver
             }
 
             $fkProperty = $property->getTargetProperty();
-            if(!$fkProperty) {
+            if (!$fkProperty) {
                 return;
             }
             $relatedClassName = $property->getRefClassName();

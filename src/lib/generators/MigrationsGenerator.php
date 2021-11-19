@@ -1,7 +1,11 @@
 <?php
 
-namespace cebe\yii2openapi\lib\generators;
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
 
+namespace cebe\yii2openapi\lib\generators;
 
 use a;
 use cebe\yii2openapi\lib\CodeFiles;
@@ -50,9 +54,8 @@ class MigrationsGenerator
 
     public function __construct(Config $config, array $models, Connection $db)
     {
-
         $this->config = $config;
-        $this->models = array_filter($models, function($model) {
+        $this->models = array_filter($models, function ($model) {
             return $model instanceof DbModel;
         });
         $this->files = new CodeFiles([]);
@@ -81,7 +84,7 @@ class MigrationsGenerator
                 $i++;
             } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
 
-            $this->files->add( new CodeFile(
+            $this->files->add(new CodeFile(
                 Yii::getAlias("$migrationPath/$className.php"),
                 $this->config->render(
                     'migration.php',

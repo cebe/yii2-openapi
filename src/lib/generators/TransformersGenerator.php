@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
@@ -30,9 +35,8 @@ class TransformersGenerator
 
     public function __construct(Config $config, array $models)
     {
-
         $this->config = $config;
-        $this->models = array_filter($models, function($model) {
+        $this->models = array_filter($models, function ($model) {
             return $model instanceof DbModel;
         });
         $this->files = new CodeFiles([]);
@@ -44,23 +48,23 @@ class TransformersGenerator
         }
         $transformerPath = $this->config->getPathFromNamespace($this->config->transformerNamespace);
         foreach ($this->models as $model) {
-           $transformer = Yii::createObject(Transformer::class, [
+            $transformer = Yii::createObject(Transformer::class, [
                $model,
                $this->config->transformerNamespace,
                $this->config->modelNamespace,
                $this->config->singularResourceKeys
            ]);
-           $dirPath = $transformerPath . ($this->config->extendableTransformers ? '/base' : '');
-           $ns = $this->config->transformerNamespace . ($this->config->extendableTransformers ? '\\base' : '');
-           $this->files->add(new CodeFile(
-               Yii::getAlias("{$dirPath}/{$transformer->name}.php"),
-               $this->config->render('transformer.php', [
+            $dirPath = $transformerPath . ($this->config->extendableTransformers ? '/base' : '');
+            $ns = $this->config->transformerNamespace . ($this->config->extendableTransformers ? '\\base' : '');
+            $this->files->add(new CodeFile(
+                Yii::getAlias("{$dirPath}/{$transformer->name}.php"),
+                $this->config->render('transformer.php', [
                    'namespace' => $ns,
                    'mainNamespace' => $this->config->transformerNamespace,
                    'extendable' => $this->config->extendableTransformers,
                    'transformer' => $transformer,
                ])
-           ));
+            ));
             if (!$this->config->extendableTransformers) {
                 continue;
             }
@@ -77,7 +81,7 @@ class TransformersGenerator
                 $this->config->transformerNamespace . '\\base\\' . $transformer->name
             );
             $classFileGenerator->setClasses([$reflection]);
-            $this->files->add( new CodeFile(
+            $this->files->add(new CodeFile(
                 Yii::getAlias("$transformerPath/{$transformer->name}.php"),
                 $classFileGenerator->generate()
             ));

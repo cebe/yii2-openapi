@@ -17,7 +17,6 @@ use cebe\yii2openapi\lib\generators\ModelsGenerator;
 use cebe\yii2openapi\lib\generators\RestActionGenerator;
 use cebe\yii2openapi\lib\generators\TransformersGenerator;
 use cebe\yii2openapi\lib\generators\UrlRulesGenerator;
-use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\PathAutoCompletion;
 use cebe\yii2openapi\lib\SchemaToDatabase;
 use Yii;
@@ -57,7 +56,7 @@ class ApiGenerator extends Generator
      * //Urls with this prefix will be located directly at defined path and namespace
      *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '/app/modules/api/v1']
      * ]
-     * Note: Order may be important! define most detailed prefixes before less detalied if you want different
+     * Note: Order may be important! define most detailed prefixes before less detailed if you want different
      * prefixes with common part, for. ex 'user/auth' should be declared before 'user'
      **/
     public $urlPrefixes = [];
@@ -78,7 +77,7 @@ class ApiGenerator extends Generator
     public $useJsonApi = false;
 
     /**
-     * @var bool if true, transformers will be generate in base subdirectory and overridable classes will extend it
+     * @var bool if true, transformers will be generated in base subdirectory and overridable classes will extend it
      */
     public $extendableTransformers = true;
 
@@ -243,35 +242,35 @@ class ApiGenerator extends Generator
                 [
                     ['urlConfigFile'],
                     'required',
-                    'when' => function(ApiGenerator $model) {
+                    'when' => function (ApiGenerator $model) {
                         return (bool)$model->generateUrls;
                     },
                 ],
                 [
                     ['modelNamespace'],
                     'required',
-                    'when' => function(ApiGenerator $model) {
+                    'when' => function (ApiGenerator $model) {
                         return (bool)$model->generateModels;
                     },
                 ],
                 [
                     ['fakerNamespace'],
                     'required',
-                    'when' => function(ApiGenerator $model) {
+                    'when' => function (ApiGenerator $model) {
                         return (bool)$model->generateModelFaker;
                     },
                 ],
                 [
                     ['migrationPath'],
                     'required',
-                    'when' => function(ApiGenerator $model) {
+                    'when' => function (ApiGenerator $model) {
                         return (bool)$model->generateMigrations;
                     },
                 ],
                 [
                     ['transformerNamespace'],
                     'required',
-                    'when' => function(ApiGenerator $model) {
+                    'when' => function (ApiGenerator $model) {
                         return (bool)$model->generateControllers && (bool)$model->useJsonApi;
                     },
                 ],
@@ -281,6 +280,9 @@ class ApiGenerator extends Generator
 
     /**
      * @param $attribute
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
     public function validateSpec($attribute):void
     {
@@ -305,15 +307,19 @@ class ApiGenerator extends Generator
                 return;
             }
             if (!is_array($rule) && !empty($rule)) {
-                $this->addError($attribute,
+                $this->addError(
+                    $attribute,
                     'Invalid definition for prefix "' . $prefix
-                    . '" it should be empty for ignore, or array with keys "path" and "namespace"');
+                    . '" it should be empty for ignore, or array with keys "path" and "namespace"'
+                );
                 return;
             }
             if (!isset($rule['path'], $rule['namespace'])) {
-                $this->addError($attribute,
+                $this->addError(
+                    $attribute,
                     'Invalid definition for prefix "' . $prefix
-                    . '" it should be empty for ignore, or array with keys "path" and "namespace"');
+                    . '" it should be empty for ignore, or array with keys "path" and "namespace"'
+                );
                 return;
             }
         }
@@ -352,7 +358,7 @@ class ApiGenerator extends Generator
                 'migrationNamespace' => 'Namespace to create migrations in. If this is empty, migrations are generated without namespace.',
                 'generateModelFaker' => 'Generate Faker for generating dummy data for each model.',
                 'useJsonApi' => 'use actions that return responses followed JsonApi specification',
-                'singularResourceKeys' => 'Use singular resource keys (/post/{id}) (Plural by defaut : /posts/{id})',
+                'singularResourceKeys' => 'Use singular resource keys (/post/{id}) (Plural by default : /posts/{id})',
                 'transformerNamespace' => 'Namespace to create fractal transformers',
                 'extendableTransformers' => 'If checked, transformers will be generate in base subdirectory and overridable classes will extend it, otherwise it will be autogenerated only',
                 'camelCaseColumnNames' => 'If checked, foreign keys will be generated in camelCase like userId, postId. Snake case by default (user_id, post_id)',
@@ -436,7 +442,7 @@ class ApiGenerator extends Generator
                 unset($props[$key]);
             }
             $this->config = new Config($props);
-            $this->config->setFileRenderer(function($template, $params) {
+            $this->config->setFileRenderer(function ($template, $params) {
                 return $this->render($template, $params);
             });
         }
@@ -465,8 +471,7 @@ class ApiGenerator extends Generator
 
         $actions = $actionsGenerator->generate();
 
-        $modelsReader = Yii::createObject(SchemaToDatabase::class, [$config]);
-        $models = $modelsReader->prepareModels();
+        $models = Yii::createObject(SchemaToDatabase::class, [$config])->prepareModels();
 
         $urlRulesGenerator = Yii::createObject(UrlRulesGenerator::class, [$config, $actions]);
         $files = $urlRulesGenerator->generate();
@@ -504,5 +509,4 @@ class ApiGenerator extends Generator
         }
         return $this->_openApiWithoutRef;
     }
-
 }

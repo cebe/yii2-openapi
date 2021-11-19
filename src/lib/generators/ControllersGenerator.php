@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
@@ -32,7 +37,6 @@ class ControllersGenerator
 
     public function __construct(Config $config, array $actions = [])
     {
-
         $this->config = $config;
         $this->controllers = ArrayHelper::index($actions, null, 'controllerId');
         $this->files = new CodeFiles([]);
@@ -78,7 +82,10 @@ class ControllersGenerator
      * @param RestAction[]|FractalAction[] $actions
      * @return FileGenerator
      */
-    protected function makeCustomController(string $className, string $controllerNamespace, array $actions
+    protected function makeCustomController(
+        string $className,
+        string $controllerNamespace,
+        array $actions
     ):FileGenerator {
         $classFileGenerator = new FileGenerator();
         $reflection = new ClassGenerator(
@@ -88,7 +95,7 @@ class ControllersGenerator
             $controllerNamespace . '\\base\\' . $className
         );
         /**@var FractalAction[]|RestAction[] $abstractActions * */
-        $abstractActions = array_filter($actions, function($action) {
+        $abstractActions = array_filter($actions, function ($action) {
             return $action->shouldBeAbstract();
         });
         if ($this->config->useJsonApi) {
@@ -105,7 +112,7 @@ PHP;
         ];
         $reflection->addMethod('checkAccess', $params, MethodGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
         foreach ($abstractActions as $action) {
-            $params = array_map(function($param) {
+            $params = array_map(function ($param) {
                 return ['name' => $param];
             }, $action->getParamNames());
             $reflection->addMethod(

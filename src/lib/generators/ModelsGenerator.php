@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
@@ -29,7 +34,6 @@ class ModelsGenerator
 
     public function __construct(Config $config, array $models)
     {
-
         $this->config = $config;
         $this->models = $models;
         $this->files = new CodeFiles([]);
@@ -76,7 +80,7 @@ class ModelsGenerator
                 }
             } else {
                 /** This case not implemented yet, just keep it **/
-                $this->files->add( new CodeFile(
+                $this->files->add(new CodeFile(
                     Yii::getAlias("$modelPath/base/$className.php"),
                     $this->config->render(
                         'model.php',
@@ -100,7 +104,7 @@ class ModelsGenerator
                     $this->config->modelNamespace . '\\base\\' . $className
                 );
                 $classFileGenerator->setClasses([$reflection]);
-                $this->files->add( new CodeFile(
+                $this->files->add(new CodeFile(
                     Yii::getAlias("$modelPath/$className.php"),
                     $classFileGenerator->generate()
                 ));

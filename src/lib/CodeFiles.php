@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
+ * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
+ */
+
 namespace cebe\yii2openapi\lib;
 
 use yii\gii\CodeFile;
@@ -17,7 +22,6 @@ class CodeFiles
      */
     public function __construct(array $files = [])
     {
-
         $this->files = $files;
     }
 

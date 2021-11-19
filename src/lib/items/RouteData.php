@@ -364,7 +364,7 @@ final class RouteData extends BaseObject
     {
         return array_filter(
             $this->parts,
-            function($part) {
+            function ($part) {
                 return !preg_match(self::PATTERN_PARAM, $part);
             }
         );
