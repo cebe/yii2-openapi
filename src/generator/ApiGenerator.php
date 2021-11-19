@@ -9,34 +9,26 @@ namespace cebe\yii2openapi\generator;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
-use cebe\yii2openapi\lib\Configurator;
-use cebe\yii2openapi\lib\FractalGenerator;
-use cebe\yii2openapi\lib\items\DbModel;
-use cebe\yii2openapi\lib\items\FractalAction;
+use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\generators\ControllersGenerator;
+use cebe\yii2openapi\lib\generators\JsonActionGenerator;
+use cebe\yii2openapi\lib\generators\MigrationsGenerator;
+use cebe\yii2openapi\lib\generators\ModelsGenerator;
+use cebe\yii2openapi\lib\generators\RestActionGenerator;
+use cebe\yii2openapi\lib\generators\TransformersGenerator;
+use cebe\yii2openapi\lib\generators\UrlRulesGenerator;
 use cebe\yii2openapi\lib\items\RestAction;
-use cebe\yii2openapi\lib\MigrationsGenerator;
 use cebe\yii2openapi\lib\PathAutoCompletion;
 use cebe\yii2openapi\lib\SchemaToDatabase;
-use cebe\yii2openapi\lib\TransformerGenerator;
-use cebe\yii2openapi\lib\UrlGenerator;
-use Laminas\Code\Generator\ClassGenerator;
-use Laminas\Code\Generator\FileGenerator;
-use Laminas\Code\Generator\MethodGenerator;
-use Laminas\Code\Generator\ParameterGenerator;
-use Laminas\Code\Generator\ValueGenerator;
 use Yii;
-use yii\di\Instance;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
-use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
-use function array_filter;
-use function array_map;
 use function array_merge;
 use function get_object_vars;
-use const YII_ENV_TEST;
+use function in_array;
+use function is_array;
 
 class ApiGenerator extends Generator
 {
@@ -55,6 +47,20 @@ class ApiGenerator extends Generator
      * @var bool whether to generate URL rules for Yii UrlManager from the API spec.
      */
     public $generateUrls = true;
+
+    /**
+     * @var array Special url prefixes
+     * @example
+     * 'urlPrefixes' => [
+     * //Urls with this prefix will be handled with CalendarController at default controllerNamespace
+     *    'calendar' => '',
+     * //Urls with this prefix will be located directly at defined path and namespace
+     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '/app/modules/api/v1']
+     * ]
+     * Note: Order may be important! define most detailed prefixes before less detalied if you want different
+     * prefixes with common part, for. ex 'user/auth' should be declared before 'user'
+     **/
+    public $urlPrefixes = [];
 
     /**
      * @var string file name for URL rules.
@@ -163,32 +169,15 @@ class ApiGenerator extends Generator
      */
     public $migrationNamespace;
 
-    public $migrationGenerator = MigrationsGenerator::class;
-
-    /**
-     * @var OpenApi
-     */
-    private $_openApi;
-
     /**
      * @var OpenApi
      */
     private $_openApiWithoutRef;
 
     /**
-     * @var DbModel[]
+     * @var \cebe\yii2openapi\lib\Config $config
      **/
-    private $preparedModels;
-
-    /**
-     * @var \cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction
-     **/
-    private $preparedActions;
-
-    /**
-     * @var \cebe\yii2openapi\lib\Configurator $configurator
-     **/
-    private $configurator;
+    private $config;
 
     /**
      * @return string name of the code generator
@@ -250,7 +239,7 @@ class ApiGenerator extends Generator
 
                 ['openApiPath', 'required'],
                 ['openApiPath', 'validateSpec'],
-
+                ['urlPrefixes', 'validateUrlPrefixes'],
                 [
                     ['urlConfigFile'],
                     'required',
@@ -292,19 +281,41 @@ class ApiGenerator extends Generator
 
     /**
      * @param $attribute
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
     public function validateSpec($attribute):void
     {
         if ($this->ignoreSpecErrors) {
             return;
         }
-        $configurator = $this->makeConfigurator();
-        $openApi = $configurator->getOpenApiWithoutReferences();
+        $config = $this->makeConfig();
+        $openApi = $this->getOpenApiWithoutReferences();
         if (!$openApi->validate()) {
             $this->addError($attribute, 'Failed to validate OpenAPI spec:' . Html::ul($openApi->getErrors()));
+        }
+    }
+
+    public function validateUrlPrefixes($attribute):void
+    {
+        if (empty($this->urlPrefixes)) {
+            return;
+        }
+        foreach ($this->urlPrefixes as $prefix => $rule) {
+            if (in_array(trim($prefix), ['', '/'])) {
+                $this->addError($attribute, 'Root prefix not allowed, use controllerNamespace settings for it');
+                return;
+            }
+            if (!is_array($rule) && !empty($rule)) {
+                $this->addError($attribute,
+                    'Invalid definition for prefix "' . $prefix
+                    . '" it should be empty for ignore, or array with keys "path" and "namespace"');
+                return;
+            }
+            if (!isset($rule['path'], $rule['namespace'])) {
+                $this->addError($attribute,
+                    'Invalid definition for prefix "' . $prefix
+                    . '" it should be empty for ignore, or array with keys "path" and "namespace"');
+                return;
+            }
         }
     }
 
@@ -408,14 +419,33 @@ class ApiGenerator extends Generator
         );
     }
 
-    private function makeConfigurator():Configurator
+    private function makeConfig():Config
     {
-        if (!$this->configurator) {
+        if (!$this->config) {
             $props = get_object_vars($this);
-            unset($props['ignoreSpecErrors']);
-            $this->configurator = new Configurator($props);
+            $excludeProps = [
+                'ignoreSpecErrors',
+                'config',
+                'template',
+                'enableI18N',
+                'messageCategory',
+                'templates',
+                '_openApiWithoutRef',
+            ];
+            foreach ($excludeProps as $key) {
+                unset($props[$key]);
+            }
+            $this->config = new Config($props);
+            $this->config->setFileRenderer(function($template, $params) {
+                return $this->render($template, $params);
+            });
         }
-        return $this->configurator;
+        return $this->config;
+    }
+
+    public function getConfig():Config
+    {
+        return $this->makeConfig();
     }
 
     /**
@@ -428,262 +458,32 @@ class ApiGenerator extends Generator
      */
     public function generate():array
     {
-        return array_merge(
-            $this->generateUrls(),
-            $this->generateControllers(),
-            $this->generateModels(),
-            $this->generateMigrations()
-        );
-    }
+        $config = $this->makeConfig();
+        $actionsGenerator = $this->useJsonApi
+            ? Yii::createObject(JsonActionGenerator::class, [$config])
+            : Yii::createObject(RestActionGenerator::class, [$config]);
 
-    /**
-     * @return array|\yii\gii\CodeFile[]
-     * @throws \Exception
-     */
-    protected function generateUrls():array
-    {
-        if (!$this->generateUrls) {
-            return [];
-        }
-        $urls = [];
-        $optionsUrls = [];
-        foreach ($this->prepareActions() as $action) {
-            $urls["{$action->requestMethod} {$action->urlPattern}"] = $action->route;
-            //@TODO: need to ensure
-            $optionsUrls[$action->urlPattern] = $action->getOptionsRoute();
-        }
-        $urls = array_merge($urls, $optionsUrls);
-        $file = new CodeFile(Yii::getAlias($this->urlConfigFile), $this->render('urls.php', ['urls' => $urls]));
-        return [$file];
-    }
+        $actions = $actionsGenerator->generate();
 
-    /**
-     * @return array|CodeFile[]
-     * @throws \Exception
-     */
-    protected function generateControllers():array
-    {
-        $files = [];
-        if (!$this->generateControllers) {
-            return $files;
-        }
-        $controllers = $this->prepareControllers();
-        $controllerNamespace = $this->controllerNamespace ?? Yii::$app->controllerNamespace;
-        $controllerPath = $this->getPathFromNamespace($controllerNamespace);
-        $templateName = $this->useJsonApi ? 'controller_jsonapi.php' : 'controller.php';
+        $modelsReader = Yii::createObject(SchemaToDatabase::class, [$config]);
+        $models = $modelsReader->prepareModels();
 
-        foreach ($controllers as $controller => $actions) {
-            $className = Inflector::id2camel($controller) . 'Controller';
-            $files[] = new CodeFile(
-                Yii::getAlias($controllerPath . "/base/$className.php"),
-                $this->render(
-                    $templateName,
-                    [
-                        'className' => $className,
-                        'namespace' => $controllerNamespace . '\\base',
-                        'actions' => $actions,
-                    ]
-                )
-            );
-            // only generate custom classes if they do not exist, do not override
-            if (!file_exists(Yii::getAlias("$controllerPath/$className.php"))) {
-                $classFileGenerator = $this->makeCustomController($className, $controllerNamespace, $actions);
-                $files[] = new CodeFile(
-                    Yii::getAlias("$controllerPath/$className.php"),
-                    $classFileGenerator->generate()
-                );
-            }
-        }
-        if ($this->useJsonApi) {
-            $transformers = $this->prepareTransformers();
-            $transformerPath = $this->getPathFromNamespace($this->transformerNamespace);
-            foreach ($transformers as $transformer) {
-                $dirPath = $transformerPath . ($this->extendableTransformers ? '/base' : '');
-                $files[] = new CodeFile(
-                    Yii::getAlias("{$dirPath}/{$transformer->name}.php"),
-                    $this->render('transformer.php', [
-                        'namespace' => $this->transformerNamespace . ($this->extendableTransformers ? '\\base' : ''),
-                        'mainNamespace' => $this->transformerNamespace,
-                        'extendable' => $this->extendableTransformers,
-                        'transformer' => $transformer,
-                    ])
-                );
+        $urlRulesGenerator = Yii::createObject(UrlRulesGenerator::class, [$config, $actions]);
+        $files = $urlRulesGenerator->generate();
 
-                if (!$this->extendableTransformers) {
-                    continue;
-                }
-                // only generate custom classes if they do not exist, do not override
-                if (!file_exists(Yii::getAlias("$transformerPath/{$transformer->name}.php"))) {
-                    $classFileGenerator = new FileGenerator();
-                    $reflection = new ClassGenerator(
-                        $transformer->name,
-                        $this->transformerNamespace,
-                        null,
-                        $this->transformerNamespace . '\\base\\' . $transformer->name
-                    );
-                    $classFileGenerator->setClasses([$reflection]);
-                    $files[] = new CodeFile(
-                        Yii::getAlias("$transformerPath/{$transformer->name}.php"),
-                        $classFileGenerator->generate()
-                    );
-                }
-            }
-        }
-        return $files;
-    }
+        $controllersGenerator = Yii::createObject(ControllersGenerator::class, [$config, $actions]);
+        $files->merge($controllersGenerator->generate());
 
-    /**
-     * @return array|CodeFile[]
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     * @throws \yii\base\InvalidConfigException
-     */
-    protected function generateModels():array
-    {
-        $files = [];
-        if (!$this->generateModels) {
-            return $files;
-        }
-        $models = $this->prepareModels();
-        $modelPath = $this->getPathFromNamespace($this->modelNamespace);
-        if ($this->generateModelFaker) {
-            $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
-            $files[] = new CodeFile(
-                Yii::getAlias("$fakerPath/BaseModelFaker.php"),
-                $this->render('basefaker.php', ['namespace' => $this->fakerNamespace])
-            );
-        }
-        foreach ($models as $modelName => $model) {
-            $className = $model->getClassName();
-            if ($model instanceof DbModel) {
-                $files[] = new CodeFile(
-                    Yii::getAlias("$modelPath/base/$className.php"),
-                    $this->render(
-                        'dbmodel.php',
-                        [
-                            'model' => $model,
-                            'namespace' => $this->modelNamespace . '\\base',
-                            'relationNamespace' => $this->modelNamespace,
-                        ]
-                    )
-                );
-                if ($this->generateModelFaker) {
-                    $fakerPath = $this->getPathFromNamespace($this->fakerNamespace);
-                    $files[] = new CodeFile(
-                        Yii::getAlias("$fakerPath/{$className}Faker.php"),
-                        $this->render(
-                            'faker.php',
-                            [
-                                'model' => $model,
-                                'modelNamespace' => $this->modelNamespace,
-                                'namespace' => $this->fakerNamespace,
-                            ]
-                        )
-                    );
-                }
-            } else {
-                /** This case not implemented yet, just keep it **/
-                $files[] = new CodeFile(
-                    Yii::getAlias("$modelPath/base/$className.php"),
-                    $this->render(
-                        'model.php',
-                        [
-                            'className' => $className,
-                            'namespace' => $this->modelNamespace,
-                            'description' => $model['description'],
-                            'attributes' => $model['attributes'],
-                        ]
-                    )
-                );
-            }
+        $transformersGenerator = Yii::createObject(TransformersGenerator::class, [$config, $models]);
+        $files->merge($transformersGenerator->generate());
 
-            // only generate custom classes if they do not exist, do not override
-            if (!file_exists(Yii::getAlias("$modelPath/$className.php"))) {
-                $classFileGenerator = new FileGenerator();
-                $reflection = new ClassGenerator(
-                    $className,
-                    $this->modelNamespace,
-                    null,
-                    $this->modelNamespace . '\\base\\' . $className
-                );
-                $classFileGenerator->setClasses([$reflection]);
-                $files[] = new CodeFile(
-                    Yii::getAlias("$modelPath/$className.php"),
-                    $classFileGenerator->generate()
-                );
-            }
-        }
-        return $files;
-    }
+        $modelsGenerator = Yii::createObject(ModelsGenerator::class, [$config, $models]);
+        $files->merge($modelsGenerator->generate());
 
-    /**
-     * @return array|CodeFile[]
-     * @throws \yii\base\InvalidConfigException
-     * @throws \Exception
-     */
-    protected function generateMigrations():array
-    {
-        $files = [];
-        if (!$this->generateMigrations) {
-            return $files;
-        }
-        $models = $this->prepareModels();
-        /** @var $migrationGenerator MigrationsGenerator */
-        $migrationGenerator = Instance::ensure($this->migrationGenerator, MigrationsGenerator::class);
-        $migrationModels = $migrationGenerator->generate(
-            array_filter($models, function($model) {
-                return $model instanceof DbModel;
-            })
-        );
-        $migrationPath = Yii::getAlias($this->migrationPath);
-        $migrationNamespace = $this->migrationNamespace;
-        $isTransactional = Yii::$app->db->getDriverName() === 'pgsql';//Probably some another yet
+        $migrationsGenerator = Yii::createObject(MigrationsGenerator::class, [$config, $models, Yii::$app->db]);
+        $files->merge($migrationsGenerator->generate());
 
-        // TODO start $i by looking at all files, otherwise only one generation per hours causes correct order!!!
-
-        $i = 0;
-        foreach ($migrationModels as $tableName => $migration) {
-            // migration files get invalidated directly after generating,
-            // if they contain a timestamp use fixed time here instead
-            do {
-                $date = YII_ENV_TEST ? '200000_00' : '';
-                $className = $migration->makeClassNameByTime($i, $migrationNamespace, $date);
-                $i++;
-            } while (file_exists(Yii::getAlias("$migrationPath/$className.php")));
-
-            $files[] = new CodeFile(
-                Yii::getAlias("$migrationPath/$className.php"),
-                $this->render(
-                    'migration.php',
-                    [
-                        'isTransactional' => $isTransactional,
-                        'namespace' => $migrationNamespace,
-                        'migration' => $migration,
-                    ]
-                )
-            );
-        }
-        return $files;
-    }
-
-    /**
-     * @return \cebe\openapi\spec\OpenApi
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     */
-    protected function getOpenApi():OpenApi
-    {
-        if ($this->_openApi === null) {
-            $file = Yii::getAlias($this->openApiPath);
-            if (StringHelper::endsWith($this->openApiPath, '.json', false)) {
-                $this->_openApi = Reader::readFromJsonFile($file, OpenApi::class, false);
-            } else {
-                $this->_openApi = Reader::readFromYamlFile($file, OpenApi::class, false);
-            }
-        }
-        return $this->_openApi;
+        return $files->all();
     }
 
     /**
@@ -705,130 +505,4 @@ class ApiGenerator extends Generator
         return $this->_openApiWithoutRef;
     }
 
-    /**
-     * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction
-     * @throws \yii\base\InvalidConfigException
-     * @throws \Exception
-     */
-    protected function prepareActions():array
-    {
-        if (!$this->preparedActions) {
-            $generator = $this->useJsonApi
-                ? new FractalGenerator(
-                    $this->getOpenApi(),
-                    $this->modelNamespace,
-                    $this->controllerModelMap,
-                    $this->transformerNamespace,
-                    $this->singularResourceKeys
-                )
-                : new UrlGenerator($this->getOpenApi(), $this->modelNamespace, $this->controllerModelMap);
-            $this->preparedActions = $generator->generate();
-        }
-        return $this->preparedActions;
-    }
-
-    /**
-     * @return array|\cebe\yii2openapi\lib\items\RestAction[]|\cebe\yii2openapi\lib\items\FractalAction[]
-     * @throws \Exception
-     */
-    protected function prepareControllers():array
-    {
-        $actions = $this->prepareActions();
-
-        return ArrayHelper::index($actions, null, 'controllerId');
-    }
-
-    /**
-     * @return DbModel[]|array
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     * @throws \yii\base\InvalidConfigException
-     */
-    protected function prepareModels():array
-    {
-        if (!$this->preparedModels) {
-            $converter = Yii::createObject([
-                'class' => SchemaToDatabase::class,
-                'excludeModels' => $this->excludeModels,
-                'skipUnderscoredSchemas' => $this->skipUnderscoredSchemas,
-                'generateModelsOnlyXTable' => $this->generateModelsOnlyXTable,
-            ]);
-            $this->preparedModels = $converter->generateModels($this->getOpenApi());
-        }
-        return $this->preparedModels;
-    }
-
-    /**
-     * @return array|\cebe\yii2openapi\lib\items\Transformer[]
-     */
-    protected function prepareTransformers():array
-    {
-        $models = array_filter($this->prepareModels(), function($model) {
-            return $model instanceof DbModel;
-        });
-        $generator = new TransformerGenerator(
-            $models,
-            $this->transformerNamespace . ($this->extendableTransformers ? '\\base' : ''),
-            $this->modelNamespace,
-            $this->singularResourceKeys
-        );
-        return $generator->generate();
-    }
-
-    /**
-     * @param string $namespace
-     * @return bool|string
-     */
-    private function getPathFromNamespace(string $namespace)
-    {
-        return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
-    }
-
-    /**
-     * @param string $className
-     * @param string $controllerNamespace
-     * @param RestAction[]|FractalAction[] $actions
-     * @return FileGenerator
-     */
-    protected function makeCustomController(string $className, string $controllerNamespace, array $actions
-    ):FileGenerator {
-        $classFileGenerator = new FileGenerator();
-        $reflection = new ClassGenerator(
-            $className,
-            $controllerNamespace,
-            null,
-            $controllerNamespace . '\\base\\' . $className
-        );
-        /**@var FractalAction[]|RestAction[] $abstractActions * */
-        $abstractActions = array_filter($actions, function($action) {
-            return $action->shouldBeAbstract();
-        });
-        if ($this->useJsonApi) {
-            $body = <<<'PHP'
-$actions = parent::actions();
-return $actions;
-PHP;
-            $reflection->addMethod('actions', [], MethodGenerator::FLAG_PUBLIC, $body);
-        }
-        $params = [
-            new ParameterGenerator('action'),
-            new ParameterGenerator('model', null, new ValueGenerator(null)),
-            new ParameterGenerator('params', null, new ValueGenerator([])),
-        ];
-        $reflection->addMethod('checkAccess', $params, MethodGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
-        foreach ($abstractActions as $action) {
-            $params = array_map(function($param) {
-                return ['name' => $param];
-            }, $action->getParamNames());
-            $reflection->addMethod(
-                $action->actionMethodName,
-                $params,
-                MethodGenerator::FLAG_PUBLIC,
-                '//TODO implement ' . $action->actionMethodName
-            );
-        }
-        $classFileGenerator->setClasses([$reflection]);
-        return $classFileGenerator;
-    }
 }

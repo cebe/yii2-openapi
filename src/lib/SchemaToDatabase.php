@@ -60,32 +60,32 @@ use function str_replace;
  *                  x-faker: #(custom faker generator, for ex '$faker->gender')
  *                  description: #(optional, used for comment)
  */
-class SchemaToDatabase extends Component
+class SchemaToDatabase
 {
-
     /**
-     * @var array List of model names to exclude.
+     * @var \cebe\yii2openapi\lib\Config
      */
-    public $excludeModels = [];
+    protected $config;
 
-    public $skipUnderscoredSchemas = true;
+    public function __construct(Config $config) {
 
-    /**
-     * @var array Generate database models only for Schemas that have the `x-table` annotation.
-     */
-    public $generateModelsOnlyXTable = false;
+        $this->config = $config;
+    }
 
     /**
-     * @param \cebe\openapi\spec\OpenApi $openApi
      * @return array|\cebe\yii2openapi\lib\items\DbModel[]
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function generateModels(OpenApi $openApi):array
+    public function prepareModels():array
     {
         $models = [];
-        $junctions = $this->findJunctionSchemas($openApi);
+        $openApi = $this->config->getOpenApi();
+        $junctions = $this->findJunctionSchemas();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
            $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
 
@@ -115,12 +115,17 @@ class SchemaToDatabase extends Component
     }
 
     /**
+     * @return \cebe\yii2openapi\lib\items\JunctionSchemas
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function findJunctionSchemas(OpenApi $openApi):JunctionSchemas
+    public function findJunctionSchemas():JunctionSchemas
     {
         $junctions = [];
+        $openApi = $this->config->getOpenApi();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
             /**@var SchemaReader $schema*/
             $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
@@ -208,16 +213,16 @@ class SchemaToDatabase extends Component
             return false;
         }
         // skip excluded model names
-        if (in_array($schemaName, $this->excludeModels, true)) {
+        if (in_array($schemaName, $this->config->excludeModels, true)) {
             return false;
         }
 
         // skip schemas started with underscore
-        if ($this->skipUnderscoredSchemas && StringHelper::startsWith($schemaName, '_')) {
+        if ($this->config->skipUnderscoredSchemas && StringHelper::startsWith($schemaName, '_')) {
             return false;
         }
 
-        if ($this->generateModelsOnlyXTable && !$schema->hasCustomTableName()) {
+        if ($this->config->generateModelsOnlyXTable && !$schema->hasCustomTableName()) {
             return false;
         }
         return true;

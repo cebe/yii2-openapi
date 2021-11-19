@@ -1,50 +1,24 @@
 <?php
 
-/**
- * @copyright Copyright (c) 2018 Carsten Brandt <mail@cebe.cc> and contributors
- * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
- */
+namespace cebe\yii2openapi\lib\generators;
 
-namespace cebe\yii2openapi\lib;
-
-use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\items\RouteData;
+use cebe\yii2openapi\lib\SchemaResponseResolver;
+use yii\base\BaseObject;
 use yii\helpers\Inflector;
-use function in_array;
 
-class FractalGenerator extends UrlGenerator
+class JsonActionGenerator extends RestActionGenerator
 {
-    /**
-     * @var string
-     */
-    private $transformerNamespace;
-
-    /**
-     * @var bool
-     */
-    private $singularResourceKeys;
-
-    public function __construct(
-        OpenApi $openApi,
-        string $modelNamespace,
-        array $controllerMap,
-        string $transformerNamespace,
-        bool $singularResourceKeys = false
-    ) {
-        parent::__construct($openApi, $modelNamespace, $controllerMap);
-        $this->transformerNamespace = $transformerNamespace;
-        $this->singularResourceKeys = $singularResourceKeys;
-    }
 
     /**
      * @param string                                $method
      * @param \cebe\openapi\spec\Operation          $operation
      * @param \cebe\yii2openapi\lib\items\RouteData $routeData
-     * @return \cebe\yii2openapi\lib\items\FractalAction
+     * @return \cebe\yii2openapi\lib\items\RestAction|object
      */
-    protected function prepareAction(string $method, Operation $operation, RouteData $routeData)
+    protected function prepareAction(string $method, Operation $operation, RouteData $routeData):BaseObject
     {
         $actionType = $this->resolveActionType($routeData, $method);
         $modelClass = SchemaResponseResolver::guessModelClass($operation, $actionType);
@@ -60,36 +34,36 @@ class FractalGenerator extends UrlGenerator
         if ($routeData->isRelationship()) {
             $relatedClass = $modelClass;
             $transformerClass = $modelClass !== null
-                ? $this->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
+                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
                 : null;
             $controllerId = $routeData->controller;
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
-            if (isset($this->controllerMap[$modelClass])) {
-                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            if (isset($this->config->controllerModelMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->config->controllerModelMap[$modelClass]);
             }
         } else {
             $relatedClass = null;
             if ($modelClass === null || !$routeData->isModelBasedType()) {
                 $controllerId = $routeData->controller;
-            } elseif (isset($this->controllerMap[$modelClass])) {
-                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            } elseif (isset($this->config->controllerModelMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->config->controllerModelMap[$modelClass]);
             } else {
                 $controllerId = Inflector::camel2id($modelClass, '-');
             }
             $transformerClass = $modelClass !== null
-                ? $this->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
+                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
                 : null;
         }
 
         if ($routeData->type === RouteData::TYPE_RESOURCE_OPERATION && !$modelClass) {
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
-            if (isset($this->controllerMap[$modelClass])) {
-                $controllerId = Inflector::camel2id($this->controllerMap[$modelClass]);
+            if (isset($this->config->controllerModelMap[$modelClass])) {
+                $controllerId = Inflector::camel2id($this->config->controllerModelMap[$modelClass]);
             }
         }
 
         return new FractalAction([
-            'singularResourceKey'=> $this->singularResourceKeys,
+            'singularResourceKey'=> $this->config->singularResourceKeys,
             'type' => $routeData->type,
             'id' => $routeData->isNonCrudAction()?trim("{$actionType}-{$routeData->action}", '-'):"$actionType{$routeData->action}",
             'controllerId' => $controllerId,
@@ -102,7 +76,7 @@ class FractalGenerator extends UrlGenerator
             'modelName' => $modelClass,
             'relatedModel'=>$relatedClass,
             'modelFqn' => $modelClass !== null
-                ? $this->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
+                ? $this->config->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
                 : null,
             'transformerFqn'=> $transformerClass,
             'expectedRelations' => $expectedRelations

@@ -4,13 +4,14 @@ namespace tests\unit;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\generators\RestActionGenerator;
 use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\UrlGenerator;
 use tests\TestCase;
 use Yii;
-use const PHP_EOL;
 
-class UrlGeneratorTest extends TestCase
+class RestActionGeneratorTest extends TestCase
 {
 
     /**
@@ -18,13 +19,18 @@ class UrlGeneratorTest extends TestCase
      * @param string $schemaFile
      * @param string $modelNs
      * @param        $expected
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
-    public function testGenerate(string $schemaFile, string $modelNs, $expected): void
+    public function testGenerate(string $schemaFile, string $modelNs, $expected):void
     {
-        $openApi = $this->getOpenApiSchema($schemaFile);
-        $result = (new UrlGenerator($openApi, $modelNs, []))->generate();
+        $config = new Config([
+            'openApiPath' => $schemaFile,
+            'modelNamespace' => $modelNs,
+        ]);
+        $result = (new RestActionGenerator($config))->generate();
         foreach ($result as $i => $data) {
             //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
@@ -37,13 +43,19 @@ class UrlGeneratorTest extends TestCase
      * @param string $modelNs
      * @param array  $namingMap
      * @param        $expected
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
-    public function testGenerateWithNamingMap(string $schemaFile, string $modelNs, array $namingMap, $expected): void
+    public function testGenerateWithNamingMap(string $schemaFile, string $modelNs, array $namingMap, $expected):void
     {
-        $openApi = $this->getOpenApiSchema($schemaFile);
-        $result = (new UrlGenerator($openApi, $modelNs, $namingMap))->generate();
+        $config = new Config([
+            'openApiPath' => $schemaFile,
+            'modelNamespace' => $modelNs,
+            'controllerModelMap' => $namingMap,
+        ]);
+        $result = (new RestActionGenerator($config))->generate();
         foreach ($result as $i => $data) {
             //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);

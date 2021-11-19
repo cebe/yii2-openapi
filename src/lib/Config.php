@@ -6,9 +6,10 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use Yii;
 use yii\base\BaseObject;
+use yii\base\InvalidConfigException;
 use yii\helpers\StringHelper;
 
-class Configurator extends BaseObject
+class Config extends BaseObject
 {
     /**
      * @var string path to the OpenAPI specification file. This can be an absolute path or a Yii path alias.
@@ -24,6 +25,18 @@ class Configurator extends BaseObject
      * @var string file name for URL rules.
      */
     public $urlConfigFile = '@app/config/urls.rest.php';
+
+    /**
+     * @var array Special url prefixes
+     * @example
+     * 'urlPrefixes' => [
+     * //Urls with this prefix will be handled with CalendarController at default controllerNamespace
+     *    'calendar' => '',
+     * //Urls with this prefix will be located directly at defined path and namespace
+     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '/app/modules/api/v1']
+     * ]
+     **/
+    public $urlPrefixes = [];
 
     /**
      * @var bool whether to generate Controllers from the spec.
@@ -127,15 +140,12 @@ class Configurator extends BaseObject
      */
     public $migrationNamespace;
 
-    /**
-     * @var OpenApi
-     */
-    private $openApi;
+    private $fileRenderer;
 
     /**
      * @var OpenApi
      */
-    private $openApiWithoutRef;
+    private $openApi;
 
     /**
      * @return \cebe\openapi\spec\OpenApi
@@ -156,22 +166,32 @@ class Configurator extends BaseObject
         return $this->openApi;
     }
 
-    /**
-     * @return \cebe\openapi\spec\OpenApi
-     * @throws \cebe\openapi\exceptions\IOException
-     * @throws \cebe\openapi\exceptions\TypeErrorException
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
-     */
-    public function getOpenApiWithoutReferences():OpenApi
+    public function getPathFromNamespace(string $namespace):string
     {
-        if ($this->openApiWithoutRef === null) {
-            $file = Yii::getAlias($this->openApiPath);
-            if (StringHelper::endsWith($this->openApiPath, '.json', false)) {
-                $this->openApiWithoutRef = Reader::readFromJsonFile($file, OpenApi::class, true);
-            } else {
-                $this->openApiWithoutRef = Reader::readFromYamlFile($file, OpenApi::class, true);
-            }
+        return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
+    }
+
+    /**
+     * @param \Closure $renderCallback
+     */
+    public function setFileRenderer($renderCallback):void
+    {
+        $this->fileRenderer = $renderCallback;
+    }
+
+    /**
+     * Generates code using the specified code template and parameters.
+     * Note that the code template will be used as a PHP file.
+     * @param string $template the code template file. This must be specified as a file path
+     * relative to [[templatePath]].
+     * @param array $params list of parameters to be passed to the template file.
+     * @return string the generated code
+     */
+    public function render($template, $params = [])
+    {
+        if (!$this->fileRenderer) {
+            throw new InvalidConfigException('Renderer is not configured');
         }
-        return $this->openApiWithoutRef;
+        return \call_user_func($this->fileRenderer, $template, $params);
     }
 }

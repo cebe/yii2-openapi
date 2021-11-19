@@ -2,17 +2,13 @@
 
 namespace tests\unit;
 
-use cebe\openapi\Reader;
-use cebe\openapi\spec\OpenApi;
-use cebe\yii2openapi\lib\FractalGenerator;
+use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\generators\JsonActionGenerator;
 use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\items\RouteData;
 use tests\TestCase;
-use Yii;
-use yii\base\BaseObject;
-use const PHP_EOL;
 
-class FractalGeneratorTest extends TestCase
+class JsonActionGeneratorTest extends TestCase
 {
 
     /**
@@ -21,14 +17,19 @@ class FractalGeneratorTest extends TestCase
      * @param string $modelNs
      * @param string $transformerNs
      * @param        $expected
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
     public function testGenerate(string $schemaFile, string $modelNs, string $transformerNs, $expected):void
     {
-        $openApi = $this->getOpenApiSchema($schemaFile);
-        $result = (new FractalGenerator($openApi, $modelNs, [], $transformerNs))->generate();
-        foreach ($result as $i => $data) {
+        $config = new Config([
+            'openApiPath' => $schemaFile,
+            'modelNamespace' => $modelNs,
+            'transformerNamespace' => $transformerNs,
+        ]);
+        foreach ((new JsonActionGenerator($config))->generate() as $i => $data) {
             //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
@@ -47,9 +48,13 @@ class FractalGeneratorTest extends TestCase
     public function testGenerateWithNamingMap(
         string $schemaFile, string $modelNs, array $namingMap, string $transformerNs, $expected
     ):void {
-        $openApi = $this->getOpenApiSchema($schemaFile);
-        $result = (new FractalGenerator($openApi, $modelNs, $namingMap, $transformerNs))->generate();
-        foreach ($result as $i => $data) {
+        $config = new Config([
+            'openApiPath' => $schemaFile,
+            'modelNamespace' => $modelNs,
+            'transformerNamespace' => $transformerNs,
+            'controllerModelMap' => $namingMap,
+        ]);
+        foreach ((new JsonActionGenerator($config))->generate() as $i => $data) {
             //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
             self::assertEquals($expected[$i], $data);
         }
@@ -91,12 +96,6 @@ class FractalGeneratorTest extends TestCase
 //                $this->petStoreActionsWithNaming(),
 //            ],
         ];
-    }
-
-    private function getOpenApiSchema(string $file)
-    {
-        $schemaFile = Yii::getAlias($file);
-        return Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
     }
 
     private function blogActions():array
@@ -466,6 +465,7 @@ class FractalGeneratorTest extends TestCase
             ]),
         ];
     }
+
     private function blogActionsWithNaming():array
     {
         return [
@@ -833,6 +833,7 @@ class FractalGeneratorTest extends TestCase
             ]),
         ];
     }
+
     private function petStoreActions():array
     {
         return [

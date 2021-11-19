@@ -8,7 +8,6 @@
 namespace cebe\yii2openapi\lib\items;
 
 use cebe\openapi\spec\PathItem;
-use cebe\yii2openapi\lib\SchemaResponseResolver;
 use yii\base\BaseObject;
 use yii\base\InvalidCallException;
 use yii\helpers\ArrayHelper;
@@ -18,6 +17,7 @@ use function count;
 use function in_array;
 use function preg_match;
 use function reset;
+use function trim;
 
 /**
  * @property-read array        $partsWithoutParams
@@ -64,7 +64,6 @@ final class RouteData extends BaseObject
     private const PATTERN_RELATIONSHIP = '~^/(?<controller>[\w-]+)/{(?<idParam>[\w-]+)}/relationships/(?<relation>[\w-]+)$~';
     private const PATTERN_PARAM = '~{(.+?)}~';
 
-
     public const TYPE_DEFAULT = 'default';
     public const TYPE_PROFILE = 'profile';
     public const TYPE_COLLECTION = 'collection';
@@ -75,16 +74,15 @@ final class RouteData extends BaseObject
     public const TYPE_RELATIONSHIP = 'relationship';
 
     private static $patternMap = [
-        self::TYPE_PROFILE =>self::PATTERN_PROFILE,
-        self::TYPE_DEFAULT =>self::PATTERN_ACTION,
-        self::TYPE_COLLECTION =>self::PATTERN_LIST,
-        self::TYPE_RESOURCE =>self::PATTERN_RESOURCE,
-        self::TYPE_RESOURCE_OPERATION =>self::PATTERN_RESOURCE_OPERATION,
-        self::TYPE_COLLECTION_FOR =>self::PATTERN_LIST_FOR_RESOURCE,
-        self::TYPE_RESOURCE_FOR =>self::PATTERN_FOR_RESOURCE,
-        self::TYPE_RELATIONSHIP =>self::PATTERN_RELATIONSHIP
+        self::TYPE_PROFILE => self::PATTERN_PROFILE,
+        self::TYPE_DEFAULT => self::PATTERN_ACTION,
+        self::TYPE_COLLECTION => self::PATTERN_LIST,
+        self::TYPE_RESOURCE => self::PATTERN_RESOURCE,
+        self::TYPE_RESOURCE_OPERATION => self::PATTERN_RESOURCE_OPERATION,
+        self::TYPE_COLLECTION_FOR => self::PATTERN_LIST_FOR_RESOURCE,
+        self::TYPE_RESOURCE_FOR => self::PATTERN_FOR_RESOURCE,
+        self::TYPE_RELATIONSHIP => self::PATTERN_RELATIONSHIP,
     ];
-
 
     /**
      * @var string
@@ -137,6 +135,21 @@ final class RouteData extends BaseObject
     private $path;
 
     /**
+     * @var string
+     */
+    private $unprefixedPath;
+
+    /**
+     * @var string
+     */
+    private $prefix = '';
+
+    /**
+     * @var array
+     **/
+    private $prefixSettings = [];
+
+    /**
      * @var array
      */
     private $parts;
@@ -146,12 +159,19 @@ final class RouteData extends BaseObject
      */
     private $pathItem;
 
-    public function __construct(PathItem $pathItem, string $path)
+    /**
+     * @var array
+     */
+    private $urlPrefixes;
+
+    public function __construct(PathItem $pathItem, string $path, array $urlPrefixes = [], $config = [])
     {
-        $this->path = $path;
+        $this->path = $this->unprefixedPath = $path;
         $this->parts = explode('/', trim($path, '/'));
         $this->pathItem = $pathItem;
-        parent::__construct([]);
+        $this->urlPrefixes = $urlPrefixes;
+
+        parent::__construct($config);
     }
 
     public function init()
@@ -161,6 +181,7 @@ final class RouteData extends BaseObject
 
         $patternParts = $this->parts;
         $pathParameters = ArrayHelper::index($this->pathItem->parameters, 'name');
+
         foreach ($this->parts as $p => $part) {
             if ($part === 'relationships' || !preg_match(self::PATTERN_PARAM, $part, $m)) {
                 continue;
@@ -202,6 +223,15 @@ final class RouteData extends BaseObject
             $this->controller = 'default';
             return;
         }
+        foreach ($this->urlPrefixes as $prefix => $rule) {
+            if (!str_starts_with($this->path, $prefix)) {
+                continue;
+            }
+            $this->prefix = $prefix;
+            $this->unprefixedPath = '/' . trim(str_replace($prefix, '', $this->path), '/');
+            $this->parts = explode('/', trim($this->unprefixedPath, '/'));
+            $this->prefixSettings = is_array($rule) ? $rule : [];
+        }
         foreach (self::$patternMap as $type => $pattern) {
             if (preg_match($pattern, $this->path, $matches)) {
                 $this->type = $type;
@@ -222,24 +252,25 @@ final class RouteData extends BaseObject
                 break;
             case self::TYPE_RESOURCE_OPERATION:
                 $this->idParam = $matches['idParam'];
-                $this->action = Inflector::camel2id($matches['action']).'-'.Inflector::camel2id($matches['method']);
+                $this->action = Inflector::camel2id($matches['action']) . '-' . Inflector::camel2id($matches['method']);
                 break;
             case self::TYPE_COLLECTION_FOR:
-                $this->action = '-for-'.Inflector::camel2id(Inflector::singularize($matches['for']));
+                $this->action = '-for-' . Inflector::camel2id(Inflector::singularize($matches['for']));
                 $this->parentParam = $matches['parentParam'];
                 break;
             case self::TYPE_RESOURCE_FOR:
                 $this->parentParam = $matches['parentParam'];
                 $this->idParam = $matches['idParam'];
-                $this->action = '-for-'.Inflector::camel2id(Inflector::singularize($matches['for']));
+                $this->action = '-for-' . Inflector::camel2id(Inflector::singularize($matches['for']));
                 break;
             case self::TYPE_RELATIONSHIP:
                 $this->idParam = $matches['idParam'];
-                $this->action = '-related-'.Inflector::camel2id($matches['relation']); break;
+                $this->action = '-related-' . Inflector::camel2id($matches['relation']);
+                break;
             default:
                 $this->action = Inflector::camel2id($matches['action'] ?? '');
                 if (isset($matches['method'])) {
-                    $this->action.='-'.Inflector::camel2id($matches['method']);
+                    $this->action .= '-' . Inflector::camel2id($matches['method']);
                 }
                 if (!$this->controller) {
                     $this->controller = 'default';
@@ -333,7 +364,7 @@ final class RouteData extends BaseObject
     {
         return array_filter(
             $this->parts,
-            function ($part) {
+            function($part) {
                 return !preg_match(self::PATTERN_PARAM, $part);
             }
         );
@@ -349,12 +380,12 @@ final class RouteData extends BaseObject
         return $this->action && Inflector::singularize($this->action) === $this->action;
     }
 
-    public function isModelBasedType(): bool
+    public function isModelBasedType():bool
     {
         return !in_array($this->type, [self::TYPE_DEFAULT, self::TYPE_PROFILE]);
     }
 
-    public function isNonCrudAction(): bool
+    public function isNonCrudAction():bool
     {
         return in_array($this->type, [self::TYPE_DEFAULT, self::TYPE_RESOURCE_OPERATION]);
     }
