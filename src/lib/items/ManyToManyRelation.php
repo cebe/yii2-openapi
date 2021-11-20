@@ -105,7 +105,7 @@ class ManyToManyRelation extends BaseObject
      */
     public function getViaRelationName(): string
     {
-        return $this->viaRelationName? $this->viaRelationName : $this->getViaModelName();
+        return $this->viaRelationName?: $this->getViaModelName();
     }
 
     /**
@@ -172,7 +172,7 @@ class ManyToManyRelation extends BaseObject
             Schema::TYPE_BIGPK => Schema::TYPE_BIGINT,
             Schema::TYPE_UBIGPK => Schema::TYPE_BIGINT,
         ];
-        $castPkColumn = function (ColumnSchema $col) use ($pkTypeMap) {
+        $castPkColumn = static function (ColumnSchema $col) use ($pkTypeMap) {
             $col->allowNull = false;
             if (isset($pkTypeMap[$col->type])) {
                 $col->type = $pkTypeMap[$col->type];

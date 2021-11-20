@@ -9,7 +9,6 @@ namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
-use yii\helpers\StringHelper;
 use function array_filter;
 use function array_map;
 use function array_merge;
@@ -80,11 +79,11 @@ class Transformer extends BaseObject
         $dbRelations = array_filter($this->dbModel->relations, function (AttributeRelation $rel) {
             return $rel->getClassName() !== $this->dbModel->getClassName();
         });
-        $relations = array_map(function (AttributeRelation $relation) {
+        $relations = array_map(static function (AttributeRelation $relation) {
             return Inflector::singularize($relation->getClassName()).'Transformer';
         }, $dbRelations);
 
-        $relationsMany = array_map(function (ManyToManyRelation $relation) {
+        $relationsMany = array_map(static function (ManyToManyRelation $relation) {
             return Inflector::singularize($relation->getRelatedClassName()).'Transformer';
         }, $this->dbModel->many2many);
 
@@ -114,11 +113,11 @@ class Transformer extends BaseObject
 
     public function getAvailableRelations(): array
     {
-        $relations = array_map(function (AttributeRelation $relation) {
+        $relations = array_map(static function (AttributeRelation $relation) {
             return Inflector::variablize($relation->getName());
         }, $this->dbModel->relations);
 
-        $relationsMany = array_map(function (ManyToManyRelation $relation) {
+        $relationsMany = array_map(static function (ManyToManyRelation $relation) {
             return Inflector::variablize($relation->name);
         }, $this->dbModel->many2many);
 

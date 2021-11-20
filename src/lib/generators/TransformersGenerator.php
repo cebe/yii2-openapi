@@ -9,7 +9,6 @@ namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
 use cebe\yii2openapi\lib\Config;
-use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\Transformer;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
@@ -39,6 +38,11 @@ class TransformersGenerator
         $this->models = $models;
         $this->files = new CodeFiles([]);
     }
+
+    /**
+     * @return \cebe\yii2openapi\lib\CodeFiles
+     * @throws \yii\base\InvalidConfigException
+     */
     public function generate():CodeFiles
     {
         if (!$this->config->generateControllers || !$this->config->useJsonApi) {

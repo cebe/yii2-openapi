@@ -10,10 +10,8 @@ namespace cebe\yii2openapi\lib\migrations;
 use cebe\yii2openapi\lib\ColumnToCode;
 use yii\db\ColumnSchema;
 use yii\db\Schema;
-use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function implode;
-use function preg_replace;
 use function sprintf;
 use function str_replace;
 
@@ -92,8 +90,7 @@ final class MigrationRecordBuilder
 
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, false, true);
-        $default = $converter->getDefaultValue();
+        $default = $this->columnToCode($column, false, true)->getDefaultValue();
         if ($default === null) {
             return '';
         }
@@ -102,8 +99,7 @@ final class MigrationRecordBuilder
 
     public function setColumnDefaultFromDb(string $tableAlias, ColumnSchema $column):string
     {
-        $converter = $this->columnToCode($column, true, true);
-        $default = $converter->getDefaultValue();
+        $default = $this->columnToCode($column, true, true)->getDefaultValue();
         if ($default === null) {
             return '';
         }
@@ -148,13 +144,13 @@ final class MigrationRecordBuilder
 
     public function addPrimaryKey(string $tableAlias, array $columns, string $pkName= null):string
     {
-        $pkName = $pkName ?? 'pk_'. implode('_', $columns);
+        $pkName = $pkName ?? ('pk_'. implode('_', $columns));
         return sprintf(self::ADD_PK, $pkName, $tableAlias, implode(',', $columns));
     }
 
     public function dropPrimaryKey(string $tableAlias, array $columns, string $pkName = null):string
     {
-        $pkName = $pkName ?? 'pk_'. implode('_', $columns);
+        $pkName = $pkName ?? ('pk_'. implode('_', $columns));
         return sprintf(self::DROP_PK, $pkName, $tableAlias);
     }
 

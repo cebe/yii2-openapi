@@ -40,8 +40,6 @@ echo $form->field($generator, 'ignoreSpecErrors')->checkbox();
         <?= $form->field($generator, 'generateModelFaker')->checkbox() ?>
         <?= $form->field($generator, 'generateModelsOnlyXTable')->checkbox() ?>
         <?= $form->field($generator, 'skipUnderscoredSchemas')->checkbox() ?>
-        <?= $form->field($generator, 'generateNonDbModels')->checkbox() ?>
-        <?= $form->field($generator, 'camelCaseColumnNames')->checkbox() ?>
     </div>
 </div>
 

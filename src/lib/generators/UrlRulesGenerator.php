@@ -29,6 +29,11 @@ class UrlRulesGenerator
         $this->config = $config;
         $this->actions = $actions;
     }
+
+    /**
+     * @return \cebe\yii2openapi\lib\CodeFiles
+     * @throws \yii\base\InvalidConfigException
+     */
     public function generate():CodeFiles
     {
         if (!$this->config->generateUrls) {

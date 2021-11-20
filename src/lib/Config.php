@@ -9,10 +9,12 @@ namespace cebe\yii2openapi\lib;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use Closure;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\helpers\StringHelper;
+use function call_user_func;
 
 class Config extends BaseObject
 {
@@ -67,12 +69,6 @@ class Config extends BaseObject
      * @var bool if true singular resource keys will be used /post/{id}, plural by default
      */
     public $singularResourceKeys = false;
-
-    /**
-     * @var bool if true "Id" suffixes for foreignKeys and junction tables will be generated in camelCase like userId
-     * postId, by default snake case used - user_id,post_id
-     */
-    public $camelCaseColumnNames = false;
 
     /**
      * @var string namespace to create controllers in. This must be resolvable via Yii alias.
@@ -181,10 +177,7 @@ class Config extends BaseObject
         return Yii::getAlias('@' . str_replace('\\', '/', ltrim($namespace, '\\')));
     }
 
-    /**
-     * @param \Closure $renderCallback
-     */
-    public function setFileRenderer($renderCallback):void
+    public function setFileRenderer(Closure $renderCallback):void
     {
         $this->fileRenderer = $renderCallback;
     }
@@ -194,14 +187,15 @@ class Config extends BaseObject
      * Note that the code template will be used as a PHP file.
      * @param string $template the code template file. This must be specified as a file path
      * relative to [[templatePath]].
-     * @param array $params list of parameters to be passed to the template file.
+     * @param array  $params list of parameters to be passed to the template file.
      * @return string the generated code
+     * @throws \yii\base\InvalidConfigException
      */
-    public function render($template, $params = [])
+    public function render(string $template, array $params = []):string
     {
         if (!$this->fileRenderer) {
             throw new InvalidConfigException('Renderer is not configured');
         }
-        return \call_user_func($this->fileRenderer, $template, $params);
+        return call_user_func($this->fileRenderer, $template, $params);
     }
 }

@@ -74,7 +74,7 @@ class DbModel extends BaseObject
         return '{{%' . $this->tableName . '}}';
     }
 
-    public function getClassName()
+    public function getClassName():string
     {
         return Inflector::id2camel($this->name, '_');
     }
@@ -82,9 +82,7 @@ class DbModel extends BaseObject
     public function getValidationRules(): string
     {
         $rules = (new ValidationRulesBuilder($this))->build();
-        $rules = array_map(function ($rule) {
-            return (string)$rule;
-        }, $rules);
+        $rules = array_map('strval', $rules);
         $rules = VarDumper::export($rules);
         return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL . '        ', "'", '[[', '],'], $rules);
     }
@@ -131,7 +129,7 @@ class DbModel extends BaseObject
     {
         return array_filter(
             $this->attributes,
-            function (Attribute $attribute) {
+            static function (Attribute $attribute) {
                 return !$attribute->isVirtual && StringHelper::startsWith($attribute->dbType, 'enum')
                     && !empty($attribute->enumValues);
             }
@@ -143,7 +141,7 @@ class DbModel extends BaseObject
      */
     public function virtualAttributes(): array
     {
-        return array_filter($this->attributes, function (Attribute $attribute) {
+        return array_filter($this->attributes, static function (Attribute $attribute) {
             return $attribute->isVirtual;
         });
     }
@@ -153,7 +151,7 @@ class DbModel extends BaseObject
      */
     public function dbAttributes(): array
     {
-        return array_filter($this->attributes, function (Attribute $attribute) {
+        return array_filter($this->attributes, static function (Attribute $attribute) {
             return !$attribute->isVirtual;
         });
     }

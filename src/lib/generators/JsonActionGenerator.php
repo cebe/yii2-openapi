@@ -23,6 +23,8 @@ class JsonActionGenerator extends RestActionGenerator
      * @param \cebe\openapi\spec\Operation          $operation
      * @param \cebe\yii2openapi\lib\items\RouteData $routeData
      * @return \cebe\yii2openapi\lib\items\RestAction|object
+     * @throws \yii\base\InvalidConfigException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
     protected function prepareAction(string $method, Operation $operation, RouteData $routeData):BaseObject
     {
@@ -54,7 +56,7 @@ class JsonActionGenerator extends RestActionGenerator
             } elseif (isset($this->config->controllerModelMap[$modelClass])) {
                 $controllerId = Inflector::camel2id($this->config->controllerModelMap[$modelClass]);
             } else {
-                $controllerId = Inflector::camel2id($modelClass, '-');
+                $controllerId = Inflector::camel2id($modelClass);
             }
             $transformerClass = $modelClass !== null
                 ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_') . 'Transformer'

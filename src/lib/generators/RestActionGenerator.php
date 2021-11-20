@@ -62,6 +62,7 @@ class RestActionGenerator
      * @param string                      $path
      * @param \cebe\openapi\spec\PathItem $pathItem
      * @return array|RestAction[]
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
     protected function resolvePath(string $path, PathItem $pathItem):array
@@ -80,6 +81,7 @@ class RestActionGenerator
      * @param \cebe\openapi\spec\Operation          $operation
      * @param \cebe\yii2openapi\lib\items\RouteData $routeData
      * @return \cebe\yii2openapi\lib\items\RestAction|object
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      * @throws \yii\base\InvalidConfigException
      */
     protected function prepareAction(string $method, Operation $operation, RouteData $routeData):BaseObject
@@ -106,7 +108,7 @@ class RestActionGenerator
                 : Inflector::camel2id($modelClass);
         } else {
             $controllerId = $routeData->controller;
-        };
+        }
         return Yii::createObject(RestAction::class, [
             [
                 'id' => trim("$actionType{$routeData->action}", '-'),

@@ -10,7 +10,9 @@ namespace cebe\yii2openapi\lib\items;
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
+use function explode;
 use function in_array;
+use function strpos;
 
 /**
  * @property-read string      $actionMethodName
@@ -134,11 +136,11 @@ final class FractalAction extends BaseObject
     public function getTemplateId(): string
     {
         $id = $this->id;
-        if (\strpos($id, '-for-') !== false) {
-            $id = \explode('-for-', $id)[0];
+        if (strpos($id, '-for-') !== false) {
+            $id = explode('-for-', $id, 2)[0];
         }
-        if (\strpos($id, '-related-') !== false) {
-            $id = \explode('-related-', $id)[0];
+        if (strpos($id, '-related-') !== false) {
+            $id = explode('-related-', $id, 2)[0];
         }
         return Inflector::variablize($id.'-'.$this->type);
     }
@@ -179,8 +181,8 @@ final class FractalAction extends BaseObject
 
     public function getRelationName(): string
     {
-        if (\strpos($this->id, '-related-') !== false) {
-            $name = \explode('-related-', $this->id)[1];
+        if (strpos($this->id, '-related-') !== false) {
+            $name = explode('-related-', $this->id)[1];
             return Inflector::variablize($name);
         }
         return '';

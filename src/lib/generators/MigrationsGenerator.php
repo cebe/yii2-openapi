@@ -7,7 +7,6 @@
 
 namespace cebe\yii2openapi\lib\generators;
 
-use a;
 use cebe\yii2openapi\lib\CodeFiles;
 use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\DbModel;
@@ -55,13 +54,17 @@ class MigrationsGenerator
     public function __construct(Config $config, array $models, Connection $db)
     {
         $this->config = $config;
-        $this->models = array_filter($models, function ($model) {
+        $this->models = array_filter($models, static function ($model) {
             return !$model->isNotDb;
         });
         $this->files = new CodeFiles([]);
         $this->db = $db;
     }
 
+    /**
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\base\InvalidConfigException
+     */
     public function generate():CodeFiles
     {
         if (!$this->config->generateMigrations) {
@@ -75,7 +78,7 @@ class MigrationsGenerator
         // TODO start $i by looking at all files, otherwise only one generation per hours causes correct order!!!
 
         $i = 0;
-        foreach ($migrationModels as $tableName => $migration) {
+        foreach ($migrationModels as $migration) {
             // migration files get invalidated directly after generating,
             // if they contain a timestamp use fixed time here instead
             do {
@@ -102,6 +105,7 @@ class MigrationsGenerator
     /**
      * @return array|\cebe\yii2openapi\lib\items\MigrationModel[]
      * @throws \yii\base\NotSupportedException
+     * @throws \Exception
      */
     public function buildMigrations(): array
     {

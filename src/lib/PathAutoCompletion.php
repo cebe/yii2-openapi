@@ -41,8 +41,7 @@ class PathAutoCompletion
             }
         }
 
-        $namespaces = array_map([$this, 'completeAlias'], array_keys(Yii::$aliases));
-        $namespaces = array_merge(...$namespaces);
+        $namespaces = array_merge(...array_map([$this, 'completeAlias'], array_keys(Yii::$aliases)));
 
         return [
             'openApiPath' => $paths,
@@ -57,7 +56,7 @@ class PathAutoCompletion
         ];
     }
 
-    private function completeAlias(string $alias)
+    private function completeAlias(string $alias):array
     {
         $path = Yii::getAlias($alias, false);
         if (in_array($alias, ['@web', '@runtime', '@vendor', '@bower', '@npm'])) {
@@ -73,7 +72,7 @@ class PathAutoCompletion
             Yii::error($e);
             return [];
         }
-        return array_map(function ($dir) use ($path, $alias) {
+        return array_map(static function ($dir) use ($path, $alias) {
             return str_replace('/', '\\', substr($alias, 1) . substr($dir, strlen($path)));
         }, $dirs);
     }

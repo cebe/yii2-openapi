@@ -52,6 +52,9 @@ class FractalActionTemplates
         return method_exists($this, $method) ? $this->$method(): null;
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function getImplementation(): ?string
     {
         $template = dirname(__DIR__)."/action_templates/{$this->action->templateId}.php";

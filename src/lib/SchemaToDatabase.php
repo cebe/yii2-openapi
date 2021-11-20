@@ -7,19 +7,12 @@
 
 namespace cebe\yii2openapi\lib;
 
-use cebe\openapi\ReferenceContext;
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Reference;
-use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use Yii;
-use yii\base\Component;
 use yii\base\Exception;
-use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use function count;
-use function str_replace;
 
 /**
  * Convert OpenAPI description into a database schema.
@@ -99,7 +92,7 @@ class SchemaToDatabase
             $resolver = Yii::createObject(AttributeResolver::class, [$schemaName, $schema, $junctions]);
             $models[$schemaName] = $resolver->resolve();
         }
-        foreach ($models as $schemaName => $model) {
+        foreach ($models as  $model) {
             foreach ($model->many2many as $relation) {
                 if (isset($models[$relation->viaModelName])) {
                     $relation->hasViaModel = true;
@@ -127,7 +120,7 @@ class SchemaToDatabase
         $junctions = [];
         $openApi = $this->config->getOpenApi();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
-            /**@var ComponentSchema $schema*/
+            /**@var ComponentSchema $schema */
             $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
             if ($schema->isNonDb()) {
                 continue;

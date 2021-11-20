@@ -11,9 +11,9 @@ use cebe\yii2openapi\lib\CodeFiles;
 use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\items\RestAction;
+use Laminas\Code\Generator\AbstractMemberGenerator;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
-use Laminas\Code\Generator\MethodGenerator;
 use Laminas\Code\Generator\ParameterGenerator;
 use Laminas\Code\Generator\ValueGenerator;
 use Yii;
@@ -42,6 +42,9 @@ class ControllersGenerator
         $this->files = new CodeFiles([]);
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function generate():CodeFiles
     {
         if (!$this->config->generateControllers) {
@@ -106,7 +109,7 @@ class ControllersGenerator
             $controllerNamespace . '\\base\\' . $className
         );
         /**@var FractalAction[]|RestAction[] $abstractActions * */
-        $abstractActions = array_filter($actions, function ($action) {
+        $abstractActions = array_filter($actions, static function ($action) {
             return $action->shouldBeAbstract();
         });
         if ($this->config->useJsonApi) {
@@ -114,22 +117,22 @@ class ControllersGenerator
 $actions = parent::actions();
 return $actions;
 PHP;
-            $reflection->addMethod('actions', [], MethodGenerator::FLAG_PUBLIC, $body);
+            $reflection->addMethod('actions', [], AbstractMemberGenerator::FLAG_PUBLIC, $body);
         }
         $params = [
             new ParameterGenerator('action'),
             new ParameterGenerator('model', null, new ValueGenerator(null)),
             new ParameterGenerator('params', null, new ValueGenerator([])),
         ];
-        $reflection->addMethod('checkAccess', $params, MethodGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
+        $reflection->addMethod('checkAccess', $params, AbstractMemberGenerator::FLAG_PUBLIC, '//TODO implement checkAccess');
         foreach ($abstractActions as $action) {
-            $params = array_map(function ($param) {
+            $params = array_map(static function ($param) {
                 return ['name' => $param];
             }, $action->getParamNames());
             $reflection->addMethod(
                 $action->actionMethodName,
                 $params,
-                MethodGenerator::FLAG_PUBLIC,
+                AbstractMemberGenerator::FLAG_PUBLIC,
                 '//TODO implement ' . $action->actionMethodName
             );
         }

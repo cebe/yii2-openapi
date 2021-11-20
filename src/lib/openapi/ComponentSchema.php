@@ -40,6 +40,9 @@ class ComponentSchema
     /**@var array* */
     private $indexes;
 
+    /**
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
     public function __construct(SpecObjectInterface $openApiSchema)
     {
         if ($openApiSchema instanceof Reference) {
@@ -125,6 +128,9 @@ class ComponentSchema
         return isset($this->schema->properties[$name]);
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function getProperty(string $name):?PropertySchema
     {
         if (!$this->hasProperty($name)) {

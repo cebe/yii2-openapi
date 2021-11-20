@@ -143,11 +143,17 @@ class PropertySchema
         return $this->refSchema;
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function getTargetProperty():?PropertySchema
     {
         return $this->getRefSchema()->getProperty($this->getRefSchema()->getPkName());
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function getSelfTargetProperty():?PropertySchema
     {
         if (!$this->isRefPointerToSelf()) {

@@ -9,7 +9,6 @@ namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
 use cebe\yii2openapi\lib\Config;
-use cebe\yii2openapi\lib\items\DbModel;
 use Laminas\Code\Generator\ClassGenerator;
 use Laminas\Code\Generator\FileGenerator;
 use Yii;
@@ -38,6 +37,10 @@ class ModelsGenerator
         $this->models = $models;
         $this->files = new CodeFiles([]);
     }
+
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function generate():CodeFiles
     {
         if (!$this->config->generateModels) {
@@ -51,7 +54,7 @@ class ModelsGenerator
                 $this->config->render('basefaker.php', ['namespace' => $this->config->fakerNamespace])
             ));
         }
-        foreach ($this->models as $modelName => $model) {
+        foreach ($this->models as $model) {
             $className = $model->getClassName();
             if ($model->isNotDb === false) {
                 $this->files->add(new CodeFile(
