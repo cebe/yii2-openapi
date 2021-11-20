@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib\migrations;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
+use Yii;
 use yii\db\ColumnSchema;
 use yii\db\Connection;
 
@@ -49,6 +50,7 @@ abstract class BaseMigrationBuilder
      * MigrationBuilder constructor.
      * @param \yii\db\Connection                  $db
      * @param \cebe\yii2openapi\lib\items\DbModel $model
+     * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      */
     public function __construct(Connection $db, DbModel $model)
@@ -56,21 +58,27 @@ abstract class BaseMigrationBuilder
         $this->db = $db;
         $this->model = $model;
         $this->tableSchema = $db->getTableSchema($model->getTableAlias(), true);
-        $this->recordBuilder = new MigrationRecordBuilder($db->getSchema());
+        $this->recordBuilder = Yii::createObject(MigrationRecordBuilder::class, [$db->getSchema()]);
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function build():MigrationModel
     {
         return $this->tableSchema === null ? $this->buildFresh() : $this->buildSecondary();
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function buildJunction(ManyToManyRelation $relation):MigrationModel
     {
         $this->tableSchema = $this->db->getTableSchema($relation->getViaTableAlias(), true);
         if ($this->tableSchema !== null) {
             return $this->buildSecondary($relation);
         }
-        $this->migration = new MigrationModel($this->model, true, $relation);
+        $this->migration = Yii::createObject(MigrationModel::class, [$this->model, true, $relation, []]);
         $builder = $this->recordBuilder;
         $tableAlias = $relation->getViaTableAlias();
         $this->migration->addUpCode($builder->createTable($tableAlias, $relation->columnSchema))
@@ -94,9 +102,12 @@ abstract class BaseMigrationBuilder
         return $this->migration;
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function buildFresh():MigrationModel
     {
-        $this->migration = new MigrationModel($this->model, true);
+        $this->migration = Yii::createObject(MigrationModel::class, [$this->model, true, null, []]);
         $this->newColumns = $this->model->attributesToColumnSchema();
         if (empty($this->newColumns)) {
             return $this->migration;
@@ -114,7 +125,7 @@ abstract class BaseMigrationBuilder
             }
         }
         if ($nonAutoincrementPk) {
-            $pkName = 'pk_'.$this->model->tableName.'_'.$nonAutoincrementPk->name;
+            $pkName = 'pk_' . $this->model->tableName . '_' . $nonAutoincrementPk->name;
             $this->migration
                 ->addUpCode($builder->addPrimaryKey($tableName, [$nonAutoincrementPk->name], $pkName))
                 ->addDownCode($builder->dropPrimaryKey($tableName, [$nonAutoincrementPk->name], $pkName));
@@ -146,9 +157,12 @@ abstract class BaseMigrationBuilder
         return $this->migration;
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function buildSecondary(?ManyToManyRelation $relation = null):MigrationModel
     {
-        $this->migration = new MigrationModel($this->model, false, $relation);
+        $this->migration = Yii::createObject(MigrationModel::class, [$this->model, false, $relation, []]);
         $this->newColumns = $relation->columnSchema ?? $this->model->attributesToColumnSchema();
         $wantNames = array_keys($this->newColumns);
         $haveNames = $this->tableSchema->columnNames;
@@ -210,6 +224,7 @@ abstract class BaseMigrationBuilder
 
     /**
      * @param array|ColumnSchema[] $columns
+     * @throws \yii\base\InvalidConfigException
      */
     protected function buildColumnsCreation(array $columns):void
     {
@@ -222,15 +237,16 @@ abstract class BaseMigrationBuilder
 
     /**
      * @param array|ColumnSchema[] $columns
+     * @throws \yii\base\InvalidConfigException
      */
     protected function buildColumnsDrop(array $columns):void
     {
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
             if ($column->isPrimaryKey && !$column->autoIncrement) {
-                $pkName = 'pk_'.$this->model->tableName.'_'.$column->name;
+                $pkName = 'pk_' . $this->model->tableName . '_' . $column->name;
                 $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name], $pkName))
-                    ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name], $pkName));
+                                ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name], $pkName));
             }
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));

@@ -16,6 +16,9 @@ use yii\helpers\ArrayHelper;
 
 final class MysqlMigrationBuilder extends BaseMigrationBuilder
 {
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     protected function buildColumnChanges(ColumnSchema $current, ColumnSchema $desired, array $changed):void
     {
         $newColumn = clone $current;

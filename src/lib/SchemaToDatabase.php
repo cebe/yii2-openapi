@@ -192,7 +192,7 @@ class SchemaToDatabase
             $junctions[] = $propertyMap[1];
             unset($junkRef, $junkRef1, $junkRef0, $propertyMap);
         }
-        return new JunctionSchemas($junctions);
+        return Yii::createObject(JunctionSchemas::class, [$junctions]);
     }
 
     private function canGenerateModel(string $schemaName, ComponentSchema $schema):bool

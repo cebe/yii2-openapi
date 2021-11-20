@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use Yii;
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -87,7 +88,7 @@ final class FractalAction extends BaseObject
     private function templateFactory():FractalActionTemplates
     {
         if (!$this->templateFactory) {
-            $this->templateFactory = new FractalActionTemplates($this);
+            $this->templateFactory = Yii::createObject(FractalActionTemplates::class, [$this]);
         }
         return $this->templateFactory;
     }

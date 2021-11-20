@@ -46,6 +46,7 @@ class MigrationsGenerator
      * @var MigrationModel[]
      **/
     protected $migrations;
+
     /**
      * @var MigrationModel[]|bool[]
      **/
@@ -62,8 +63,8 @@ class MigrationsGenerator
     }
 
     /**
-     * @throws \yii\base\NotSupportedException
      * @throws \yii\base\InvalidConfigException
+     * @throws \Exception
      */
     public function generate():CodeFiles
     {
@@ -104,10 +105,9 @@ class MigrationsGenerator
 
     /**
      * @return array|\cebe\yii2openapi\lib\items\MigrationModel[]
-     * @throws \yii\base\NotSupportedException
      * @throws \Exception
      */
-    public function buildMigrations(): array
+    public function buildMigrations():array
     {
         $junctions = [];
         foreach ($this->models as $model) {
@@ -130,14 +130,14 @@ class MigrationsGenerator
     }
 
     /**
-     * @throws \yii\base\NotSupportedException
+     * @throws \yii\base\InvalidConfigException
      */
     protected function createBuilder(DbModel $model):BaseMigrationBuilder
     {
         if ($this->db->getDriverName() === 'pgsql') {
-            return new PostgresMigrationBuilder($this->db, $model);
+            return Yii::createObject(PostgresMigrationBuilder::class, [$this->db, $model]);
         }
-        return new MysqlMigrationBuilder($this->db, $model);
+        return Yii::createObject(MysqlMigrationBuilder::class, [$this->db, $model]);
     }
 
     /**

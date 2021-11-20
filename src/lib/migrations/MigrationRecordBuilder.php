@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\migrations;
 
 use cebe\yii2openapi\lib\ColumnToCode;
+use Yii;
 use yii\db\ColumnSchema;
 use yii\db\Schema;
 use yii\helpers\VarDumper;
@@ -47,6 +48,7 @@ final class MigrationRecordBuilder
      * @param string                     $tableAlias
      * @param array|\yii\db\ColumnSchema $columns
      * @return string
+     * @throws \yii\base\InvalidConfigException
      */
     public function createTable(string $tableAlias, array $columns):string
     {
@@ -57,37 +59,54 @@ final class MigrationRecordBuilder
         return sprintf(self::ADD_TABLE, $tableAlias, $codeColumns);
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function addColumn(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, false);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function addDbColumn(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function alterColumn(string $tableAlias, ColumnSchema $column):string
     {
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
-
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function alterColumnType(string $tableAlias, ColumnSchema $column, bool $addUsing = false):string
     {
         $converter = $this->columnToCode($column, false);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column, bool $addUsing = false) :string
     {
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function setColumnDefault(string $tableAlias, ColumnSchema $column):string
     {
         $default = $this->columnToCode($column, false, true)->getDefaultValue();
@@ -97,6 +116,9 @@ final class MigrationRecordBuilder
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, '"SET DEFAULT '.$default.'"');
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     public function setColumnDefaultFromDb(string $tableAlias, ColumnSchema $column):string
     {
         $default = $this->columnToCode($column, true, true)->getDefaultValue();
@@ -179,8 +201,11 @@ final class MigrationRecordBuilder
         return sprintf(self::DROP_INDEX, $indexName, $tableAlias);
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     private function columnToCode(ColumnSchema $column, bool $fromDb = false, bool $alter = false): ColumnToCode
     {
-        return new ColumnToCode($this->dbSchema, $column, $fromDb, $alter);
+        return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter]);
     }
 }

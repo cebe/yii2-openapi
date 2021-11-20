@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\items;
 
 use cebe\yii2openapi\lib\ValidationRulesBuilder;
+use Yii;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\Inflector;
@@ -30,6 +31,7 @@ class DbModel extends BaseObject
      * @var string primary key attribute name
      */
     public $pkName;
+
     /**
      * @var string model name.
      */
@@ -69,7 +71,7 @@ class DbModel extends BaseObject
 
     public $isNotDb = false;
 
-    public function getTableAlias(): string
+    public function getTableAlias():string
     {
         return '{{%' . $this->tableName . '}}';
     }
@@ -79,9 +81,9 @@ class DbModel extends BaseObject
         return Inflector::id2camel($this->name, '_');
     }
 
-    public function getValidationRules(): string
+    public function getValidationRules():string
     {
-        $rules = (new ValidationRulesBuilder($this))->build();
+        $rules = Yii::createObject(ValidationRulesBuilder::class, [$this])->build();
         $rules = array_map('strval', $rules);
         $rules = VarDumper::export($rules);
         return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL . '        ', "'", '[[', '],'], $rules);
@@ -90,7 +92,7 @@ class DbModel extends BaseObject
     /**
      * @return \cebe\yii2openapi\lib\items\AttributeRelation[]|array
      */
-    public function getHasOneRelations(): array
+    public function getHasOneRelations():array
     {
         return array_filter(
             $this->relations,
@@ -100,7 +102,7 @@ class DbModel extends BaseObject
         );
     }
 
-    public function getPkAttribute(): Attribute
+    public function getPkAttribute():Attribute
     {
         return $this->attributes[$this->pkName];
     }
@@ -108,24 +110,26 @@ class DbModel extends BaseObject
     /**
      * @return ColumnSchema[]
      */
-    public function attributesToColumnSchema(): array
+    public function attributesToColumnSchema():array
     {
-        return $this->isNotDb? []: array_reduce(
-            $this->attributes,
-            static function ($acc, Attribute $attribute) {
-                if (!$attribute->isVirtual) {
-                    $acc[$attribute->columnName] = $attribute->toColumnSchema();
-                }
-                return $acc;
-            },
-            []
-        );
+        return $this->isNotDb
+            ? []
+            : array_reduce(
+                $this->attributes,
+                static function ($acc, Attribute $attribute) {
+                    if (!$attribute->isVirtual) {
+                        $acc[$attribute->columnName] = $attribute->toColumnSchema();
+                    }
+                    return $acc;
+                },
+                []
+            );
     }
 
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
-    public function getEnumAttributes(): array
+    public function getEnumAttributes():array
     {
         return array_filter(
             $this->attributes,
@@ -139,7 +143,7 @@ class DbModel extends BaseObject
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
-    public function virtualAttributes(): array
+    public function virtualAttributes():array
     {
         return array_filter($this->attributes, static function (Attribute $attribute) {
             return $attribute->isVirtual;
@@ -149,7 +153,7 @@ class DbModel extends BaseObject
     /**
      * @return array|\cebe\yii2openapi\lib\items\Attribute[]
      */
-    public function dbAttributes(): array
+    public function dbAttributes():array
     {
         return array_filter($this->attributes, static function (Attribute $attribute) {
             return !$attribute->isVirtual;
