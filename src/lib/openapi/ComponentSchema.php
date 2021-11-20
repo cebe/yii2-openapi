@@ -12,7 +12,6 @@ use cebe\openapi\spec\Reference;
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\CustomSpecAttr;
 use Generator;
-use InvalidArgumentException;
 use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -90,6 +89,11 @@ class ComponentSchema
         return in_array($propName, $this->requiredProps, true);
     }
 
+    public function isNonDb():bool
+    {
+        return isset($this->schema->{CustomSpecAttr::TABLE}) && $this->schema->{CustomSpecAttr::TABLE} === false;
+    }
+
     public function resolveTableName(string $schemaName):string
     {
         return $this->schema->{CustomSpecAttr::TABLE} ??
@@ -101,12 +105,12 @@ class ComponentSchema
         return isset($this->schema->{CustomSpecAttr::TABLE});
     }
 
-    public function getIndexes(): array
+    public function getIndexes():array
     {
         return $this->schema->{CustomSpecAttr::INDEXES} ?? [];
     }
 
-    public function getDescription(): string
+    public function getDescription():string
     {
         return $this->schema->description ?? '';
     }

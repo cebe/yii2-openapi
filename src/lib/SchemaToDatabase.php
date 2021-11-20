@@ -129,6 +129,9 @@ class SchemaToDatabase
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
             /**@var ComponentSchema $schema*/
             $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
+            if ($schema->isNonDb()) {
+                continue;
+            }
             if (!StringHelper::startsWith($schemaName, JunctionSchemas::PREFIX)) {
                 continue;
             }

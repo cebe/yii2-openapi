@@ -36,9 +36,7 @@ class TransformersGenerator
     public function __construct(Config $config, array $models)
     {
         $this->config = $config;
-        $this->models = array_filter($models, function ($model) {
-            return $model instanceof DbModel;
-        });
+        $this->models = $models;
         $this->files = new CodeFiles([]);
     }
     public function generate():CodeFiles

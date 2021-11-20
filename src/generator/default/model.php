@@ -1,73 +1,43 @@
-<?= '<?php' ?>
+<?php
+/**
+ * @var \cebe\yii2openapi\lib\items\DbModel $model
+ * @var string $namespace
+ * @var string $relationNamespace
+ **/
+use yii\helpers\Inflector;
+use yii\helpers\VarDumper;
 
+?>
+<?= '<?php' ?>
 
 namespace <?= $namespace ?>;
 
 use yii\base\Model;
 
 /**
- * <?= str_replace("\n", "\n * ", trim($description)) ?>
+ * <?= empty($model->description) ? '' : str_replace("\n", "\n * ", ' ' . trim($model->description)) ?>
 
  *
  */
-class <?= $className ?> extends Model
+class <?= $model->getClassName() ?> extends Model
 {
-<?php foreach ($attributes as $attribute): ?>
+<?php foreach ($model->attributes as $attribute): ?>
     /**
-     * @var <?= trim(($attribute['type'] ?? 'mixed') . ' ' . str_replace("\n", "\n     * ", rtrim($attribute['description']))) ?>
+    * @var <?=$attribute->phpType.' '.$attribute->description.PHP_EOL?>
+    */
+    public $<?= $attribute->propertyName ?>;
 
-     */
-    public $<?= $attribute['name'] ?>;
 <?php endforeach; ?>
+<?php foreach ($model->relations as $relationName => $relation): ?>
+    /**
+    * @var <?=$relation->isHasOne()? $relation->getClassName(): 'array|'.$relation->getClassName().'[]'.PHP_EOL?>
+    */
+    public $<?= $relationName ?>;
 
+<?php endforeach; ?>
 
     public function rules()
     {
-        return [
-<?php
-    $safeAttributes = [];
-    $requiredAttributes = [];
-    $integerAttributes = [];
-    $stringAttributes = [];
-
-    foreach ($attributes as $attribute) {
-        if ($attribute['readOnly']) {
-            continue;
-        }
-        if ($attribute['required']) {
-            $requiredAttributes[$attribute['name']] = $attribute['name'];
-        }
-        switch ($attribute['type']) {
-            case 'integer':
-                $integerAttributes[$attribute['name']] = $attribute['name'];
-                break;
-            case 'string':
-                $stringAttributes[$attribute['name']] = $attribute['name'];
-                break;
-            default:
-            case 'array':
-                $safeAttributes[$attribute['name']] = $attribute['name'];
-                break;
-        }
-    }
-    if (!empty($stringAttributes)) {
-        echo "            [['" . implode("', '", $stringAttributes) . "'], 'trim'],\n";
-    }
-    if (!empty($requiredAttributes)) {
-        echo "            [['" . implode("', '", $requiredAttributes) . "'], 'required'],\n";
-    }
-    if (!empty($stringAttributes)) {
-        echo "            [['" . implode("', '", $stringAttributes) . "'], 'string'],\n";
-    }
-    if (!empty($integerAttributes)) {
-        echo "            [['" . implode("', '", $integerAttributes) . "'], 'integer'],\n";
-    }
-    if (!empty($safeAttributes)) {
-        echo "            // TODO define more concreate validation rules!\n";
-        echo "            [['" . implode("','", $safeAttributes) . "'], 'safe'],\n";
-    }
-
-?>
-        ];
+        return <?=$model->getValidationRules()?>;
     }
 }

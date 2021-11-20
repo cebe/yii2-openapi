@@ -56,7 +56,7 @@ class MigrationsGenerator
     {
         $this->config = $config;
         $this->models = array_filter($models, function ($model) {
-            return $model instanceof DbModel;
+            return !$model->isNotDb;
         });
         $this->files = new CodeFiles([]);
         $this->db = $db;

@@ -67,6 +67,8 @@ class DbModel extends BaseObject
      */
     public $indexes = [];
 
+    public $isNotDb = false;
+
     public function getTableAlias(): string
     {
         return '{{%' . $this->tableName . '}}';
@@ -110,7 +112,7 @@ class DbModel extends BaseObject
      */
     public function attributesToColumnSchema(): array
     {
-        return array_reduce(
+        return $this->isNotDb? []: array_reduce(
             $this->attributes,
             static function ($acc, Attribute $attribute) {
                 if (!$attribute->isVirtual) {

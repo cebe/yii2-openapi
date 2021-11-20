@@ -53,7 +53,7 @@ class ModelsGenerator
         }
         foreach ($this->models as $modelName => $model) {
             $className = $model->getClassName();
-            if ($model instanceof DbModel) {
+            if ($model->isNotDb === false) {
                 $this->files->add(new CodeFile(
                     Yii::getAlias("$modelPath/base/$className.php"),
                     $this->config->render(
@@ -85,10 +85,8 @@ class ModelsGenerator
                     $this->config->render(
                         'model.php',
                         [
-                            'className' => $className,
-                            'namespace' => $this->config->modelNamespace,
-                            'description' => $model['description'],
-                            'attributes' => $model['attributes'],
+                            'model' => $model,
+                            'namespace' => $this->config->modelNamespace . '\\base',
                         ]
                     )
                 ));

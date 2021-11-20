@@ -73,6 +73,7 @@ class AttributeResolver
     /**@var bool */
     private $hasMany2Many;
 
+
     public function __construct(string $schemaName, ComponentSchema $schema, JunctionSchemas $junctions)
     {
         $this->schemaName = $schemaName;
@@ -110,7 +111,8 @@ class AttributeResolver
             'many2many' => $this->many2many,
             'indexes' => $this->prepareIndexes($this->schema->getIndexes()),
             //For valid primary keys for junction tables
-            'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : []
+            'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : [],
+            'isNotDb' => $this->schema->isNonDb()
         ]);
     }
 
