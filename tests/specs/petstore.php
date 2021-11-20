@@ -8,5 +8,5 @@ return [
         'Error',
     ],
     'generateControllers' => true,
-    'generateMigrations' => false, // TODO add tests for migrations
+    'generateMigrations' => false,
 ];

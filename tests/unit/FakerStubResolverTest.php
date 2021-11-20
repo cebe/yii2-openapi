@@ -6,8 +6,8 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\FakerStubResolver;
 use cebe\yii2openapi\lib\items\Attribute;
-use cebe\yii2openapi\lib\openapi\PropertyReader;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use tests\TestCase;
 use Yii;
 use yii\db\Schema as YiiDbSchema;
@@ -17,7 +17,7 @@ class FakerStubResolverTest extends TestCase
     /**
      * @dataProvider dataProvider
      **/
-    public function testResolve(Attribute $column, PropertyReader $property, $expected)
+    public function testResolve(Attribute $column, PropertySchema $property, $expected)
     {
         $resolver = Yii::createObject(['class' => FakerStubResolver::class], [$column, $property]);
         self::assertEquals($expected, $resolver->resolve());
@@ -28,7 +28,7 @@ class FakerStubResolverTest extends TestCase
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
         $openApiSchema = $openApi->components->schemas['Fakerable'];
-        $schema = new SchemaReader($openApiSchema);
+        $schema = new ComponentSchema($openApiSchema);
         return [
             [
                 (new Attribute('id'))->setPhpType('int')->setDbType(YiiDbSchema::TYPE_BIGPK),

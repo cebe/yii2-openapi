@@ -22,7 +22,7 @@ use function is_int;
 use function strpos;
 use function substr;
 
-class PropertyReader
+class PropertySchema
 {
     public const REFERENCE_PATH = '/components/schemas/';
     public const REFERENCE_PATH_LEN = 20;
@@ -44,7 +44,7 @@ class PropertyReader
     /**@var string $refPointer * */
     private $refPointer;
 
-    /**@var \cebe\yii2openapi\lib\openapi\SchemaReader $refSchema * */
+    /**@var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema * */
     private $refSchema;
 
     /**
@@ -53,17 +53,17 @@ class PropertyReader
     private $isPk;
 
     /**
-     * @var \cebe\yii2openapi\lib\openapi\SchemaReader
+     * @var \cebe\yii2openapi\lib\openapi\ComponentSchema
      */
     private $schema;
 
     /**
-     * @param \cebe\openapi\SpecObjectInterface          $property
-     * @param string                                     $name
-     * @param \cebe\yii2openapi\lib\openapi\SchemaReader $schema
+     * @param \cebe\openapi\SpecObjectInterface             $property
+     * @param string                                        $name
+     * @param \cebe\yii2openapi\lib\openapi\ComponentSchema $schema
      * @throws \yii\base\InvalidConfigException
      */
-    public function __construct(SpecObjectInterface $property, string $name, SchemaReader $schema)
+    public function __construct(SpecObjectInterface $property, string $name, ComponentSchema $schema)
     {
         $this->name = $name;
         $this->property = $property;
@@ -92,7 +92,7 @@ class PropertyReader
             $this->refSchema = $this->schema;
         } elseif ($this->isRefPointerToSchema()) {
             $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(SchemaReader::class, [$this->property->resolve()]);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve()]);
         }
     }
 
@@ -111,7 +111,7 @@ class PropertyReader
             $this->refSchema = $this->schema;
         } elseif ($this->isRefPointerToSchema()) {
             $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(SchemaReader::class, [$items->resolve()]);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve()]);
         }
     }
 
@@ -135,7 +135,7 @@ class PropertyReader
         return $this->property;
     }
 
-    public function getRefSchema():SchemaReader
+    public function getRefSchema():ComponentSchema
     {
         if (!$this->isReference && !$this->isItemsReference) {
             throw new BadMethodCallException('Schema is not reference');
@@ -143,12 +143,12 @@ class PropertyReader
         return $this->refSchema;
     }
 
-    public function getTargetProperty():?PropertyReader
+    public function getTargetProperty():?PropertySchema
     {
         return $this->getRefSchema()->getProperty($this->getRefSchema()->getPkName());
     }
 
-    public function getSelfTargetProperty():?PropertyReader
+    public function getSelfTargetProperty():?PropertySchema
     {
         if (!$this->isRefPointerToSelf()) {
             return null;

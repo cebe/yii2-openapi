@@ -51,10 +51,15 @@ class ApiGenerator extends Generator
      * @var array Special url prefixes
      * @example
      * 'urlPrefixes' => [
-     * //Urls with this prefix will be handled with CalendarController at default controllerNamespace
+     * //Prefix will be ignored in url pattern,
+     * //Rule like ['/calendar/<controller>/<action>' => '<controller>/<action>']
      *    'calendar' => '',
-     * //Urls with this prefix will be located directly at defined path and namespace
-     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '/app/modules/api/v1']
+     * //Controller for url with this prefix will be located directly at defined path and namespace
+     * //Rule like ['/api/v1/<controller>/<action>' => '/api/v1/<controller>/<action>']
+     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '\app\modules\api\v1'],
+     * //Controller for url with this prefix will be located directly at defined namespace, path resolved by namespace
+     * //Rule like ['/prefix/<controller>/<action>' => '/xxx/<controller>/<action>']
+     *    'prefix' => ['module' => 'xxx','namespace' => '\app\modules\xxx\controllers']
      * ]
      * Note: Order may be important! define most detailed prefixes before less detailed if you want different
      * prefixes with common part, for. ex 'user/auth' should be declared before 'user'
@@ -310,15 +315,14 @@ class ApiGenerator extends Generator
                 $this->addError(
                     $attribute,
                     'Invalid definition for prefix "' . $prefix
-                    . '" it should be empty for ignore, or array with keys "path" and "namespace"'
+                    . '" it should be empty for ignore, or array with keys "path", "namespace", "module"'
                 );
                 return;
             }
-            if (!isset($rule['path'], $rule['namespace'])) {
+            if (is_array($rule) && !isset($rule['namespace'])) {
                 $this->addError(
                     $attribute,
-                    'Invalid definition for prefix "' . $prefix
-                    . '" it should be empty for ignore, or array with keys "path" and "namespace"'
+                    'Invalid definition for prefix "' . $prefix . 'at least "namespace" required'
                 );
                 return;
             }
@@ -447,11 +451,6 @@ class ApiGenerator extends Generator
             });
         }
         return $this->config;
-    }
-
-    public function getConfig():Config
-    {
-        return $this->makeConfig();
     }
 
     /**

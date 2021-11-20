@@ -18,8 +18,8 @@ use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
-use cebe\yii2openapi\lib\openapi\PropertyReader;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use Throwable;
 use Yii;
 use yii\helpers\Inflector;
@@ -59,7 +59,7 @@ class AttributeResolver
      */
     private $tableName;
     /**
-     * @var SchemaReader
+     * @var ComponentSchema
      */
     private $schema;
     /**
@@ -73,7 +73,7 @@ class AttributeResolver
     /**@var bool */
     private $hasMany2Many;
 
-    public function __construct(string $schemaName, SchemaReader $schema, JunctionSchemas $junctions)
+    public function __construct(string $schemaName, ComponentSchema $schema, JunctionSchemas $junctions)
     {
         $this->schemaName = $schemaName;
         $this->schema = $schema;
@@ -117,7 +117,7 @@ class AttributeResolver
     /**
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      */
-    protected function resolveJunctionTableProperty(PropertyReader $property, bool $isRequired)
+    protected function resolveJunctionTableProperty(PropertySchema $property, bool $isRequired)
     {
         if ($this->junctions->isJunctionProperty($this->schemaName, $property->getName())) {
             $junkAttribute = $this->junctions->byJunctionSchema($this->schemaName)[$property->getName()];
@@ -141,7 +141,7 @@ class AttributeResolver
     /**
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      */
-    protected function resolveHasMany2ManyTableProperty(PropertyReader $property, bool $isRequired):void
+    protected function resolveHasMany2ManyTableProperty(PropertySchema $property, bool $isRequired):void
     {
         if ($this->junctions->isManyToManyProperty($this->schemaName, $property->getName())) {
             return;
@@ -177,11 +177,11 @@ class AttributeResolver
     }
 
     /**
-     * @param \cebe\yii2openapi\lib\openapi\PropertyReader $property
+     * @param \cebe\yii2openapi\lib\openapi\PropertySchema $property
      * @param bool                                         $isRequired
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      */
-    protected function resolveProperty(PropertyReader $property, bool $isRequired):void
+    protected function resolveProperty(PropertySchema $property, bool $isRequired):void
     {
         $attribute = new Attribute($property->getName());
         $attribute->setRequired($isRequired)
@@ -267,17 +267,17 @@ class AttributeResolver
      * Check and register many-to-many relation
      * - property name for many-to-many relation should be equal lower-cased, pluralized schema name
      * - referenced schema should contain mirrored reference to current schema
-     * @param string $propertyName
-     * @param string $relatedSchemaName
-     * @param string $relatedTableName
-     * @param SchemaReader $refSchema
+     * @param string          $propertyName
+     * @param string          $relatedSchemaName
+     * @param string          $relatedTableName
+     * @param ComponentSchema $refSchema
      * @return bool
      */
     protected function catchManyToMany(
         string $propertyName,
         string $relatedSchemaName,
         string $relatedTableName,
-        SchemaReader $refSchema
+        ComponentSchema $refSchema
     ): bool {
         if (strtolower(Inflector::id2camel($propertyName, '_'))
             !== strtolower(Inflector::pluralize($relatedSchemaName))) {
@@ -308,7 +308,7 @@ class AttributeResolver
     }
 
 
-    protected function guessFakerStub(Attribute $attribute, PropertyReader $property): ?string
+    protected function guessFakerStub(Attribute $attribute, PropertySchema $property): ?string
     {
         $resolver = Yii::createObject(['class' => FakerStubResolver::class], [$attribute, $property]);
         return $resolver->resolve();

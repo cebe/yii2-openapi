@@ -18,7 +18,7 @@ use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use function in_array;
 
-class SchemaReader
+class ComponentSchema
 {
     /**
      * @var \cebe\openapi\spec\Schema
@@ -121,22 +121,22 @@ class SchemaReader
         return isset($this->schema->properties[$name]);
     }
 
-    public function getProperty(string $name):?PropertyReader
+    public function getProperty(string $name):?PropertySchema
     {
         if (!$this->hasProperty($name)) {
             return null;
         }
-        return Yii::createObject(PropertyReader::class, [$this->schema->properties[$name], $name, $this]);
+        return Yii::createObject(PropertySchema::class, [$this->schema->properties[$name], $name, $this]);
     }
 
     /**
-     * @return \Generator|\cebe\yii2openapi\lib\openapi\PropertyReader[]
+     * @return \Generator|\cebe\yii2openapi\lib\openapi\PropertySchema[]
      * @throws \yii\base\InvalidConfigException
      */
     public function getProperties():Generator
     {
         foreach ($this->schema->properties as $name => $property) {
-            yield Yii::createObject(PropertyReader::class, [$property, $name, $this]);
+            yield Yii::createObject(PropertySchema::class, [$property, $name, $this]);
         }
     }
 }

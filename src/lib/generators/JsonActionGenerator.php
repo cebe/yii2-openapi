@@ -10,7 +10,8 @@ namespace cebe\yii2openapi\lib\generators;
 use cebe\openapi\spec\Operation;
 use cebe\yii2openapi\lib\items\FractalAction;
 use cebe\yii2openapi\lib\items\RouteData;
-use cebe\yii2openapi\lib\SchemaResponseResolver;
+use cebe\yii2openapi\lib\openapi\ResponseSchema;
+use Yii;
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
 
@@ -26,9 +27,9 @@ class JsonActionGenerator extends RestActionGenerator
     protected function prepareAction(string $method, Operation $operation, RouteData $routeData):BaseObject
     {
         $actionType = $this->resolveActionType($routeData, $method);
-        $modelClass = SchemaResponseResolver::guessModelClass($operation, $actionType);
+        $modelClass = ResponseSchema::guessModelClass($operation, $actionType);
         $expectedRelations = in_array($actionType, ['list', 'view'])
-            ?  SchemaResponseResolver::guessResponseRelations($operation)
+            ? ResponseSchema::guessResponseRelations($operation)
             : [];
         // fallback to known model class on same URL
         if ($modelClass === null && isset($this->knownModelClasses[$routeData->path])) {
@@ -39,7 +40,7 @@ class JsonActionGenerator extends RestActionGenerator
         if ($routeData->isRelationship()) {
             $relatedClass = $modelClass;
             $transformerClass = $modelClass !== null
-                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
+                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_') . 'Transformer'
                 : null;
             $controllerId = $routeData->controller;
             $modelClass = Inflector::id2camel(Inflector::singularize($controllerId));
@@ -56,7 +57,7 @@ class JsonActionGenerator extends RestActionGenerator
                 $controllerId = Inflector::camel2id($modelClass, '-');
             }
             $transformerClass = $modelClass !== null
-                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_').'Transformer'
+                ? $this->config->transformerNamespace . '\\' . Inflector::id2camel($modelClass, '_') . 'Transformer'
                 : null;
         }
 
@@ -67,24 +68,29 @@ class JsonActionGenerator extends RestActionGenerator
             }
         }
 
-        return new FractalAction([
-            'singularResourceKey'=> $this->config->singularResourceKeys,
-            'type' => $routeData->type,
-            'id' => $routeData->isNonCrudAction()?trim("{$actionType}-{$routeData->action}", '-'):"$actionType{$routeData->action}",
-            'controllerId' => $controllerId,
-            'urlPath' => $routeData->path,
-            'requestMethod' => strtoupper($method),
-            'urlPattern' => $routeData->pattern,
-            'idParam' => $routeData->idParam ?? null,
-            'parentIdParam' => $routeData->parentParam ?? null,
-            'params' => $routeData->params,
-            'modelName' => $modelClass,
-            'relatedModel'=>$relatedClass,
-            'modelFqn' => $modelClass !== null
-                ? $this->config->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
-                : null,
-            'transformerFqn'=> $transformerClass,
-            'expectedRelations' => $expectedRelations
+        return Yii::createObject(FractalAction::class, [
+            [
+                'singularResourceKey' => $this->config->singularResourceKeys,
+                'type' => $routeData->type,
+                'id' => $routeData->isNonCrudAction() ? trim("{$actionType}-{$routeData->action}", '-')
+                    : "$actionType{$routeData->action}",
+                'controllerId' => $controllerId,
+                'urlPath' => $routeData->path,
+                'requestMethod' => strtoupper($method),
+                'urlPattern' => $routeData->pattern,
+                'idParam' => $routeData->idParam ?? null,
+                'parentIdParam' => $routeData->parentParam ?? null,
+                'params' => $routeData->params,
+                'modelName' => $modelClass,
+                'relatedModel' => $relatedClass,
+                'modelFqn' => $modelClass !== null
+                    ? $this->config->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
+                    : null,
+                'transformerFqn' => $transformerClass,
+                'expectedRelations' => $expectedRelations,
+                'prefix' => $routeData->getPrefix(),
+                'prefixSettings' => $routeData->getPrefixSettings(),
+            ],
         ]);
     }
 }

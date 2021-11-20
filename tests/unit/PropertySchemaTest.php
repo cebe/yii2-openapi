@@ -4,13 +4,12 @@ namespace tests\unit;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
-use cebe\yii2openapi\lib\openapi\PropertyReader;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use tests\TestCase;
 use Yii;
-use const PHP_EOL;
 
-class PropertyReaderTest extends TestCase
+class PropertySchemaTest extends TestCase
 {
     public function testPkProperty()
     {
@@ -63,10 +62,10 @@ class PropertyReaderTest extends TestCase
         self::assertFalse($prop->hasRefItems());
 
         $refSchema = $prop->getRefSchema();
-        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertInstanceOf(ComponentSchema::class, $refSchema);
         self::assertTrue($refSchema->hasProperties());
         $fkProperty = $prop->getTargetProperty();
-        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertInstanceOf(PropertySchema::class, $fkProperty);
         self::assertEquals('id', $fkProperty->getName());
         self::assertTrue($fkProperty->isPrimaryKey());
         self::assertTrue($fkProperty->isReadonly());
@@ -91,11 +90,11 @@ class PropertyReaderTest extends TestCase
         self::assertTrue($prop->hasRefItems());
 
         $refSchema = $prop->getRefSchema();
-        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertInstanceOf(ComponentSchema::class, $refSchema);
         self::assertTrue($refSchema->hasProperties());
 
         $fkProperty = $prop->getTargetProperty();
-        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertInstanceOf(PropertySchema::class, $fkProperty);
         self::assertEquals('id', $fkProperty->getName());
         self::assertTrue($fkProperty->isPrimaryKey());
         self::assertTrue($fkProperty->isReadonly());
@@ -108,7 +107,7 @@ class PropertyReaderTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/menu.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new SchemaReader($openApi->components->schemas['Menu']);
+        $schema = new ComponentSchema($openApi->components->schemas['Menu']);
 
         $prop = $schema->getProperty('parent');
         self::assertFalse($prop->isPrimaryKey());
@@ -123,12 +122,12 @@ class PropertyReaderTest extends TestCase
         self::assertFalse($prop->hasRefItems());
 
         $refSchema = $prop->getRefSchema();
-        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertInstanceOf(ComponentSchema::class, $refSchema);
         self::assertTrue($refSchema->hasProperties());
         self::assertEquals($refSchema, $schema);
         self::assertEquals('id', $prop->getRefSchema()->getPkName());
         $fkProperty = $prop->getTargetProperty();
-        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertInstanceOf(PropertySchema::class, $fkProperty);
         self::assertEquals('id', $fkProperty->getName());
 
         $prop = $schema->getProperty('childes');
@@ -144,18 +143,18 @@ class PropertyReaderTest extends TestCase
         self::assertTrue($prop->hasRefItems());
 
         $refSchema = $prop->getRefSchema();
-        self::assertInstanceOf(SchemaReader::class, $refSchema);
+        self::assertInstanceOf(ComponentSchema::class, $refSchema);
         self::assertEquals($refSchema, $schema);
         $fkChildProperty = $prop->getTargetProperty();
-        self::assertInstanceOf(PropertyReader::class, $fkProperty);
+        self::assertInstanceOf(PropertySchema::class, $fkProperty);
         self::assertEquals('id', $fkProperty->getName());
         self::assertEquals($fkChildProperty, $fkProperty);
     }
 
-    private function getSchema():SchemaReader
+    private function getSchema():ComponentSchema
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        return new SchemaReader($openApi->components->schemas['Post']);
+        return new ComponentSchema($openApi->components->schemas['Post']);
     }
 }

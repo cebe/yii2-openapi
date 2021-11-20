@@ -170,7 +170,6 @@ final class RouteData extends BaseObject
         $this->parts = explode('/', trim($path, '/'));
         $this->pathItem = $pathItem;
         $this->urlPrefixes = $urlPrefixes;
-
         parent::__construct($config);
     }
 
@@ -181,7 +180,6 @@ final class RouteData extends BaseObject
 
         $patternParts = $this->parts;
         $pathParameters = ArrayHelper::index($this->pathItem->parameters, 'name');
-
         foreach ($this->parts as $p => $part) {
             if ($part === 'relationships' || !preg_match(self::PATTERN_PARAM, $part, $m)) {
                 continue;
@@ -199,6 +197,7 @@ final class RouteData extends BaseObject
             } else {
                 $this->params[$paramName] = null;
             }
+
             $type = $this->params[$paramName]['type'] ?? null;
             //check minimum/maximum for routes like <year:\d{4}> ?
             if ($type === 'integer') {
@@ -210,9 +209,36 @@ final class RouteData extends BaseObject
             }
         }
         $this->pattern = implode('/', $patternParts);
+        if ($this->prefix) {
+            $this->pattern = trim($this->prefix, '/').'/'.$this->pattern;
+        }
         if ($this->hasParams && $this->isRelationship()) {
             $this->relatedModel = $this->getFirstParam()['model'] ?? null;
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrefix():string
+    {
+        return $this->prefix;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUnprefixedPath():string
+    {
+        return $this->unprefixedPath;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPrefixSettings():array
+    {
+        return $this->prefixSettings;
     }
 
     protected function detectUrlPattern():void
@@ -224,7 +250,7 @@ final class RouteData extends BaseObject
             return;
         }
         foreach ($this->urlPrefixes as $prefix => $rule) {
-            if (!str_starts_with($this->path, $prefix)) {
+            if (!str_starts_with(trim($this->path, '/'), trim($prefix, '/'))) {
                 continue;
             }
             $this->prefix = $prefix;
@@ -233,7 +259,7 @@ final class RouteData extends BaseObject
             $this->prefixSettings = is_array($rule) ? $rule : [];
         }
         foreach (self::$patternMap as $type => $pattern) {
-            if (preg_match($pattern, $this->path, $matches)) {
+            if (preg_match($pattern, $this->unprefixedPath, $matches)) {
                 $this->type = $type;
                 break;
             }

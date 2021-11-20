@@ -12,7 +12,7 @@ use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use Yii;
 use yii\base\Component;
 use yii\base\Exception;
@@ -87,7 +87,7 @@ class SchemaToDatabase
         $openApi = $this->config->getOpenApi();
         $junctions = $this->findJunctionSchemas();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
-            $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
+            $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
 
             if (!$this->canGenerateModel($schemaName, $schema)) {
                 continue;
@@ -127,8 +127,8 @@ class SchemaToDatabase
         $junctions = [];
         $openApi = $this->config->getOpenApi();
         foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
-            /**@var SchemaReader $schema*/
-            $schema = Yii::createObject(SchemaReader::class, [$openApiSchema]);
+            /**@var ComponentSchema $schema*/
+            $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
             if (!StringHelper::startsWith($schemaName, JunctionSchemas::PREFIX)) {
                 continue;
             }
@@ -199,7 +199,7 @@ class SchemaToDatabase
         return new JunctionSchemas($junctions);
     }
 
-    private function canGenerateModel(string $schemaName, SchemaReader $schema):bool
+    private function canGenerateModel(string $schemaName, ComponentSchema $schema):bool
     {
         // only generate tables for schemas of type object and those who have defined properties
         if ($schema->isObjectSchema() && !$schema->hasProperties()) {

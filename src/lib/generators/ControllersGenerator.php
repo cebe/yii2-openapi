@@ -47,11 +47,22 @@ class ControllersGenerator
         if (!$this->config->generateControllers) {
             return new CodeFiles([]);
         }
-        $controllerNamespace = $this->config->controllerNamespace ?? Yii::$app->controllerNamespace;
-        $controllerPath = $this->config->getPathFromNamespace($controllerNamespace);
+        $namespace = $this->config->controllerNamespace ?? Yii::$app->controllerNamespace;
+        $path = $this->config->getPathFromNamespace($namespace);
         $templateName = $this->config->useJsonApi ? 'controller_jsonapi.php' : 'controller.php';
 
         foreach ($this->controllers as $controller => $actions) {
+            $controllerNamespace = $namespace;
+            $controllerPath = $path;
+            /**
+             * @var RestAction|FractalAction $action
+            **/
+            $action = $actions[0];
+            if ($action->prefix && !empty($action->prefixSettings)) {
+                $controllerNamespace = trim($action->prefixSettings['namespace'], '\\');
+                $controllerPath = $action->prefixSettings['path']
+                    ?? $this->config->getPathFromNamespace($controllerNamespace);
+            }
             $className = Inflector::id2camel($controller) . 'Controller';
             $this->files->add(new CodeFile(
                 Yii::getAlias($controllerPath . "/base/$className.php"),

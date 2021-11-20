@@ -9,7 +9,7 @@ use cebe\yii2openapi\lib\AttributeResolver;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use tests\TestCase;
 use Yii;
 use yii\helpers\VarDumper;
@@ -21,7 +21,7 @@ class AttributeResolverTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new SchemaReader($openApi->components->schemas['Post']);
+        $schema = new ComponentSchema($openApi->components->schemas['Post']);
         $postModel = (new AttributeResolver('Post', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($postModel->many2many);
         $relation = $postModel->many2many['tags'];
@@ -33,7 +33,7 @@ class AttributeResolverTest extends TestCase
         self::assertEquals(['id' => 'tag_id'], $relation->getLink());
         self::assertEquals(['post_id' => 'id'], $relation->getViaLink());
 
-        $schema = new SchemaReader($openApi->components->schemas['Tag']);
+        $schema = new ComponentSchema($openApi->components->schemas['Tag']);
         $tagModel = (new AttributeResolver('Tag', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($tagModel->many2many);
         $relation = $tagModel->many2many['posts'];
@@ -56,7 +56,7 @@ class AttributeResolverTest extends TestCase
      */
     public function testResolve(string $schemaName, Schema $openApiSchema, DbModel $expected):void
     {
-        $schema = new SchemaReader($openApiSchema);
+        $schema = new ComponentSchema($openApiSchema);
         $resolver = new AttributeResolver($schemaName, $schema, new JunctionSchemas([]));
         $model = $resolver->resolve();
         echo $schemaName . PHP_EOL;

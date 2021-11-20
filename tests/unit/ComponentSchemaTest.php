@@ -4,18 +4,18 @@ namespace tests\unit;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
-use cebe\yii2openapi\lib\openapi\PropertyReader;
-use cebe\yii2openapi\lib\openapi\SchemaReader;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use tests\TestCase;
 use Yii;
 
-class SchemaReaderTest extends TestCase
+class ComponentSchemaTest extends TestCase
 {
     public function testWithoutReference()
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new SchemaReader($openApi->components->schemas['User']);
+        $schema = new ComponentSchema($openApi->components->schemas['User']);
         self::assertFalse($schema->isReference());
         self::assertTrue($schema->isObjectSchema());
         self::assertTrue($schema->hasProperties());
@@ -23,9 +23,9 @@ class SchemaReaderTest extends TestCase
         self::assertEquals(['id', 'username', 'email', 'password'], $schema->getRequiredProperties());
         self::assertEquals('users', $schema->resolveTableName('User'));
         self::assertTrue($schema->hasProperty('email'));
-        self::assertInstanceOf(PropertyReader::class, $schema->getProperty('username'));
+        self::assertInstanceOf(PropertySchema::class, $schema->getProperty('username'));
         foreach ($schema->getProperties() as $prop) {
-            self::assertInstanceOf(PropertyReader::class, $prop);
+            self::assertInstanceOf(PropertySchema::class, $prop);
         }
     }
 
@@ -33,7 +33,7 @@ class SchemaReaderTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new SchemaReader($openApi->components->schemas['Post']->properties['category']);
+        $schema = new ComponentSchema($openApi->components->schemas['Post']->properties['category']);
         self::assertTrue($schema->isObjectSchema());
         self::assertEquals('id', $schema->getPkName());
         self::assertTrue($schema->isReference());

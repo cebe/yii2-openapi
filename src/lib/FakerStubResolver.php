@@ -10,7 +10,7 @@
 namespace cebe\yii2openapi\lib;
 
 use cebe\yii2openapi\lib\items\Attribute;
-use cebe\yii2openapi\lib\openapi\PropertyReader;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
 use yii\helpers\VarDumper;
 use function str_replace;
 use const PHP_EOL;
@@ -28,11 +28,11 @@ class FakerStubResolver
     private $attribute;
 
     /**
-     * @var \cebe\yii2openapi\lib\openapi\PropertyReader
+     * @var \cebe\yii2openapi\lib\openapi\PropertySchema
      */
     private $property;
 
-    public function __construct(Attribute $attribute, PropertyReader $property)
+    public function __construct(Attribute $attribute, PropertySchema $property)
     {
         $this->attribute = $attribute;
         $this->property = $property;

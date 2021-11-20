@@ -7,7 +7,6 @@ use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\generators\RestActionGenerator;
 use cebe\yii2openapi\lib\items\RestAction;
-use cebe\yii2openapi\lib\UrlGenerator;
 use tests\TestCase;
 use Yii;
 
@@ -62,6 +61,31 @@ class RestActionGeneratorTest extends TestCase
         }
     }
 
+    /**
+     * @dataProvider dataProviderWithUrlPrefixes
+     * @param string $schemaFile
+     * @param string $modelNs
+     * @param array  $urlPrefixes
+     * @param        $expected
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function testGenerateWithUrlPrefixes(string $schemaFile, string $modelNs, array $urlPrefixes, $expected):void
+    {
+        $config = new Config([
+            'openApiPath' => $schemaFile,
+            'modelNamespace' => $modelNs,
+            'urlPrefixes' => $urlPrefixes,
+        ]);
+        $result = (new RestActionGenerator($config))->generate();
+        foreach ($result as $i => $data) {
+            //echo $expected[$i]->requestMethod . ' ' . $expected[$i]->urlPath . ' : ' . $expected[$i]->route . PHP_EOL;
+            self::assertEquals($expected[$i], $data);
+        }
+    }
+
     public function dataProvider():array
     {
         return [
@@ -79,6 +103,8 @@ class RestActionGeneratorTest extends TestCase
                         'params' => [],
                         'modelName' => 'Post',
                         'modelFqn' => 'app\models\Post',
+                        'prefix' => '',
+                        'prefixSettings' => [],
                         'responseWrapper' => ['item' => '', 'list' => '', 'type' => 'array'],
                     ]),
                     new RestAction([
@@ -297,6 +323,133 @@ class RestActionGeneratorTest extends TestCase
                         'params' => [],
                         'modelName' => null,
                         'modelFqn' => null,
+                        'responseWrapper' => null,
+                    ]),
+                ],
+            ],
+        ];
+    }
+
+    public function dataProviderWithUrlPrefixes():array
+    {
+        return [
+            [
+                '@specs/petstore_urlprefixes.yaml',
+                'app\\mymodels',
+                [
+                    'animals' => '',
+                    '/info' => [
+                        'module' => 'pet-info',
+                        'path' => '@app/modules/petinfo/controllers',
+                        'namespace' => '\app\modules\petinfo\controllers',
+                    ],
+                    '/api/v1' => ['path' => '@app/modules/api/v1/controllers', 'namespace' => '\app\api\v1\controllers'],
+                ],
+                [
+                    new RestAction([
+                        'id' => 'list',
+                        'urlPath' => '/api/v1/pets',
+                        'requestMethod' => 'GET',
+                        'urlPattern' => 'api/v1/pets',
+                        'controllerId' => 'pet',
+                        'idParam' => null,
+                        'params' => [],
+                        'modelName' => 'Pet',
+                        'modelFqn' => 'app\mymodels\Pet',
+                        'prefix' => '/api/v1',
+                        'prefixSettings' => [
+                            'path' => '@app/modules/api/v1/controllers',
+                            'namespace' => '\app\api\v1\controllers',
+                        ],
+                        'responseWrapper' => ['item' => '', 'list' => '', 'type' => 'array'],
+                    ]),
+                    new RestAction([
+                        'id' => 'create',
+                        'urlPath' => '/api/v1/pets',
+                        'requestMethod' => 'POST',
+                        'urlPattern' => 'api/v1/pets',
+                        'controllerId' => 'pet',
+                        'idParam' => null,
+                        'params' => [],
+                        'modelName' => 'Pet',
+                        'modelFqn' => 'app\mymodels\Pet',
+                        'prefix' => '/api/v1',
+                        'prefixSettings' => [
+                            'path' => '@app/modules/api/v1/controllers',
+                            'namespace' => '\app\api\v1\controllers',
+                        ],
+                        'responseWrapper' => null,
+                    ]),
+                    new RestAction([
+                        'id' => 'view',
+                        'controllerId' => 'pet',
+                        'urlPath' => '/animals/pets/{id}',
+                        'requestMethod' => 'GET',
+                        'urlPattern' => 'animals/pets/<id:[\w-]+>',
+                        'idParam' => 'id',
+                        'params' => ['id' => ['type' => 'string']],
+                        'modelName' => 'Pet',
+                        'modelFqn' => 'app\mymodels\Pet',
+                        'prefix' => 'animals',
+                        'prefixSettings' => [],
+                        'responseWrapper' => ['item' => '', 'list' => '', 'type' => 'object'],
+                    ]),
+                    new RestAction([
+                        'id' => 'delete',
+                        'urlPath' => '/animals/pets/{id}',
+                        'requestMethod' => 'DELETE',
+                        'urlPattern' => 'animals/pets/<id:[\w-]+>',
+                        'controllerId' => 'pet',
+                        'idParam' => 'id',
+                        'params' => ['id' => ['type' => 'string']],
+                        'modelName' => 'Pet',
+                        'modelFqn' => 'app\mymodels\Pet',
+                        'prefix' => 'animals',
+                        'prefixSettings' => [],
+                        'responseWrapper' => null,
+                    ]),
+                    new RestAction([
+                        'id' => 'update',
+                        'urlPath' => '/animals/pets/{id}',
+                        'requestMethod' => 'PATCH',
+                        'urlPattern' => 'animals/pets/<id:[\w-]+>',
+                        'controllerId' => 'pet',
+                        'idParam' => 'id',
+                        'params' => ['id' => ['type' => 'string']],
+                        'modelName' => 'Pet',
+                        'modelFqn' => 'app\mymodels\Pet',
+                        'prefix' => 'animals',
+                        'prefixSettings' => [],
+                        'responseWrapper' => ['item' => '', 'list' => '', 'type' => 'object'],
+                    ]),
+                    new RestAction([
+                        'id' => 'list',
+                        'urlPath' => '/petComments',
+                        'requestMethod' => 'GET',
+                        'urlPattern' => 'petComments',
+                        'controllerId' => 'pet-comment',
+                        'idParam' => null,
+                        'params' => [],
+                        'modelName' => null,
+                        'modelFqn' => null,
+                        'responseWrapper' => null,
+                    ]),
+                    new RestAction([
+                        'id' => 'list',
+                        'urlPath' => '/info/pet-details',
+                        'requestMethod' => 'GET',
+                        'urlPattern' => 'info/pet-details',
+                        'controllerId' => 'pet-detail',
+                        'idParam' => null,
+                        'params' => [],
+                        'modelName' => null,
+                        'modelFqn' => null,
+                        'prefix' => '/info',
+                        'prefixSettings' => [
+                            'module' => 'pet-info',
+                            'path' => '@app/modules/petinfo/controllers',
+                            'namespace' => '\app\modules\petinfo\controllers',
+                        ],
                         'responseWrapper' => null,
                     ]),
                 ],

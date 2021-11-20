@@ -5,7 +5,7 @@
  * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
  */
 
-namespace cebe\yii2openapi\lib;
+namespace cebe\yii2openapi\lib\openapi;
 
 use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\Operation;
@@ -16,7 +16,7 @@ use cebe\yii2openapi\lib\items\JunctionSchemas;
 use function array_keys;
 use function explode;
 
-class SchemaResponseResolver
+class ResponseSchema
 {
     private const REQUEST_BODY_ACTIONS = ['create', 'update', 'delete'];
     private const RESPONSE_BODY_ACTIONS = [

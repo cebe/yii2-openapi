@@ -35,10 +35,15 @@ class Config extends BaseObject
      * @var array Special url prefixes
      * @example
      * 'urlPrefixes' => [
-     * //Urls with this prefix will be handled with CalendarController at default controllerNamespace
+     * //Prefix will be ignored in url pattern,
+     * //Rule like ['/calendar/<controller>/<action>' => '<controller>/<action>']
      *    'calendar' => '',
-     * //Urls with this prefix will be located directly at defined path and namespace
-     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '/app/modules/api/v1']
+     * //Controller for url with this prefix will be located directly at defined path and namespace
+     * //Rule like ['/api/v1/<controller>/<action>' => '/api/v1/<controller>/<action>']
+     *    'api/v1/' => ['path' => '@app/modules/api/controllers/v1/', 'namespace' => '\app\modules\api\v1'],
+     * //Controller for url with this prefix will be located directly at defined namespace, path resolved by namespace
+     * //Rule like ['/prefix/<controller>/<action>' => '/xxx/<controller>/<action>']
+     *    'prefix' => ['module' => 'xxx','namespace' => '\app\modules\xxx\controllers']
      * ]
      **/
     public $urlPrefixes = [];
@@ -173,7 +178,7 @@ class Config extends BaseObject
 
     public function getPathFromNamespace(string $namespace):string
     {
-        return Yii::getAlias('@' . str_replace('\\', '/', $namespace));
+        return Yii::getAlias('@' . str_replace('\\', '/', ltrim($namespace, '\\')));
     }
 
     /**

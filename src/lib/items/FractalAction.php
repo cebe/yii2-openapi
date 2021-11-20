@@ -72,6 +72,12 @@ final class FractalAction extends BaseObject
      **/
     public $relatedModel;
 
+    /**@var ?string */
+    public $prefix;
+
+    /**@var array */
+    public $prefixSettings = [];
+
     public $expectedRelations = [];
 
     private $templateFactory;
@@ -86,12 +92,20 @@ final class FractalAction extends BaseObject
 
     public function getRoute():string
     {
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/'.$this->id;
+        }
         return $this->controllerId.'/'.$this->id;
     }
 
     public function getOptionsRoute():string
     {
         //@TODO: re-check
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/options';
+        }
         return $this->controllerId.'/options';
     }
 

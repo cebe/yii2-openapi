@@ -13,7 +13,7 @@ use cebe\openapi\spec\Reference;
 use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\items\RouteData;
-use cebe\yii2openapi\lib\SchemaResponseResolver;
+use cebe\yii2openapi\lib\openapi\ResponseSchema;
 use Yii;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
@@ -85,8 +85,8 @@ class RestActionGenerator
     protected function prepareAction(string $method, Operation $operation, RouteData $routeData):BaseObject
     {
         $actionType = $this->resolveActionType($routeData, $method);
-        $modelClass = SchemaResponseResolver::guessModelClass($operation, $actionType);
-        $responseWrapper = SchemaResponseResolver::findResponseWrapper($operation, $modelClass);
+        $modelClass = ResponseSchema::guessModelClass($operation, $actionType);
+        $responseWrapper = ResponseSchema::findResponseWrapper($operation, $modelClass);
         // fallback to known model class on same URL
         if ($modelClass === null && isset($this->knownModelClasses[$routeData->path])) {
             $modelClass = $this->knownModelClasses[$routeData->path];
@@ -121,6 +121,8 @@ class RestActionGenerator
                     ? $this->config->modelNamespace . '\\' . Inflector::id2camel($modelClass, '_')
                     : null,
                 'responseWrapper' => $responseWrapper,
+                'prefix' => $routeData->getPrefix(),
+                'prefixSettings' => $routeData->getPrefixSettings()
             ],
         ]);
     }
