@@ -52,9 +52,9 @@ class ComponentSchema
         } else {
             $this->schema = $openApiSchema;
         }
-        $this->pkName = $openApiSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
-        $this->requiredProps = $openApiSchema->required ?? [];
-        $this->indexes = $openApiSchema->{CustomSpecAttr::INDEXES} ?? [];
+        $this->pkName = $this->schema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
+        $this->requiredProps = $this->schema->required ?? [];
+        $this->indexes = $this->schema->{CustomSpecAttr::INDEXES} ?? [];
     }
 
     public function getSchema()
