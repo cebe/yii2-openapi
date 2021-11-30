@@ -14,6 +14,7 @@ use function array_keys;
 use function array_map;
 use function implode;
 use function strtr;
+use function trim;
 use function var_export;
 
 /**
@@ -57,6 +58,11 @@ final class RestAction extends BaseObject
     /**@var array */
     public $params = [];
 
+    /**@var ?string */
+    public $prefix;
+
+    /**@var array */
+    public $prefixSettings = [];
     /**
      * @var array|null
      */
@@ -64,12 +70,20 @@ final class RestAction extends BaseObject
 
     public function getRoute():string
     {
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/'.$this->id;
+        }
         return $this->controllerId.'/'.$this->id;
     }
 
     public function getOptionsRoute():string
     {
         //@TODO: re-check
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/options';
+        }
         return $this->controllerId.'/options';
     }
 

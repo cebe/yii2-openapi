@@ -4,6 +4,7 @@ namespace tests\unit;
 
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
+use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\SchemaToDatabase;
@@ -17,8 +18,7 @@ class SchemaToDatabaseTest extends TestCase
     public function testFindJunctionSchemas()
     {
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
-        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $result = (new SchemaToDatabase())->findJunctionSchemas($openApi);
+        $result = (new SchemaToDatabase(new Config(['openApiPath' => $schemaFile])))->findJunctionSchemas();
         //VarDumper::dump($result->indexByJunctionRef());
         //VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
@@ -51,9 +51,8 @@ class SchemaToDatabaseTest extends TestCase
     public function testGenerateModels()
     {
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
-        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $converter = new SchemaToDatabase([]);
-        $result = $converter->generateModels($openApi);
+        $converter = new SchemaToDatabase(new Config(['openApiPath' => $schemaFile]));
+        $result = $converter->prepareModels();
         self::assertNotEmpty($result);
         self::assertArrayHasKey('Post', $result);
         self::assertArrayHasKey('Tag', $result);

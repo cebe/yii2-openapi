@@ -7,18 +7,12 @@
 
 namespace cebe\yii2openapi\lib;
 
-use cebe\openapi\ReferenceContext;
-use cebe\openapi\spec\OpenApi;
-use cebe\openapi\spec\Reference;
-use cebe\openapi\spec\Schema;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
+use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use Yii;
-use yii\base\Component;
 use yii\base\Exception;
-use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
 use function count;
-use function str_replace;
 
 /**
  * Convert OpenAPI description into a database schema.
@@ -59,38 +53,34 @@ use function str_replace;
  *                  x-faker: #(custom faker generator, for ex '$faker->gender')
  *                  description: #(optional, used for comment)
  */
-class SchemaToDatabase extends Component
+class SchemaToDatabase
 {
-
     /**
-     * @var array List of model names to exclude.
+     * @var \cebe\yii2openapi\lib\Config
      */
-    public $excludeModels = [];
+    protected $config;
 
-    public $skipUnderscoredSchemas = true;
-
-    /**
-     * @var array Generate database models only for Schemas that have the `x-table` annotation.
-     */
-    public $generateModelsOnlyXTable = false;
-
-    public $attributeResolverClass = AttributeResolver::class;
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
 
     /**
-     * @param \cebe\openapi\spec\OpenApi $openApi
      * @return array|\cebe\yii2openapi\lib\items\DbModel[]
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
+     * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function generateModels(OpenApi $openApi):array
+    public function prepareModels():array
     {
         $models = [];
-        $junctions = $this->findJunctionSchemas($openApi);
-        foreach ($openApi->components->schemas as $schemaName => $schema) {
-            if ($schema instanceof Reference) {
-                $schema->getContext()->mode = ReferenceContext::RESOLVE_MODE_INLINE;
-                $schema = $schema->resolve();
-            }
+        $openApi = $this->config->getOpenApi();
+        $junctions = $this->findJunctionSchemas();
+        foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
+            $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
 
             if (!$this->canGenerateModel($schemaName, $schema)) {
                 continue;
@@ -99,10 +89,10 @@ class SchemaToDatabase extends Component
                 $schemaName = $junctions->trimPrefix($schemaName);
             }
             /**@var \cebe\yii2openapi\lib\AttributeResolver $resolver */
-            $resolver = Yii::createObject($this->attributeResolverClass, [$schemaName, $schema, $junctions]);
+            $resolver = Yii::createObject(AttributeResolver::class, [$schemaName, $schema, $junctions]);
             $models[$schemaName] = $resolver->resolve();
         }
-        foreach ($models as $schemaName => $model) {
+        foreach ($models as  $model) {
             foreach ($model->many2many as $relation) {
                 if (isset($models[$relation->viaModelName])) {
                     $relation->hasViaModel = true;
@@ -117,17 +107,26 @@ class SchemaToDatabase extends Component
         return $models;
     }
 
-    public function findJunctionSchemas(OpenApi $openApi):JunctionSchemas
+    /**
+     * @return \cebe\yii2openapi\lib\items\JunctionSchemas
+     * @throws \cebe\openapi\exceptions\IOException
+     * @throws \cebe\openapi\exceptions\TypeErrorException
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function findJunctionSchemas():JunctionSchemas
     {
         $junctions = [];
-        foreach ($openApi->components->schemas as $schemaName => $schema) {
-            if (!StringHelper::startsWith($schemaName, JunctionSchemas::PREFIX)) {
+        $openApi = $this->config->getOpenApi();
+        foreach ($openApi->components->schemas as $schemaName => $openApiSchema) {
+            /**@var ComponentSchema $schema */
+            $schema = Yii::createObject(ComponentSchema::class, [$openApiSchema]);
+            if ($schema->isNonDb()) {
                 continue;
             }
-
-            if ($schema instanceof Reference) {
-                $schema->getContext()->mode = ReferenceContext::RESOLVE_MODE_INLINE;
-                $schema = $schema->resolve();
+            if (!StringHelper::startsWith($schemaName, JunctionSchemas::PREFIX)) {
+                continue;
             }
 
             if (!$this->canGenerateModel($schemaName, $schema)) {
@@ -135,58 +134,42 @@ class SchemaToDatabase extends Component
             }
 
             $propertyMap = [];
-            $tableName = $schema->{CustomSpecAttr::TABLE} ??
-                AttributeResolver::tableNameBySchema(str_replace(JunctionSchemas::PREFIX, '', $schemaName));
-            foreach ($schema->properties as $propertyName => $property) {
-                if (!$property instanceof Reference) {
+            $tableName = $schema->resolveTableName($schemaName);
+            foreach ($schema->getProperties() as $property) {
+                if (!$property->isReference() || !$property->isRefPointerToSchema()) {
                     continue;
                 }
                 $junkRef = null;
-                $refPointer = $property->getJsonReference()->getJsonPointer()->getPointer();
-                $property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-                $relatedSchema = $property->resolve();
-                if (!strpos($refPointer, AttributeResolver::REFERENCE_PATH) === 0) {
-                    continue;
-                }
-                $relatedClassName = substr($refPointer, AttributeResolver::REFERENCE_PATH_LEN);
-                $relatedClassName = Inflector::id2camel($relatedClassName, '_');
+                $relatedSchema = $property->getRefSchema();
 
-                foreach ($relatedSchema->properties as $propName => $prop) {
-                    if ($prop instanceof Reference) {
+                foreach ($relatedSchema->getProperties() as $prop) {
+                    if (!$prop->hasRefItems()) {
                         continue;
                     }
-                    if (!($prop->type === 'array' && isset($prop->items) && $prop->items instanceof Reference)) {
-                        continue;
-                    }
-                    $ref = $prop->items->getJsonReference()->getJsonPointer()->getPointer();
-                    if ($schemaName === substr($ref, AttributeResolver::REFERENCE_PATH_LEN)) {
-                        $junkRef = $propName;
+                    if ($schemaName === $prop->getRefSchemaName()) {
+                        $junkRef = $prop->getName();
                         break;
                     }
                 }
                 if ($junkRef) {
-                    $relatedTableName =
-                        $relatedSchema->{CustomSpecAttr::TABLE} ??
-                        AttributeResolver::tableNameBySchema($relatedClassName);
-                    $foreignPk = $relatedSchema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
-                    $foreignPkProperty = $relatedSchema->properties[$foreignPk];
+                    $relatedTableName = $relatedSchema->resolveTableName($property->getRefClassName());
+                    $foreignPkProperty = $property->getTargetProperty();
                     if ($foreignPkProperty === null) {
                         //Non-db
                         break;
                     }
-                    $phpType = SchemaTypeResolver::schemaToPhpType($foreignPkProperty);
-                    $dbType = SchemaTypeResolver::referenceToDbType($foreignPkProperty);
+
                     $propertyMap[] = [
-                        'property' => $propertyName,
-                        'targetClass' => $relatedClassName,
+                        'property' => $property->getName(),
+                        'targetClass' => $property->getRefClassName(),
                         'refProperty' => $junkRef,
                         'junctionSchema' => $schemaName,
                         'junctionTable' => $tableName,
-                        'relatedClassName' => $relatedClassName,
+                        'relatedClassName' => $property->getRefClassName(),
                         'relatedTableName' => $relatedTableName,
-                        'foreignPk' => $foreignPk,
-                        'phpType' => $phpType,
-                        'dbType' => $dbType,
+                        'foreignPk' => $foreignPkProperty->getName(),
+                        'phpType' => $foreignPkProperty->guessPhpType(),
+                        'dbType' => $foreignPkProperty->guessDbType(true),
                     ];
                 }
 
@@ -209,33 +192,33 @@ class SchemaToDatabase extends Component
             $junctions[] = $propertyMap[1];
             unset($junkRef, $junkRef1, $junkRef0, $propertyMap);
         }
-        return new JunctionSchemas($junctions);
+        return Yii::createObject(JunctionSchemas::class, [$junctions]);
     }
 
-    private function canGenerateModel(string $schemaName, Schema $schema):bool
+    private function canGenerateModel(string $schemaName, ComponentSchema $schema):bool
     {
         // only generate tables for schemas of type object and those who have defined properties
-        if ((empty($schema->type) || $schema->type === 'object') && empty($schema->properties)) {
+        if ($schema->isObjectSchema() && !$schema->hasProperties()) {
             return false;
         }
-        if (!empty($schema->type) && $schema->type !== 'object') {
+        if (!$schema->isObjectSchema()) {
             return false;
         }
         // do not generate tables for composite schemas
-        if ($schema->allOf || $schema->anyOf || $schema->multipleOf || $schema->oneOf) {
+        if ($schema->isCompositeSchema()) {
             return false;
         }
         // skip excluded model names
-        if (in_array($schemaName, $this->excludeModels, true)) {
+        if (in_array($schemaName, $this->config->excludeModels, true)) {
             return false;
         }
 
         // skip schemas started with underscore
-        if ($this->skipUnderscoredSchemas && StringHelper::startsWith($schemaName, '_')) {
+        if ($this->config->skipUnderscoredSchemas && StringHelper::startsWith($schemaName, '_')) {
             return false;
         }
 
-        if ($this->generateModelsOnlyXTable && empty($schema->{CustomSpecAttr::TABLE})) {
+        if ($this->config->generateModelsOnlyXTable && !$schema->hasCustomTableName()) {
             return false;
         }
         return true;

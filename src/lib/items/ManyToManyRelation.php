@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use Yii;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\db\Schema;
@@ -54,15 +55,16 @@ class ManyToManyRelation extends BaseObject
     /**@var \cebe\yii2openapi\lib\items\Attribute */
     public $relatedPkAttribute;
 
-    /**@var string**/
+    /**@var string* */
     public $viaModelName;
 
-    /**@var string**/
+    /**@var string* */
     public $viaRelationName;
 
-    /**@var string**/
+    /**@var string* */
     public $fkProperty;
-    /**@var string**/
+
+    /**@var string* */
     public $relatedFkProperty;
 
     public function getCamelName():string
@@ -103,9 +105,9 @@ class ManyToManyRelation extends BaseObject
      * For cases when relation name and viaModel are different
      * @return string
      */
-    public function getViaRelationName(): string
+    public function getViaRelationName():string
     {
-        return $this->viaRelationName? $this->viaRelationName : $this->getViaModelName();
+        return $this->viaRelationName ?: $this->getViaModelName();
     }
 
     /**
@@ -172,7 +174,7 @@ class ManyToManyRelation extends BaseObject
             Schema::TYPE_BIGPK => Schema::TYPE_BIGINT,
             Schema::TYPE_UBIGPK => Schema::TYPE_BIGINT,
         ];
-        $castPkColumn = function (ColumnSchema $col) use ($pkTypeMap) {
+        $castPkColumn = static function (ColumnSchema $col) use ($pkTypeMap) {
             $col->allowNull = false;
             if (isset($pkTypeMap[$col->type])) {
                 $col->type = $pkTypeMap[$col->type];
@@ -199,10 +201,13 @@ class ManyToManyRelation extends BaseObject
     public function getRelations():array
     {
         return [
-            (new AttributeRelation($this->selfFk, $this->tableName, $this->className))
-                ->asHasOne(['id' => $this->selfFk]),
-            (new AttributeRelation($this->relatedFk, $this->relatedTableName, $this->relatedClassName))
-                ->asHasOne(['id' => $this->relatedFk]),
+            Yii::createObject(AttributeRelation::class, [$this->selfFk, $this->tableName, $this->className])
+               ->asHasOne(['id' => $this->selfFk]),
+            Yii::createObject(
+                AttributeRelation::class,
+                [$this->relatedFk, $this->relatedTableName, $this->relatedClassName]
+            )
+               ->asHasOne(['id' => $this->relatedFk]),
         ];
     }
 }

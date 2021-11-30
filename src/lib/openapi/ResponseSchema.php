@@ -5,7 +5,7 @@
  * @license https://github.com/cebe/yii2-openapi/blob/master/LICENSE
  */
 
-namespace cebe\yii2openapi\lib;
+namespace cebe\yii2openapi\lib\openapi;
 
 use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\Operation;
@@ -15,8 +15,9 @@ use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use function array_keys;
 use function explode;
+use function str_replace;
 
-class SchemaResponseResolver
+class ResponseSchema
 {
     private const REQUEST_BODY_ACTIONS = ['create', 'update', 'delete'];
     private const RESPONSE_BODY_ACTIONS = [
@@ -49,9 +50,14 @@ class SchemaResponseResolver
 //        }
         $ref = $schemaOrReference->getJsonReference()->getJsonPointer()->getPointer();
         $name = strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
-        return \str_replace(JunctionSchemas::PREFIX, '', $name);
+        return str_replace(JunctionSchemas::PREFIX, '', $name);
     }
 
+    /**
+     * @param \cebe\openapi\spec\Operation $operation
+     * @return array
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
     public static function guessResponseRelations(Operation $operation):array
     {
         if (!isset($operation->responses)) {
@@ -64,7 +70,7 @@ class SchemaResponseResolver
             if ($successResponse instanceof Reference) {
                 $successResponse = $successResponse->resolve();
             }
-            foreach ($successResponse->content as $contentType => $content) {
+            foreach ($successResponse->content as $content) {
                 $responseSchema =
                     $content->schema instanceof Reference ? $content->schema->resolve() : $content->schema;
                 if (self::isObjectSchema($responseSchema) && isset($responseSchema->properties['data'])) {
@@ -79,7 +85,7 @@ class SchemaResponseResolver
                         }
                         $relationSchema = $ref->properties['relationships'];
                         if ($relationSchema instanceof Reference) {
-                            $relationSchema->resolve();
+                            $relationSchema = $relationSchema->resolve();
                         }
                         return isset($relationSchema->properties) ? array_keys($relationSchema->properties) : [];
                     }
@@ -90,7 +96,7 @@ class SchemaResponseResolver
                         }
                         $relationSchema = $ref->properties['relationships'];
                         if ($relationSchema instanceof Reference) {
-                            $relationSchema->resolve();
+                            $relationSchema = $relationSchema->resolve();
                         }
                         return isset($relationSchema->properties) ? array_keys($relationSchema->properties) : [];
                     }
@@ -101,6 +107,12 @@ class SchemaResponseResolver
         return [];
     }
 
+    /**
+     * @param \cebe\openapi\spec\Operation $operation
+     * @param                              $actionType
+     * @return string|null
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
     public static function guessModelClass(Operation $operation, $actionType):?string
     {
         // first, check request body
@@ -110,7 +122,7 @@ class SchemaResponseResolver
                 $requestBody = $requestBody->resolve();
             }
 
-            foreach ($requestBody->content as $contentType => $content) {
+            foreach ($requestBody->content as $content) {
                 [$modelClass,] = self::guessModelClassFromContent($content);
                 if ($modelClass !== null) {
                     return $modelClass;
@@ -134,7 +146,7 @@ class SchemaResponseResolver
                 $successResponse = $successResponse->resolve();
             }
 
-            foreach ($successResponse->content as $contentType => $content) {
+            foreach ($successResponse->content as $content) {
                 [$modelClass,] = self::guessModelClassFromContent($content);
                 if ($modelClass !== null) {
                     return $modelClass;
@@ -145,6 +157,11 @@ class SchemaResponseResolver
         return null;
     }
 
+    /**
+     * @param \cebe\openapi\SpecObjectInterface $property
+     * @return array|null[]
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
     public static function guessModelClassFromJsonResource(SpecObjectInterface $property): array
     {
         $schema = $property instanceof Reference? $property->resolve() : $property;
@@ -169,6 +186,11 @@ class SchemaResponseResolver
         return [null, null, null, null];
     }
 
+    /**
+     * @param \cebe\openapi\spec\MediaType $content
+     * @return array|null[]
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     */
     public static function guessModelClassFromContent(MediaType $content):array
     {
         /** @var $referencedSchema Schema */
@@ -232,6 +254,7 @@ class SchemaResponseResolver
      * @param Operation $operation
      * @param           $modelClass
      * @return null|array
+     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
     public static function findResponseWrapper(Operation $operation, $modelClass):?array
     {
@@ -245,7 +268,7 @@ class SchemaResponseResolver
             if ($successResponse instanceof Reference) {
                 $successResponse = $successResponse->resolve();
             }
-            foreach ($successResponse->content as $contentType => $content) {
+            foreach ($successResponse->content as $content) {
                 [$detectedModelClass, $itemWrapper, $itemsWrapper, $type] = self::guessModelClassFromContent($content);
                 if (($itemWrapper !== null || $itemsWrapper !== null) && $detectedModelClass === $modelClass) {
                     return ['item' => $itemWrapper, 'list' => $itemsWrapper, 'type' => $type];
@@ -253,21 +276,5 @@ class SchemaResponseResolver
             }
         }
         return null;
-    }
-
-    public static function guessModelByRef($reference):?string
-    {
-        if (!$reference instanceof Reference) {
-            return null;
-        }
-        $ref = $reference->resolve();
-        if ($ref->type !== null && $ref->type !== 'object') {
-            return null;
-        }
-        $pointer = $reference->getJsonReference()->getJsonPointer()->getPointer();
-        if (!strpos($pointer, '/components/schemas/') === 0) {
-            return null;
-        }
-        return substr($pointer, 20);
     }
 }

@@ -6,11 +6,11 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Reference;
-use cebe\yii2openapi\lib\SchemaResponseResolver;
+use cebe\yii2openapi\lib\openapi\ResponseSchema;
 use tests\TestCase;
 use Yii;
 
-class SchemaResponseResolverTest extends TestCase
+class ResponseSchemaTest extends TestCase
 {
     /**
      * @dataProvider dataProviderForGuessModel
@@ -19,7 +19,7 @@ class SchemaResponseResolverTest extends TestCase
     {
         self::assertEquals(
             $expected['expected'],
-            SchemaResponseResolver::guessModelClass($operation, $expected['actionName'])
+            ResponseSchema::guessModelClass($operation, $expected['actionName'])
         );
     }
 
@@ -30,7 +30,7 @@ class SchemaResponseResolverTest extends TestCase
     {
         self::assertEquals(
             $expected['expected'],
-            SchemaResponseResolver::findResponseWrapper($operation, $expected['modelClass'])
+            ResponseSchema::findResponseWrapper($operation, $expected['modelClass'])
         );
     }
 
@@ -39,7 +39,7 @@ class SchemaResponseResolverTest extends TestCase
      */
     public function testGuessResponseRelations(Operation $operation, array $expected)
     {
-        $result = SchemaResponseResolver::guessResponseRelations($operation);
+        $result = ResponseSchema::guessResponseRelations($operation);
         self::assertEquals($expected['expected'], $result);
     }
 

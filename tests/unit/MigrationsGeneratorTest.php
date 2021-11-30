@@ -2,13 +2,15 @@
 
 namespace tests\unit;
 
+use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\generators\MigrationsGenerator;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use cebe\yii2openapi\lib\migrations\MigrationRecordBuilder;
-use cebe\yii2openapi\lib\MigrationsGenerator;
 use tests\TestCase;
+use Yii;
 use yii\db\Schema;
 use yii\db\TableSchema;
 use yii\helpers\VarDumper;
@@ -23,8 +25,8 @@ class MigrationsGeneratorTest extends TestCase
         $this->prepareTempDir();
         $this->mockApplication($this->mockDbSchemaAsEmpty());
         $model = new DbModel(['name' => 'dummy', 'tableName' => 'dummy', 'attributes' => []]);
-        $generator = new MigrationsGenerator();
-        $migrations = $generator->generate([$model]);
+        $generator = new MigrationsGenerator(new Config(), [$model], Yii::$app->db);
+        $migrations = $generator->buildMigrations();
         self::assertEmpty($migrations);
     }
     /**
@@ -37,8 +39,8 @@ class MigrationsGeneratorTest extends TestCase
     {
         $this->prepareTempDir();
         $this->mockApplication($this->mockDbSchemaAsEmpty());
-        $generator = new MigrationsGenerator();
-        $models = $generator->generate($dbModels);
+        $generator = new MigrationsGenerator(new Config(), $dbModels, Yii::$app->db);
+        $models = $generator->buildMigrations();
         $model = \array_values($models)[0];
         self::assertInstanceOf(MigrationModel::class, $model);
         self::assertEquals($expected[0]->fileName, $model->fileName);

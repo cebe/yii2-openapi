@@ -7,10 +7,13 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use Yii;
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
+use function explode;
 use function in_array;
+use function strpos;
 
 /**
  * @property-read string      $actionMethodName
@@ -72,6 +75,12 @@ final class FractalAction extends BaseObject
      **/
     public $relatedModel;
 
+    /**@var ?string */
+    public $prefix;
+
+    /**@var array */
+    public $prefixSettings = [];
+
     public $expectedRelations = [];
 
     private $templateFactory;
@@ -79,19 +88,27 @@ final class FractalAction extends BaseObject
     private function templateFactory():FractalActionTemplates
     {
         if (!$this->templateFactory) {
-            $this->templateFactory = new FractalActionTemplates($this);
+            $this->templateFactory = Yii::createObject(FractalActionTemplates::class, [$this]);
         }
         return $this->templateFactory;
     }
 
     public function getRoute():string
     {
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/'.$this->id;
+        }
         return $this->controllerId.'/'.$this->id;
     }
 
     public function getOptionsRoute():string
     {
         //@TODO: re-check
+        if ($this->prefix && !empty($this->prefixSettings)) {
+            $prefix = $this->prefixSettings['module'] ?? $this->prefix;
+            return trim($prefix, '/').'/'.$this->controllerId.'/options';
+        }
         return $this->controllerId.'/options';
     }
 
@@ -120,11 +137,11 @@ final class FractalAction extends BaseObject
     public function getTemplateId(): string
     {
         $id = $this->id;
-        if (\strpos($id, '-for-') !== false) {
-            $id = \explode('-for-', $id)[0];
+        if (strpos($id, '-for-') !== false) {
+            $id = explode('-for-', $id, 2)[0];
         }
-        if (\strpos($id, '-related-') !== false) {
-            $id = \explode('-related-', $id)[0];
+        if (strpos($id, '-related-') !== false) {
+            $id = explode('-related-', $id, 2)[0];
         }
         return Inflector::variablize($id.'-'.$this->type);
     }
@@ -165,8 +182,8 @@ final class FractalAction extends BaseObject
 
     public function getRelationName(): string
     {
-        if (\strpos($this->id, '-related-') !== false) {
-            $name = \explode('-related-', $this->id)[1];
+        if (strpos($this->id, '-related-') !== false) {
+            $name = explode('-related-', $this->id)[1];
             return Inflector::variablize($name);
         }
         return '';

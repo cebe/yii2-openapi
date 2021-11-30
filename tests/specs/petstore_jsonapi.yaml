@@ -128,6 +128,27 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Pet/properties/tag"
+    PetStatistic:
+      x-table: false
+      description: Non-Db model
+      properties:
+        id:
+          type: integer
+          format: int64
+          readOnly: True
+        title:
+          type: string
+        dogsCount:
+          type: integer
+        catsCount:
+          type: integer
+        summary:
+          type: string
+        favoritePets:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Pet"
 
     Pets:
       type: array

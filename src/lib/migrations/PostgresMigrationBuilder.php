@@ -16,6 +16,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
     /**
      * @param array|ColumnSchema[] $columns
+     * @throws \yii\base\InvalidConfigException
      */
     protected function buildColumnsCreation(array $columns):void
     {
@@ -32,6 +33,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
     /**
      * @param array|ColumnSchema[] $columns
+     * @throws \yii\base\InvalidConfigException
      */
     protected function buildColumnsDrop(array $columns):void
     {
@@ -46,6 +48,9 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         }
     }
 
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
     protected function buildColumnChanges(ColumnSchema $current, ColumnSchema $desired, array $changed):void
     {
         $tableName = $this->model->getTableAlias();

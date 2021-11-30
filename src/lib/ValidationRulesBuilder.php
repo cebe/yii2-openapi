@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
+use function count;
 use function implode;
 use function in_array;
 use function preg_match;
@@ -71,9 +72,9 @@ class ValidationRulesBuilder
         return $this->rules;
     }
 
-    private function addUniqueRule(array $columns)
+    private function addUniqueRule(array $columns):void
     {
-        $params = \count($columns) > 1 ? ['targetAttribute' => $columns] : [];
+        $params = count($columns) > 1 ? ['targetAttribute' => $columns] : [];
         $this->rules[implode('_', $columns) . '_unique'] = new ValidationRule($columns, 'unique', $params);
     }
 
