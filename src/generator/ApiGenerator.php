@@ -421,7 +421,7 @@ class ApiGenerator extends Generator
         );
     }
 
-    private function makeConfig():Config
+    public function makeConfig():Config
     {
         if (!$this->config) {
             $props = get_object_vars($this);
