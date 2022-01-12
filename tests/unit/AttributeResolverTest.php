@@ -121,7 +121,7 @@ class AttributeResolverTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/petstore_jsonapi.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new ComponentSchema($openApi->components->schemas['PetStatistic']);
+        $schema = new ComponentSchema($openApi->components->schemas['PetStatistic'], 'PetStatistic');
         $resolver = new AttributeResolver('PetStatistic', $schema, new JunctionSchemas([]));
         $model = $resolver->resolve();
         $fixture = require Yii::getAlias('@fixtures/non-db.php');
