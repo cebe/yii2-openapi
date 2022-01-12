@@ -15,7 +15,7 @@ class ComponentSchemaTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new ComponentSchema($openApi->components->schemas['User']);
+        $schema = new ComponentSchema($openApi->components->schemas['User'], 'User');
         self::assertFalse($schema->isReference());
         self::assertTrue($schema->isObjectSchema());
         self::assertTrue($schema->hasProperties());
@@ -33,7 +33,7 @@ class ComponentSchemaTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new ComponentSchema($openApi->components->schemas['Post']->properties['category']);
+        $schema = new ComponentSchema($openApi->components->schemas['Post']->properties['category'], 'Category');
         self::assertTrue($schema->isObjectSchema());
         self::assertEquals('id', $schema->getPkName());
         self::assertTrue($schema->isReference());

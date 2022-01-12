@@ -1,21 +1,37 @@
 <?php
-
 namespace app\models\base;
 
+use yii\base\Model;
+
 /**
- * Information about a user watching a Person
- *
+ *  Information about a user watching a Person
  *
  */
-abstract class PersonWatch extends \yii\db\ActiveRecord
+class PersonWatch extends Model
 {
-    public static function tableName()
-    {
-        return '{{%person_watches}}';
-    }
+    /**
+    * @var string The MongoDB Identifier
+    */
+    public $personId;
+
+    /**
+    * @var string The MongoDB Identifier
+    */
+    public $userId;
+
+    /**
+    * @var int 
+    */
+    public $someProp;
+
 
     public function rules()
     {
-        return [];
+        return [
+            'trim' => [['personId', 'userId'], 'trim'],
+            'personId_string' => [['personId'], 'string'],
+            'userId_string' => [['userId'], 'string'],
+            'someProp_integer' => [['someProp'], 'integer'],
+        ];
     }
 }

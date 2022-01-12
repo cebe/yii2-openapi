@@ -107,7 +107,7 @@ class PropertySchemaTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/menu.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new ComponentSchema($openApi->components->schemas['Menu']);
+        $schema = new ComponentSchema($openApi->components->schemas['Menu'], 'Menu');
 
         $prop = $schema->getProperty('parent');
         self::assertFalse($prop->isPrimaryKey());
@@ -155,6 +155,6 @@ class PropertySchemaTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        return new ComponentSchema($openApi->components->schemas['Post']);
+        return new ComponentSchema($openApi->components->schemas['Post'], 'Post');
     }
 }

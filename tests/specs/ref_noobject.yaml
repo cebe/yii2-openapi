@@ -38,23 +38,19 @@ components:
     schemas:
         Mid:
             description: The MongoDB Identifier
-            x-table: false
-            type: object
-            properties:
-                mid:
-                    type: string
-                    x-faker: false
-                    x-db-type: false
-                    pattern: ^[0-9a-f]{24}$
+            type: string
+            x-faker: false
+            x-db-type: false
+            pattern: ^[0-9a-f]{24}$
         PersonWatch:
             description: Information about a user watching a Person
             type: object
             x-table: false
             properties:
                 personId:
-                    $ref: "#/components/schemas/Mid/properties/mid"
+                    $ref: "#/components/schemas/Mid"
                 userId:
-                    $ref: "#/components/schemas/Mid/properties/mid"
+                    $ref: "#/components/schemas/Mid"
                 someProp:
                     type: integer
                     x-faker: false

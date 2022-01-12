@@ -28,7 +28,7 @@ class FakerStubResolverTest extends TestCase
         $schemaFile = Yii::getAlias("@specs/blog.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
         $openApiSchema = $openApi->components->schemas['Fakerable'];
-        $schema = new ComponentSchema($openApiSchema);
+        $schema = new ComponentSchema($openApiSchema, 'Fakerable');
         return [
             [
                 (new Attribute('id'))->setPhpType('int')->setDbType(YiiDbSchema::TYPE_BIGPK),

@@ -205,17 +205,11 @@ class AttributeResolver
             }
 
             $fkProperty = $property->getTargetProperty();
+            if (!$fkProperty && !$property->getRefSchema()->isObjectSchema()) {
+                $this->resolvePropertyRef($property, $attribute);
+                return;
+            }
             if (!$fkProperty) {
-
-                throw new InvalidDefinitionException(VarDumper::dumpAsString([
-                    $property->getName(),
-                    $property->isRefPointerToSelf(),
-                    $property->isRefPointerToProperty(),
-                    $property->getTargetPropertyName(),
-                    $property->getRefSchemaName(),
-                    $this->schema->getPropertyNames(),
-                    $property->getRefSchema()
-                ]));
                 return;
             }
             $relatedClassName = $property->getRefClassName();
@@ -398,5 +392,29 @@ class AttributeResolver
             $dbIndexes[$dbIndex->name] = $dbIndex;
         }
         return $dbIndexes;
+    }
+
+    /**
+     * @param \cebe\yii2openapi\lib\openapi\PropertySchema $property
+     * @param \cebe\yii2openapi\lib\items\Attribute        $attribute
+     * @return void
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function resolvePropertyRef(PropertySchema $property, Attribute $attribute):void
+    {
+        $fkProperty = new PropertySchema(
+            $property->getRefSchema()->getSchema(),
+            $property->getName(),
+            $this->schema
+        );
+        [$min, $max] = $fkProperty->guessMinMax();
+        $attribute->setPhpType($fkProperty->guessPhpType())
+                  ->setDbType($fkProperty->guessDbType(true))
+                  ->setSize($fkProperty->getMaxLength())
+                  ->setDescription($fkProperty->getAttr('description'))
+                  ->setDefault($fkProperty->guessDefault())
+                  ->setLimits($min, $max, $fkProperty->getMinLength());
+        $this->attributes[$property->getName()] =
+            $attribute->setFakerStub($this->guessFakerStub($attribute, $fkProperty));
     }
 }

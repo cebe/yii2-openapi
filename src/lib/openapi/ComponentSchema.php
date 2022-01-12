@@ -160,13 +160,4 @@ class ComponentSchema
             yield Yii::createObject(PropertySchema::class, [$property, $name, $this]);
         }
     }
-
-    public function getPropertyNames():array
-    {
-        $names = [];
-        foreach ($this->schema->properties as $name => $property) {
-            $names[] = $name;
-        }
-        return $names;
-    }
 }

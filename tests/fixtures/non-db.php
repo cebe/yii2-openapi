@@ -33,6 +33,10 @@ return [
         'description' => 'Information about a user watching a Person',
         'isNotDb' => true,
         'attributes' => [
+            'personId' => (new Attribute('personId', ['phpType' => 'string', 'dbType' => 'string']))
+                ->setReadOnly(false)->setRequired(false)->setDescription('The MongoDB Identifier'),
+            'userId' => (new Attribute('userId', ['phpType' => 'string', 'dbType' => 'string']))
+                ->setReadOnly(false)->setRequired(false)->setDescription('The MongoDB Identifier'),
             'someProp' => (new Attribute('someProp', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->setReadOnly(false)->setRequired(false)
         ]
