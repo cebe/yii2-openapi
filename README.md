@@ -95,6 +95,7 @@ You may specify custom PHP code for generating fake data for a property:
 ### `x-table`
 
 Specify the table name for a Schema that defines a model which is stored in the database.
+You can generate non-db model based on \yii\base\Model without migrations by setting `x-table: false`
 
 ### `x-pk`
 
