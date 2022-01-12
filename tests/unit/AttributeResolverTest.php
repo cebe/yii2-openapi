@@ -21,7 +21,7 @@ class AttributeResolverTest extends TestCase
     {
         $schemaFile = Yii::getAlias("@specs/many2many.yaml");
         $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
-        $schema = new ComponentSchema($openApi->components->schemas['Post']);
+        $schema = new ComponentSchema($openApi->components->schemas['Post'], 'Post');
         $postModel = (new AttributeResolver('Post', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($postModel->many2many);
         $relation = $postModel->many2many['tags'];
@@ -33,7 +33,7 @@ class AttributeResolverTest extends TestCase
         self::assertEquals(['id' => 'tag_id'], $relation->getLink());
         self::assertEquals(['post_id' => 'id'], $relation->getViaLink());
 
-        $schema = new ComponentSchema($openApi->components->schemas['Tag']);
+        $schema = new ComponentSchema($openApi->components->schemas['Tag'], 'Tag');
         $tagModel = (new AttributeResolver('Tag', $schema, new JunctionSchemas([])))->resolve();
         self::assertNotEmpty($tagModel->many2many);
         $relation = $tagModel->many2many['posts'];
@@ -56,7 +56,7 @@ class AttributeResolverTest extends TestCase
      */
     public function testResolve(string $schemaName, Schema $openApiSchema, DbModel $expected):void
     {
-        $schema = new ComponentSchema($openApiSchema);
+        $schema = new ComponentSchema($openApiSchema, $schemaName);
         $resolver = new AttributeResolver($schemaName, $schema, new JunctionSchemas([]));
         $model = $resolver->resolve();
         echo $schemaName . PHP_EOL;
@@ -103,6 +103,18 @@ class AttributeResolverTest extends TestCase
                 $fixture['comment'],
             ],
         ];
+    }
+
+    public function testResolveRefNoObject()
+    {
+        $schemaFile = Yii::getAlias("@specs/ref_noobject.yaml");
+        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
+        $schema = new ComponentSchema($openApi->components->schemas['PersonWatch'], 'PersonWatch');
+        $resolver = new AttributeResolver('PersonWatch', $schema, new JunctionSchemas([]));
+        $model = $resolver->resolve();
+        $fixture = require Yii::getAlias('@fixtures/non-db.php');
+        $testModel = $fixture['personWatch'];
+        self::assertEquals($testModel, $model);
     }
 
     public function testResolveNonDbModel()

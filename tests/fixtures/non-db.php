@@ -1,4 +1,6 @@
 <?php
+//Data provider for AttributeResolver test for ref_noobject.yml spec
+
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
 use cebe\yii2openapi\lib\items\DbModel;
@@ -23,6 +25,16 @@ return [
         'relations' => [
             'parentPet' => new AttributeRelation('parentPet', 'pets', 'Pet', 'hasOne', ['id' => 'parentPet_id']),
             'favoritePets' => new AttributeRelation('favoritePets', 'pets', 'Pet', 'hasMany', ['pet_statistic_id' => 'id']),
+    ]]),
+    'personWatch' => new DbModel([
+        'pkName' => 'id',
+        'name' => 'PersonWatch',
+        'tableName' => '',
+        'description' => 'Information about a user watching a Person',
+        'isNotDb' => true,
+        'attributes' => [
+            'someProp' => (new Attribute('someProp', ['phpType' => 'int', 'dbType' => 'integer']))
+                ->setReadOnly(false)->setRequired(false)
         ]
     ])
 ];

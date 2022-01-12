@@ -12,6 +12,7 @@ use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\CustomSpecAttr;
+use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use Throwable;
 use Yii;
 use yii\db\Schema as YiiDbSchema;
@@ -20,7 +21,6 @@ use yii\helpers\Json;
 use yii\helpers\StringHelper;
 use function is_int;
 use function strpos;
-use function substr;
 
 class PropertySchema
 {
@@ -46,6 +46,9 @@ class PropertySchema
 
     /**@var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema * */
     private $refSchema;
+
+    /**@var string|null **/
+    private $targetProperty = null;
 
     /**
      * @var bool
@@ -82,21 +85,32 @@ class PropertySchema
     }
 
     /**
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
     private function initReference():void
     {
         $this->isReference = true;
         $this->refPointer = $this->property->getJsonReference()->getJsonPointer()->getPointer();
+        $refSchemaName = \str_replace(self::REFERENCE_PATH, '', $this->refPointer);
         if ($this->isRefPointerToSelf()) {
             $this->refSchema = $this->schema;
+        }elseif ($this->isRefPointerToProperty()) {
+            $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_INLINE;
+            $pattern = '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)/properties/(?<propName>.+)$~';
+            if (!\preg_match($pattern, $this->refPointer, $matches)) {
+                throw new InvalidDefinitionException('Invalid schema reference');
+            }
+            $this->targetProperty = $matches['propName'];
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve(), $matches['schemaName']]);
         } elseif ($this->isRefPointerToSchema()) {
             $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve()]);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve(), $refSchemaName]);
         }
     }
 
     /**
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
     private function initItemsReference():void
@@ -109,9 +123,18 @@ class PropertySchema
         $this->refPointer = $items->getJsonReference()->getJsonPointer()->getPointer();
         if ($this->isRefPointerToSelf()) {
             $this->refSchema = $this->schema;
+        } elseif ($this->isRefPointerToProperty()) {
+            $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
+            $pattern = '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)/properties/(?<propName>.+)$~';
+            if (!\preg_match($pattern, $this->refPointer, $matches)) {
+                throw new InvalidDefinitionException('Invalid schema reference');
+            }
+            $this->targetProperty = $matches['propName'];
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve(), $matches['schemaName']]);
         } elseif ($this->isRefPointerToSchema()) {
             $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve()]);
+            $schemaName = \str_replace(self::REFERENCE_PATH, '', $this->refPointer);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve(), $schemaName]);
         }
     }
 
@@ -135,6 +158,11 @@ class PropertySchema
         return $this->property;
     }
 
+    public function getRefPointer(): string
+    {
+        return $this->refPointer ?? '';
+    }
+
     public function getRefSchema():ComponentSchema
     {
         if (!$this->isReference && !$this->isItemsReference) {
@@ -148,7 +176,15 @@ class PropertySchema
      */
     public function getTargetProperty():?PropertySchema
     {
+        if ($this->targetProperty !== null && $this->isRefPointerToProperty()) {
+            return $this->getRefSchema()->getProperty($this->targetProperty);
+        }
         return $this->getRefSchema()->getProperty($this->getRefSchema()->getPkName());
+    }
+
+    public function getTargetPropertyName():?string
+    {
+        return $this->targetProperty;
     }
 
     /**
@@ -174,18 +210,30 @@ class PropertySchema
 
     public function isRefPointerToSelf():bool
     {
-        return $this->isRefPointerToSchema() && strpos($this->refPointer, '/properties/') !== false;
+        return $this->isRefPointerToSchema()
+            && strpos($this->refPointer, '/' . $this->schema->getName() . '/') !== false
+            && strpos($this->refPointer, '/properties/') !== false;
     }
 
-
+    public function isRefPointerToProperty():bool
+    {
+        return $this->isRefPointerToSchema()
+            && strpos($this->refPointer, '/' . $this->schema->getName() . '/') === false
+            && strpos($this->refPointer, '/properties/') !== false;
+    }
 
     public function getRefSchemaName():string
     {
         if (!$this->isReference && !$this->isItemsReference) {
             throw new BadMethodCallException('Property should be a reference or contains items with reference');
         }
-        $name = substr($this->refPointer, self::REFERENCE_PATH_LEN);
-        return $this->isRefPointerToSelf() ? substr($name, 0, strpos($name, '/properties/')) : $name;
+        $pattern = strpos($this->refPointer, '/properties/') !== false ?
+            '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)/properties/(?<propName>.+)$~'
+            : '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)$~';
+        if (!\preg_match($pattern, $this->refPointer, $matches)) {
+            throw new InvalidDefinitionException('Invalid schema reference');
+        }
+        return $matches['schemaName'];
     }
 
     public function getRefClassName():string

@@ -19,6 +19,7 @@ use cebe\yii2openapi\lib\openapi\PropertySchema;
 use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function explode;
 use function strpos;
 use function strtolower;
@@ -205,6 +206,16 @@ class AttributeResolver
 
             $fkProperty = $property->getTargetProperty();
             if (!$fkProperty) {
+
+                throw new InvalidDefinitionException(VarDumper::dumpAsString([
+                    $property->getName(),
+                    $property->isRefPointerToSelf(),
+                    $property->isRefPointerToProperty(),
+                    $property->getTargetPropertyName(),
+                    $property->getRefSchemaName(),
+                    $this->schema->getPropertyNames(),
+                    $property->getRefSchema()
+                ]));
                 return;
             }
             $relatedClassName = $property->getRefClassName();
