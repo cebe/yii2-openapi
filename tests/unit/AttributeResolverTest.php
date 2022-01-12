@@ -104,4 +104,16 @@ class AttributeResolverTest extends TestCase
             ],
         ];
     }
+
+    public function testResolveNonDbModel()
+    {
+        $schemaFile = Yii::getAlias("@specs/petstore_jsonapi.yaml");
+        $openApi = Reader::readFromYamlFile($schemaFile, OpenApi::class, false);
+        $schema = new ComponentSchema($openApi->components->schemas['PetStatistic']);
+        $resolver = new AttributeResolver('PetStatistic', $schema, new JunctionSchemas([]));
+        $model = $resolver->resolve();
+        $fixture = require Yii::getAlias('@fixtures/non-db.php');
+        $testModel = $fixture['PetStatistic'];
+        self::assertEquals($testModel, $model);
+    }
 }

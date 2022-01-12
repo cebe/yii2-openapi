@@ -136,14 +136,21 @@ components:
           type: integer
           format: int64
           readOnly: True
+          x-faker: false
         title:
           type: string
+          x-faker: false
+        parentPet:
+          $ref: "#/components/schemas/Pet"
         dogsCount:
           type: integer
+          x-faker: false
         catsCount:
           type: integer
+          x-faker: false
         summary:
           type: string
+          x-faker: false
         favoritePets:
           type: array
           readOnly: true

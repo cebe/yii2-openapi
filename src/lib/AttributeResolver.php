@@ -290,6 +290,10 @@ class AttributeResolver
                    ->asHasMany([Inflector::camel2id($this->schemaName, '_') . '_id' => $this->schema->getPkName()]);
             return;
         }
+        if ($this->schema->isNonDb() && $attribute->isReference()) {
+            $this->attributes[$property->getName()] = $attribute;
+            return;
+        }
         $this->attributes[$property->getName()] =
             $attribute->setFakerStub($this->guessFakerStub($attribute, $property));
     }
