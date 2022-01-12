@@ -22,11 +22,13 @@ use yii\base\Model;
 class <?= $model->getClassName() ?> extends Model
 {
 <?php foreach ($model->attributes as $attribute): ?>
+<?php if (!$attribute->isReference()):?>
     /**
     * @var <?=$attribute->phpType.' '.$attribute->description.PHP_EOL?>
     */
     public $<?= $attribute->propertyName ?>;
 
+<?php endif; ?>
 <?php endforeach; ?>
 <?php foreach ($model->relations as $relationName => $relation): ?>
     /**
