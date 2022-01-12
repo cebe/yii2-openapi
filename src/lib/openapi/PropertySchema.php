@@ -12,6 +12,7 @@ use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\Reference;
 use cebe\openapi\SpecObjectInterface;
 use cebe\yii2openapi\lib\CustomSpecAttr;
+use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use Throwable;
 use Yii;
 use yii\db\Schema as YiiDbSchema;
@@ -20,7 +21,6 @@ use yii\helpers\Json;
 use yii\helpers\StringHelper;
 use function is_int;
 use function strpos;
-use function substr;
 
 class PropertySchema
 {
@@ -61,6 +61,7 @@ class PropertySchema
      * @param \cebe\openapi\SpecObjectInterface             $property
      * @param string                                        $name
      * @param \cebe\yii2openapi\lib\openapi\ComponentSchema $schema
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
     public function __construct(SpecObjectInterface $property, string $name, ComponentSchema $schema)
@@ -82,21 +83,24 @@ class PropertySchema
     }
 
     /**
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
     private function initReference():void
     {
         $this->isReference = true;
         $this->refPointer = $this->property->getJsonReference()->getJsonPointer()->getPointer();
+        $refSchemaName = $this->getRefSchemaName();
         if ($this->isRefPointerToSelf()) {
             $this->refSchema = $this->schema;
         } elseif ($this->isRefPointerToSchema()) {
             $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve()]);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve(), $refSchemaName]);
         }
     }
 
     /**
+     * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
     private function initItemsReference():void
@@ -111,7 +115,7 @@ class PropertySchema
             $this->refSchema = $this->schema;
         } elseif ($this->isRefPointerToSchema()) {
             $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
-            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve()]);
+            $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve(), $this->getRefSchemaName()]);
         }
     }
 
@@ -133,6 +137,11 @@ class PropertySchema
     public function getProperty():SpecObjectInterface
     {
         return $this->property;
+    }
+
+    public function getRefPointer(): string
+    {
+        return $this->refPointer ?? '';
     }
 
     public function getRefSchema():ComponentSchema
@@ -174,18 +183,23 @@ class PropertySchema
 
     public function isRefPointerToSelf():bool
     {
-        return $this->isRefPointerToSchema() && strpos($this->refPointer, '/properties/') !== false;
+        return $this->isRefPointerToSchema()
+            && strpos($this->refPointer, '/' . $this->schema->getName() . '/') !== false
+            && strpos($this->refPointer, '/properties/') !== false;
     }
-
-
 
     public function getRefSchemaName():string
     {
         if (!$this->isReference && !$this->isItemsReference) {
             throw new BadMethodCallException('Property should be a reference or contains items with reference');
         }
-        $name = substr($this->refPointer, self::REFERENCE_PATH_LEN);
-        return $this->isRefPointerToSelf() ? substr($name, 0, strpos($name, '/properties/')) : $name;
+        $pattern = strpos($this->refPointer, '/properties/') !== false ?
+            '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)/properties/(?<propName>.+)$~'
+            : '~^'.self::REFERENCE_PATH.'(?<schemaName>.+)$~';
+        if (!\preg_match($pattern, $this->refPointer, $matches)) {
+            throw new InvalidDefinitionException('Invalid schema reference');
+        }
+        return $matches['schemaName'];
     }
 
     public function getRefClassName():string

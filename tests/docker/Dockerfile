@@ -61,12 +61,12 @@ RUN curl -o /tmp/composer-setup.php https://getcomposer.org/installer \
 # Enable Xdebug
 ENV XDEBUGINI_PATH=/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-RUN echo "xdebug.idekey=PHPSTORM" >> $XDEBUGINI_PATH && \
+RUN echo "xdebug.idekey=PHP_STORM" >> $XDEBUGINI_PATH && \
     echo "xdebug.default_enable=1" >> $XDEBUGINI_PATH && \
     echo "xdebug.remote_enable=1" >> $XDEBUGINI_PATH && \
-    echo "xdebug.remote_connect_back=0" >> $XDEBUGINI_PATH && \
+    echo "xdebug.remote_connect_back=1" >> $XDEBUGINI_PATH && \
     echo "xdebug.remote_log=1" >> $XDEBUGINI_PATH && \
     echo "xdebug.remote_port=9000" >> $XDEBUGINI_PATH && \
-    echo "xdebug.remote_autostart=0" >> $XDEBUGINI_PATH
+    echo "xdebug.remote_autostart=1" >> $XDEBUGINI_PATH
 
 WORKDIR /app

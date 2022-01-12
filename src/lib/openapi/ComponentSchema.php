@@ -25,6 +25,11 @@ class ComponentSchema
     private $schema;
 
     /**
+     * @var string
+    **/
+    private $name;
+
+    /**
      * @var bool
      */
     private $isReference = false;
@@ -43,7 +48,7 @@ class ComponentSchema
     /**
      * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
      */
-    public function __construct(SpecObjectInterface $openApiSchema)
+    public function __construct(SpecObjectInterface $openApiSchema, string $name)
     {
         if ($openApiSchema instanceof Reference) {
             $this->isReference = true;
@@ -52,6 +57,7 @@ class ComponentSchema
         } else {
             $this->schema = $openApiSchema;
         }
+        $this->name = $name;
         $this->pkName = $this->schema->{CustomSpecAttr::PRIMARY_KEY} ?? 'id';
         $this->requiredProps = $this->schema->required ?? [];
         $this->indexes = $this->schema->{CustomSpecAttr::INDEXES} ?? [];
@@ -60,6 +66,11 @@ class ComponentSchema
     public function getSchema()
     {
         return $this->schema;
+    }
+
+    public function getName()
+    {
+        return $this->name;
     }
 
     public function isReference():bool

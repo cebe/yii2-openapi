@@ -16,7 +16,7 @@ class GeneratorTest extends TestCase
         $tests = FileHelper::findFiles(Yii::getAlias('@specs'), ['recursive' => false, 'only' => ['*.php']]);
         $ret = [];
         foreach ($tests as $testFile) {
-//            if(!StringHelper::endsWith($testFile, 'blog_v2.php')){
+//            if(!StringHelper::endsWith($testFile, 'ref_noobject.php')){
 //                continue;
 //            }
             $ret[] = [substr($testFile, strlen(Yii::getAlias('@specs')) + 1)];

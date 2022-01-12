@@ -19,6 +19,7 @@ use cebe\yii2openapi\lib\openapi\PropertySchema;
 use Yii;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function explode;
 use function strpos;
 use function strtolower;
@@ -204,6 +205,10 @@ class AttributeResolver
             }
 
             $fkProperty = $property->getTargetProperty();
+            if (!$fkProperty && !$property->getRefSchema()->isObjectSchema()) {
+                $this->resolvePropertyRef($property, $attribute);
+                return;
+            }
             if (!$fkProperty) {
                 return;
             }
@@ -387,5 +392,29 @@ class AttributeResolver
             $dbIndexes[$dbIndex->name] = $dbIndex;
         }
         return $dbIndexes;
+    }
+
+    /**
+     * @param \cebe\yii2openapi\lib\openapi\PropertySchema $property
+     * @param \cebe\yii2openapi\lib\items\Attribute        $attribute
+     * @return void
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function resolvePropertyRef(PropertySchema $property, Attribute $attribute):void
+    {
+        $fkProperty = new PropertySchema(
+            $property->getRefSchema()->getSchema(),
+            $property->getName(),
+            $this->schema
+        );
+        [$min, $max] = $fkProperty->guessMinMax();
+        $attribute->setPhpType($fkProperty->guessPhpType())
+                  ->setDbType($fkProperty->guessDbType(true))
+                  ->setSize($fkProperty->getMaxLength())
+                  ->setDescription($fkProperty->getAttr('description'))
+                  ->setDefault($fkProperty->guessDefault())
+                  ->setLimits($min, $max, $fkProperty->getMinLength());
+        $this->attributes[$property->getName()] =
+            $attribute->setFakerStub($this->guessFakerStub($attribute, $fkProperty));
     }
 }

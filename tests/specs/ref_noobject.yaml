@@ -1,0 +1,56 @@
+info:
+    version: 1.0.0
+    title: Bad reference type handling
+servers:
+    - url: http://localhost:3001/api/v4
+tags:
+    - name: watching
+        #description: Operations about watching people
+openapi: 3.0.2
+paths:
+    "/watch/{personId}":
+        post:
+            operationId: toggleWatch
+            summary: "Toggle person watch"
+            ##description: ""
+            tags:
+                - watching
+            parameters:
+                - name: personId
+                  schema:
+                      $ref: "#/components/schemas/Mid"
+                  in: path
+                  required: true
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/PersonWatch"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/PersonWatch"
+components:
+    schemas:
+        Mid:
+            description: The MongoDB Identifier
+            type: string
+            x-faker: false
+            x-db-type: false
+            pattern: ^[0-9a-f]{24}$
+        PersonWatch:
+            description: Information about a user watching a Person
+            type: object
+            x-table: false
+            properties:
+                personId:
+                    $ref: "#/components/schemas/Mid"
+                userId:
+                    $ref: "#/components/schemas/Mid"
+                someProp:
+                    type: integer
+                    x-faker: false

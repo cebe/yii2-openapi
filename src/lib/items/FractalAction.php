@@ -246,6 +246,9 @@ final class FractalAction extends BaseObject
 
     public function getIdParamType(): string
     {
+        if (!isset($this->params[$this->idParam]['type'])) {
+            return 'string';
+        }
         return $this->params[$this->idParam]['type'] === 'integer' ? 'int' : 'string';
     }
 }
