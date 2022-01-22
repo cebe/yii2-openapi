@@ -37,6 +37,13 @@ class <?= $model->getClassName() ?> extends Model
     public $<?= $relationName ?>;
 
 <?php endforeach; ?>
+<?php foreach ($model->nonDbRelations as $relationName => $relation): ?>
+    /**
+    * @var <?=$relation->isHasOne()? $relation->getClassName(): 'array|'.$relation->getClassName().'[]'.PHP_EOL?>
+    */
+    public $<?= $relationName ?>;
+
+<?php endforeach; ?>
 
     public function rules()
     {

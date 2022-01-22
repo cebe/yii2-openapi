@@ -190,6 +190,14 @@ class Attribute extends BaseObject
         $this->columnName = $this->propertyName . '_id';
         return $this;
     }
+
+    public function asNonDbReference(string $relatedClass):Attribute
+    {
+        $this->reference = $relatedClass;
+        $this->columnName = $this->propertyName;
+        return $this;
+    }
+
     public function isReadOnly():bool
     {
         return $this->readOnly;

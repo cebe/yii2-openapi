@@ -57,6 +57,11 @@ class DbModel extends BaseObject
      */
     public $relations = [];
 
+    /***
+     * @var array|\cebe\yii2openapi\lib\items\NonDbRelation[] non-db relations
+     */
+    public $nonDbRelations = [];
+
     /**
      * @var array|\cebe\yii2openapi\lib\items\ManyToManyRelation[] many to many relations.
      */

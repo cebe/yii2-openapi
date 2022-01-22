@@ -4,6 +4,7 @@
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
 use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\NonDbRelation;
 
 return [
     'PetStatistic' => new DbModel([
@@ -25,7 +26,11 @@ return [
         'relations' => [
             'parentPet' => new AttributeRelation('parentPet', 'pets', 'Pet', 'hasOne', ['id' => 'parentPet_id']),
             'favoritePets' => new AttributeRelation('favoritePets', 'pets', 'Pet', 'hasMany', ['pet_statistic_id' => 'id']),
-    ]]),
+        ],
+        'nonDbRelations' => [
+            'topDoctors' => new NonDbRelation('topDoctors', 'Doctor', 'hasMany'),
+        ]
+        ]),
     'personWatch' => new DbModel([
         'pkName' => 'id',
         'name' => 'PersonWatch',

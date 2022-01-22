@@ -41,6 +41,9 @@ class PropertySchema
     /**@var bool $isItemsReference * */
     private $isItemsReference = false;
 
+    /**@var bool $isNonDbReference * */
+    private $isNonDbReference = false;
+
     /**@var string $refPointer * */
     private $refPointer;
 
@@ -79,7 +82,14 @@ class PropertySchema
         ) {
             $this->initItemsReference();
         }
-        $this->schema = $schema;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNonDbReference():bool
+    {
+        return $this->isNonDbReference;
     }
 
     /**
@@ -96,6 +106,9 @@ class PropertySchema
         } elseif ($this->isRefPointerToSchema()) {
             $this->property->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $this->refSchema = Yii::createObject(ComponentSchema::class, [$this->property->resolve(), $refSchemaName]);
+        }
+        if ($this->refSchema && $this->refSchema->isNonDb()) {
+            $this->isNonDbReference = true;
         }
     }
 
@@ -116,6 +129,9 @@ class PropertySchema
         } elseif ($this->isRefPointerToSchema()) {
             $items->getContext()->mode = ReferenceContext::RESOLVE_MODE_ALL;
             $this->refSchema = Yii::createObject(ComponentSchema::class, [$items->resolve(), $this->getRefSchemaName()]);
+        }
+        if ($this->refSchema && $this->refSchema->isNonDb()) {
+            $this->isNonDbReference = true;
         }
     }
 
