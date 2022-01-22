@@ -63,6 +63,31 @@ class <?=$transformer->name?> extends TransformerAbstract
 <?php endif;?>
     }
 <?php endforeach;?>
+<?php foreach ($transformer->nonDbRelations as $relation):?>
+
+    public function include<?=$relation->getCamelName()?>(<?=$transformer->dbModel->getClassName()?> $model)
+    {
+        $relation = $model-><?=Inflector::variablize($relation->getName())?>;
+<?php if ($relation->isHasOne()):?>
+        if ($relation === null) {
+            return $this->null();
+        }
+<?php if ($relation->getClassName() === $transformer->dbModel->getClassName()):?>
+        $transformer = new static();
+<?php else:?>
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
+<?php endif;?>
+        return $this->item($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+<?php else:?>
+<?php if ($relation->getClassName() === $transformer->dbModel->getClassName()):?>
+        $transformer = new static();
+<?php else:?>
+        $transformer = new <?=Inflector::singularize($relation->getClassName())?>Transformer();
+<?php endif;?>
+        return $this->collection($relation, $transformer, '<?=$transformer->makeResourceKey($relation->getClassKey())?>');
+<?php endif;?>
+    }
+<?php endforeach;?>
 <?php foreach ($transformer->many2Many as $relation):?>
 
     public function include<?=$relation->getCamelName()?>(<?=$transformer->dbModel->getClassName()?> $model)

@@ -21,6 +21,7 @@ use function array_unique;
  * @property-read string                                                 $fQN
  * @property-read array|\cebe\yii2openapi\lib\items\AttributeRelation[]  $relations
  * @property-read \cebe\yii2openapi\lib\items\ManyToManyRelation[]|array $many2Many
+ * @property-read \cebe\yii2openapi\lib\items\NonDbRelation[]|array $nonDbRelations
  * @property-read array                                                  $availableRelations
  */
 class Transformer extends BaseObject
@@ -87,7 +88,11 @@ class Transformer extends BaseObject
             return Inflector::singularize($relation->getRelatedClassName()).'Transformer';
         }, $this->dbModel->many2many);
 
-        return array_unique(array_merge($relations, $relationsMany));
+        $relationsNonDb = array_map(static function (NonDbRelation $relation) {
+            return Inflector::singularize($relation->getClassName()).'Transformer';
+        }, $this->dbModel->nonDbRelations);
+
+        return array_unique(array_merge($relations, $relationsMany, $relationsNonDb));
     }
 
     /**
@@ -97,7 +102,13 @@ class Transformer extends BaseObject
     {
         return $this->dbModel->relations;
     }
-
+    /**
+     * @return array|\cebe\yii2openapi\lib\items\NonDbRelation[]
+     */
+    public function getNonDbRelations(): array
+    {
+        return $this->dbModel->nonDbRelations;
+    }
     /**
      * @return array|\cebe\yii2openapi\lib\items\ManyToManyRelation[]
      */
@@ -121,7 +132,11 @@ class Transformer extends BaseObject
             return Inflector::variablize($relation->name);
         }, $this->dbModel->many2many);
 
-        return array_merge($relations, $relationsMany);
+        $relationsNonDb = array_map(static function (NonDbRelation $relation) {
+            return Inflector::variablize($relation->getName());
+        }, $this->dbModel->nonDbRelations);
+
+        return array_merge($relations, $relationsMany, $relationsNonDb);
     }
 
     public function makeResourceKey(string $value): string

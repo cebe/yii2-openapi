@@ -6,7 +6,7 @@ use app\models\Pet;
 
 class PetTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['duplicates'];
+    protected $availableIncludes = ['duplicates', 'doctor'];
     protected $defaultIncludes = [];
 
     public function transform(Pet $model)
@@ -19,5 +19,15 @@ class PetTransformer extends TransformerAbstract
         $relation = $model->duplicates;
         $transformer = new static();
         return $this->collection($relation, $transformer, 'pets');
+    }
+
+    public function includeDoctor(Pet $model)
+    {
+        $relation = $model->doctor;
+        if ($relation === null) {
+            return $this->null();
+        }
+        $transformer = new DoctorTransformer();
+        return $this->item($relation, $transformer, 'doctors');
     }
 }
