@@ -20,6 +20,7 @@ class m100000_000000_maria extends Migration
         $this->dropTableIfExists('{{%v2_posts}}');
         $this->dropTableIfExists('{{%v2_users}}');
         $this->dropTableIfExists('{{%v2_categories}}');
+        $this->dropTableIfExists('{{%default_sizes}}');
 
         $this->createTable('{{%v2_categories}}',
             [
