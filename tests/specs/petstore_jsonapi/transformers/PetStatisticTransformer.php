@@ -6,7 +6,7 @@ use app\models\PetStatistic;
 
 class PetStatisticTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['parentPet', 'favoritePets'];
+    protected $availableIncludes = ['parentPet', 'favoritePets', 'topDoctors'];
     protected $defaultIncludes = [];
 
     public function transform(PetStatistic $model)
@@ -29,5 +29,12 @@ class PetStatisticTransformer extends TransformerAbstract
         $relation = $model->favoritePets;
         $transformer = new PetTransformer();
         return $this->collection($relation, $transformer, 'pets');
+    }
+
+    public function includeTopDoctors(PetStatistic $model)
+    {
+        $relation = $model->topDoctors;
+        $transformer = new DoctorTransformer();
+        return $this->collection($relation, $transformer, 'doctors');
     }
 }

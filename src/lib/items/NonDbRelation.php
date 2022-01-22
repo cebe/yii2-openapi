@@ -7,6 +7,8 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use yii\helpers\Inflector;
+
 class NonDbRelation
 {
     public const HAS_ONE = 'hasOne';
@@ -81,6 +83,16 @@ class NonDbRelation
     public function getClassName():?string
     {
         return $this->className;
+    }
+
+    public function getCamelName():string
+    {
+        return Inflector::camelize($this->name);
+    }
+
+    public function getClassKey():string
+    {
+        return Inflector::camel2id($this->getClassName());
     }
 
     /**
