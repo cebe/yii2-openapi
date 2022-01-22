@@ -10,6 +10,7 @@ namespace app\models\base;
  * @property string $tag
  *
  * @property array|\app\models\Pet[] $duplicates
+ * @property \app\models\Doctor $doctor
  */
 abstract class Pet extends \yii\db\ActiveRecord
 {

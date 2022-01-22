@@ -43,6 +43,11 @@ class PetStatistic extends Model
     */
     public $favoritePets;
 
+    /**
+    * @var array|Doctor[]
+    */
+    public $topDoctors;
+
 
     public function rules()
     {

@@ -14,6 +14,7 @@ use cebe\yii2openapi\lib\items\DbIndex;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
+use cebe\yii2openapi\lib\items\NonDbRelation;
 use cebe\yii2openapi\lib\openapi\ComponentSchema;
 use cebe\yii2openapi\lib\openapi\PropertySchema;
 use Yii;
@@ -35,7 +36,10 @@ class AttributeResolver
      * @var AttributeRelation[]|array
      */
     private $relations = [];
-
+    /**
+     * @var NonDbRelation[]|array
+     */
+    private $nonDbRelations = [];
     /**
      * @var ManyToManyRelation[]|array
      */
@@ -102,6 +106,7 @@ class AttributeResolver
                 'description' => $this->schema->getDescription(),
                 'attributes' => $this->attributes,
                 'relations' => $this->relations,
+                'nonDbRelations' => $this->nonDbRelations,
                 'many2many' => $this->many2many,
                 'indexes' => $this->prepareIndexes($this->schema->getIndexes()),
                 //For valid primary keys for junction tables
@@ -203,6 +208,17 @@ class AttributeResolver
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
             }
+            
+            if ($property->isNonDbReference()) {
+                $attribute->asNonDbReference($property->getRefClassName());
+                $relation = Yii::createObject(
+                    NonDbRelation::class,
+                    [$property->getName(), $property->getRefClassName(), NonDbRelation::HAS_ONE]
+                );
+
+                $this->nonDbRelations[$property->getName()] = $relation;
+                return;
+            }
 
             $fkProperty = $property->getTargetProperty();
             if (!$fkProperty && !$property->getRefSchema()->isObjectSchema()) {
@@ -249,6 +265,18 @@ class AttributeResolver
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
             }
+
+            if ($property->isNonDbReference()) {
+                $attribute->asNonDbReference($property->getRefClassName());
+                $relation = Yii::createObject(
+                    NonDbRelation::class,
+                    [$property->getName(), $property->getRefClassName(), NonDbRelation::HAS_MANY]
+                );
+
+                $this->nonDbRelations[$property->getName()] = $relation;
+                return;
+            }
+
             if ($property->isRefPointerToSelf()) {
                 $relatedClassName = $property->getRefClassName();
                 $attribute->setPhpType($relatedClassName . '[]');

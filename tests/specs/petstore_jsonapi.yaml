@@ -97,6 +97,21 @@ paths:
           description: successfully deleted pet
 components:
   schemas:
+    Doctor:
+      description: Non-db doctor object
+      x-table: false
+      required:
+        - name
+      properties:
+         name:
+           type: string
+           maxLength: 200
+         surname:
+           type: string
+           maxLength: 200
+         phones:
+           type: array
+
     Pet:
       description: A Pet
       required:
@@ -128,6 +143,8 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Pet/properties/tag"
+        doctor:
+          $ref: "#/components/schemas/Doctor"
     PetStatistic:
       x-table: false
       description: Non-Db model
@@ -156,6 +173,11 @@ components:
           readOnly: true
           items:
             $ref: "#/components/schemas/Pet"
+        topDoctors:
+          type: array
+          readOnly: true
+          items:
+            $ref: "#/components/schemas/Doctor"
 
     Pets:
       type: array

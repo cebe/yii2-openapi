@@ -30,6 +30,14 @@ namespace <?= $namespace ?>;
 <?php endif?>
 
 <?php endforeach; ?>
+<?php foreach ($model->nonDbRelations as $relationName => $relation): ?>
+<?php if ($relation->isHasOne()):?>
+ * @property \<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?> $<?= Inflector::variablize($relation->getName()) ?>
+<?php else:?>
+ * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->getClassName() ?>[] $<?= Inflector::variablize($relation->getName()) ?>
+<?php endif?>
+
+<?php endforeach; ?>
 <?php foreach ($model->many2many as $relation): ?>
  * @property array|\<?= trim($relationNamespace, '\\') ?>\<?= $relation->relatedClassName ?>[] $<?= Inflector::variablize($relation->name) ?>
 
