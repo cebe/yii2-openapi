@@ -131,7 +131,7 @@ Specify table indexes
       properties:
         id:
            type: integer
-           x-db-type: INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT
+           x-db-type: INTEGER PRIMARY KEY AUTO_INCREMENT
         title:
            type: string
         visible:
@@ -141,7 +141,8 @@ Specify table indexes
             format: date
         metadata:
            type: object
-           x-db-type: JSON NOT NULL DEFAULT '{}'
+           x-db-type: JSON
+           default: '{}' 
 ```
 
 ### Many-to-Many relation definition
