@@ -47,6 +47,11 @@ class Attribute extends BaseObject
     public $dbType = 'string';
 
     /**
+     * Custom db type
+     */
+    public $xDbType;
+
+    /**
      * @var string
      */
     public $description = '';
@@ -115,6 +120,17 @@ class Attribute extends BaseObject
     {
         $this->dbType = $dbType;
         return $this;
+    }
+
+    public function setXDbType($xDbType):Attribute
+    {
+        $this->xDbType = $xDbType;
+        return $this;
+    }
+
+    public function getXDbType($xDbType)
+    {
+        return $this->xDbType;
     }
 
     public function setDescription(string $description):Attribute
@@ -270,6 +286,13 @@ class Attribute extends BaseObject
 
     private function dbTypeAbstract(string $type):string
     {
+        /**
+         * Custom db type
+         */
+        if ($this->xDbType){
+            return $this->xDbType;
+        }
+
         if (stripos($type, 'int') === 0) {
             return 'integer';
         }
