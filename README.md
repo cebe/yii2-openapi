@@ -248,6 +248,52 @@ $this->update('{{%company}}', ['name' => 'No name']);
 $this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
 ```
 
+### Handling of `NOT NULL` constraints (#required, #nullable)
+
+e.g. attribute = 'alpha'.
+
+1) If you define attribute neither "required" nor via "nullable", then it is by default:
+   ALLOW 'NOT NULL'
+ ```yaml
+  test_table:
+    required:
+    properties:
+      alpha:
+        type: string
+```
+
+2) If you define attribute by "required", then it is:
+   FORBIDDEN 'NOT NULL'
+ ```yaml
+  test_table:
+    required:
+     - alpha
+    properties:
+      alpha:
+        type: string
+```
+
+3) If you define attribute via "nullable", then it has the highest priority.
+   ALLOW 'NOT NULL'
+ ```yaml
+  test_table:
+    required:
+      - alpha
+    properties:
+      alpha:
+        type: string
+        nullable: true
+```
+
+FORBIDDEN 'NOT NULL'
+ ```yaml
+  test_table:
+    required:
+    properties:
+      alpha:
+        type: string
+        nullable: false
+```
 
 ## Screenshots
 

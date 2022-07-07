@@ -48,8 +48,15 @@ class Attribute extends BaseObject
 
     /**
      * Custom db type
+     * string | null
      */
     public $xDbType;
+
+    /**
+     * nullable
+     * bool | null
+     */
+    public $nullable;
 
     /**
      * @var string
@@ -128,9 +135,10 @@ class Attribute extends BaseObject
         return $this;
     }
 
-    public function getXDbType($xDbType)
+    public function setNullable($nullable):Attribute
     {
-        return $this->xDbType;
+        $this->nullable = $nullable;
+        return $this;
     }
 
     public function setDescription(string $description):Attribute
@@ -263,7 +271,7 @@ class Attribute extends BaseObject
             'phpType'=>$this->phpType,
             'dbType' => strtolower($this->dbType),
             'type' => $this->dbTypeAbstract($this->dbType),
-            'allowNull' => !$this->isRequired(),
+            'allowNull' => $this->allowNull(),
             'size' => $this->size > 0 ? $this->size : null,
         ]);
         $column->isPrimaryKey = $this->primary;
@@ -312,5 +320,13 @@ class Attribute extends BaseObject
             return 'timestamp';
         }
         return $type;
+    }
+
+    private function allowNull()
+    {
+        if (is_bool($this->nullable)){
+            return $this->nullable;
+        }
+        return !$this->isRequired();
     }
 }
