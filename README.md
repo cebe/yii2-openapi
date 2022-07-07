@@ -248,52 +248,43 @@ $this->update('{{%company}}', ['name' => 'No name']);
 $this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
 ```
 
-### Handling of `NOT NULL` constraints (#required, #nullable)
+### Handling of `NOT NULL` constraints
 
-e.g. attribute = 'alpha'.
+`NOT NULL` in DB migrations is determined by `nullable` and `required` properties of the OpenAPI schema.
 
-1) If you define attribute neither "required" nor via "nullable", then it is by default:
-   ALLOW 'NOT NULL'
- ```yaml
-  test_table:
-    required:
+- If you define attribute neither "required" nor via "nullable", then it is by default `NULL`:
+
+  ```yaml
+  ExampleSchema:
     properties:
       alpha:
         type: string
-```
+  ```
 
-2) If you define attribute by "required", then it is:
-   FORBIDDEN 'NOT NULL'
- ```yaml
-  test_table:
+- If you define attribute in "required", then it is `NOT NULL`
+
+  ```yaml
+  ExampleSchema:
     required:
      - alpha
     properties:
       alpha:
         type: string
-```
+  ```
 
-3) If you define attribute via "nullable", then it has the highest priority.
-   ALLOW 'NOT NULL'
- ```yaml
-  test_table:
+- If you define attribute via "nullable", then it overrides "required", e.g. allow `NULL` in this case:
+
+  ```yaml
+  ExampleSchema:
     required:
       - alpha
     properties:
       alpha:
         type: string
         nullable: true
-```
+  ```
 
-FORBIDDEN 'NOT NULL'
- ```yaml
-  test_table:
-    required:
-    properties:
-      alpha:
-        type: string
-        nullable: false
-```
+
 
 ## Screenshots
 
