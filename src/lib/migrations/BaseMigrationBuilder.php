@@ -205,6 +205,10 @@ abstract class BaseMigrationBuilder
                 $current->type = 'enum';
                 $current->dbType = 'enum';
             }
+            if (!empty($desired->enumValues)) {
+                $desired->type = 'enum';
+                $desired->dbType = 'enum';
+            }
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
                 continue;

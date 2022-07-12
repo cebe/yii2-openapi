@@ -66,7 +66,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
 
     protected function createEnumMigrations():void
     {
-        // Postgres only case
+        // execute via default
     }
 
     protected function isDbDefaultSize(ColumnSchema $current):bool

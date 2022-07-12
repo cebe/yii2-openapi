@@ -250,7 +250,7 @@ $this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
 
 ### Handling of `NOT NULL` constraints (#required, #nullable)
 
-e.g. attribute = 'alpha'.
+e.g. attribute = 'my_property'.
 
 1) If you define attribute neither "required" nor via "nullable", then it is by default:
    ALLOW 'NOT NULL'
@@ -258,7 +258,7 @@ e.g. attribute = 'alpha'.
   test_table:
     required:
     properties:
-      alpha:
+      my_property:
         type: string
 ```
 
@@ -267,9 +267,9 @@ e.g. attribute = 'alpha'.
  ```yaml
   test_table:
     required:
-     - alpha
+     - my_property
     properties:
-      alpha:
+      my_property:
         type: string
 ```
 
@@ -278,9 +278,9 @@ e.g. attribute = 'alpha'.
  ```yaml
   test_table:
     required:
-      - alpha
+      - my_property
     properties:
-      alpha:
+      my_property:
         type: string
         nullable: true
 ```
@@ -290,9 +290,22 @@ FORBIDDEN 'NOT NULL'
   test_table:
     required:
     properties:
-      alpha:
+      my_property:
         type: string
         nullable: false
+```
+
+### Handling of `enum` (#enum, #MariaDb)
+It work on MariaDb.
+
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        enum:
+          - one
+          - two
+          - three
 ```
 
 ## Screenshots

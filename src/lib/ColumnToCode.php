@@ -147,7 +147,7 @@ class ColumnToCode
 
     public function isEnum():bool
     {
-        return StringHelper::startsWith($this->column->dbType, 'enum');
+        return !empty($this->column->enumValues);
     }
 
     public static function escapeQuotes(string $str):string
@@ -208,11 +208,7 @@ class ColumnToCode
         if ($dbType === 'varchar') {
             $type = $dbType = 'string';
         }
-        if ($this->fromDb === true) {
-            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
-        } else {
-            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
-        }
+        $this->isBuiltinType = $this->getIsBuiltinType($type, $dbType);
         $fluentSize = $this->column->size ? '(' . $this->column->size . ')' : '()';
         $rawSize = $this->column->size ? '(' . $this->column->size . ')' : '';
         $this->rawParts['nullable'] = $this->column->allowNull ? 'NULL' : 'NOT NULL';
@@ -233,6 +229,23 @@ class ColumnToCode
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
         $this->resolveDefaultValue();
+    }
+
+    /**
+     * @param $type
+     * @param $dbType
+     * @return bool
+     */
+    private function getIsBuiltinType($type, $dbType)
+    {
+        if ($this->isEnum() && $this->isMariaDb()){
+            return false;
+        }
+        if ($this->fromDb === true){
+            return isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
+        } else {
+            return  isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
+        }
     }
 
     private function resolveEnumType():void
@@ -314,10 +327,18 @@ class ColumnToCode
     private function isDefaultAllowed():bool
     {
         $type = strtolower($this->column->dbType);
-        if ($type === 'tsvector') {
-            return false;
+        switch ($type){
+            case 'tsvector':
+                return false;
+            case 'blob':
+            case 'geometry':
+            case 'text':
+            case 'json':
+                return ($this->isMysql() && !$this->isMariaDb()) === false;
+            case 'enum':
+            default:
+                return true;
         }
-        return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
     }
 
     private function typeWithoutSize(string $type):string
