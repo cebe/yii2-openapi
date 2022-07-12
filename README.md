@@ -248,24 +248,24 @@ $this->update('{{%company}}', ['name' => 'No name']);
 $this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
 ```
 
-### Handling of `NOT NULL` constraints (#required, #nullable)
+### Handling of `NOT NULL` constraints
 
+`NOT NULL` in DB migrations is determined by `nullable` and `required` properties of the OpenAPI schema.
 e.g. attribute = 'my_property'.
 
-1) If you define attribute neither "required" nor via "nullable", then it is by default:
-   ALLOW 'NOT NULL'
- ```yaml
-  test_table:
-    required:
+- If you define attribute neither "required" nor via "nullable", then it is by default `NULL`:
+
+```yaml
+  ExampleSchema:
     properties:
       my_property:
         type: string
 ```
 
-2) If you define attribute by "required", then it is:
-   FORBIDDEN 'NOT NULL'
- ```yaml
-  test_table:
+- If you define attribute in "required", then it is `NOT NULL`
+
+```yaml
+  ExampleSchema:
     required:
      - my_property
     properties:
@@ -273,10 +273,10 @@ e.g. attribute = 'my_property'.
         type: string
 ```
 
-3) If you define attribute via "nullable", then it has the highest priority.
-   ALLOW 'NOT NULL'
- ```yaml
-  test_table:
+- If you define attribute via "nullable", then it overrides "required", e.g. allow `NULL` in this case:
+
+```yaml
+  ExampleSchema:
     required:
       - my_property
     properties:
@@ -285,8 +285,9 @@ e.g. attribute = 'my_property'.
         nullable: true
 ```
 
-FORBIDDEN 'NOT NULL'
- ```yaml
+- If you define attribute via "nullable", then it overrides "required", e.g. `NOT NULL` in this case:
+
+```yaml
   test_table:
     required:
     properties:
