@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbIndex;
 use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
@@ -56,6 +57,19 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
             $desired->size = $current->size;
         }
+        
+        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)){
+            $desired->precision = $decimalAttributes['precision'];
+            $desired->scale = $decimalAttributes['scale'];
+            $desired->type = 'decimal';
+            $desired->size = $decimalAttributes['precision'];
+            foreach (['precision', 'scale', 'dbType'] as $decimalAttr) {
+                if ($current->$decimalAttr !== $desired->$decimalAttr) {
+                    $changedAttributes[] = $decimalAttr;
+                }
+            }
+        }
+        
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
             if ($current->$attr !== $desired->$attr) {
                 $changedAttributes[] = $attr;

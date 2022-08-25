@@ -309,6 +309,37 @@ It work on MariaDb.
           - three
 ```
 
+### Handling of `numeric` (#numeric, #MariaDb)
+precision-default = 10
+scale-default = 2
+
+- You can define attribute like "numeric(precision,scale)":
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal(12,4)
+```
+DB-Result = decimal(12,4)
+
+- You can define attribute like "numeric(precision)" with default scale-default = 2:
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal(12)
+```
+DB-Result = decimal(12,2)
+
+- You can define attribute like "numeric" with precision-default = 10 and scale-default = 2:
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal
+```
+DB-Result = decimal(10,2)
+
 ## Screenshots
 
 Gii Generator Form:

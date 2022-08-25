@@ -150,6 +150,56 @@ class ColumnToCode
         return !empty($this->column->enumValues);
     }
 
+    public function isDecimal()
+    {
+        return self::isDecimalByDbType($this->column->dbType);
+    }
+
+    /**
+     * @param $dbType
+     * @return array|false
+     */
+    public static function isDecimalByDbType($dbType)
+    {
+        $precision = null;
+        $scale = null;
+
+        // https://runebook.dev/de/docs/mariadb/decimal/index
+        $precisionDefault = 10;
+        $scaleDefault = 2;
+
+        preg_match_all('/(decimal\()+(\d)+(,)+(\d)+(\))/', $dbType, $matches);
+        if (!empty($matches[4][0])) {
+            $precision = $matches[2][0];
+            $scale = $matches[4][0];
+        }
+
+        if (empty($precision)){
+            preg_match_all('/(decimal\()+(\d)+(\))/', $dbType, $matches);
+            if (!empty($matches[2][0])) {
+                $precision = $matches[2][0];
+                $scale = $scaleDefault;
+            }
+        }
+
+        if (empty($precision)){
+            if (strtolower($dbType) === 'decimal'){
+                $precision = $precisionDefault;
+                $scale = $scaleDefault;
+            }
+        }
+
+        if (empty($precision)){
+            return false;
+        }
+
+        return [
+            'precision' => (int)$precision,
+            'scale' => (int)$scale,
+            'dbType' => "decimal($precision,$scale)",
+        ];
+    }
+
     public static function escapeQuotes(string $str):string
     {
         return str_replace(["'", '"', '$'], ["\\'", "\\'", '\$'], $str);
@@ -208,7 +258,6 @@ class ColumnToCode
         if ($dbType === 'varchar') {
             $type = $dbType = 'string';
         }
-        $this->isBuiltinType = $this->getIsBuiltinType($type, $dbType);
         $fluentSize = $this->column->size ? '(' . $this->column->size . ')' : '()';
         $rawSize = $this->column->size ? '(' . $this->column->size . ')' : '';
         $this->rawParts['nullable'] = $this->column->allowNull ? 'NULL' : 'NOT NULL';
@@ -223,11 +272,17 @@ class ColumnToCode
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         } elseif ($this->isEnum()) {
             $this->resolveEnumType();
+        } elseif ($this->isDecimal()) {
+            $this->fluentParts['type'] = $dbType;
+            $this->rawParts['type'] = $dbType;
         } else {
             $this->fluentParts['type'] = $type . $fluentSize;
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
+        
+        $this->isBuiltinType = $this->getIsBuiltinType($type, $dbType);
+
         $this->resolveDefaultValue();
     }
 
