@@ -93,8 +93,7 @@ class ColumnToCode
         bool $fromDb = false,
         bool $alter = false,
         ?string $previousColumnName = null
-    )
-    {
+    ) {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;

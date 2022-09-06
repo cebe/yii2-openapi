@@ -66,8 +66,7 @@ final class MigrationRecordBuilder
         string $tableAlias,
         ColumnSchema $column,
         ?string $previousColumnName = null
-    ): string
-    {
+    ): string {
         $converter = $this->columnToCode($column, false, false, $previousColumnName);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
@@ -213,8 +212,7 @@ final class MigrationRecordBuilder
         bool $fromDb = false,
         bool $alter = false,
         ?string $previousColumnName = null
-    ): ColumnToCode
-    {
+    ): ColumnToCode {
         return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter, $previousColumnName]);
     }
 }
