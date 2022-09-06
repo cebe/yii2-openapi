@@ -66,14 +66,19 @@ class ColumnToCode
      */
     private $isPk = false;
 
-    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null];
+    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null, 'after' => null];
 
-    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null];
+    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null, 'after' => null];
 
     /**
      * @var bool
      */
     private $alter;
+
+    /**
+     * Used for `AFTER` in SQL to preserve order as in OpenAPI schema
+     */
+    private ?string $previousColumnName = null;
 
     /**
      * ColumnToCode constructor.
@@ -82,12 +87,19 @@ class ColumnToCode
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
      * @param bool                 $alter (flag for resolve quotes that is different for create and alter)
      */
-    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false, bool $alter = false)
+    public function __construct(
+        Schema $dbSchema,
+        ColumnSchema $column,
+        bool $fromDb = false,
+        bool $alter = false,
+        ?string $previousColumnName = null
+    )
     {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
+        $this->previousColumnName = $previousColumnName;
         $this->resolve();
     }
 
@@ -97,7 +109,7 @@ class ColumnToCode
             return '$this->' . $this->fluentParts['type'];
         }
         if ($this->isBuiltinType) {
-            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default']];
+            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default'], $this->fluentParts['after']];
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
@@ -111,6 +123,10 @@ class ColumnToCode
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
+        if ($this->rawParts['after']) {
+            $code .= ' ' . $this->rawParts['after'];
+        }
+
         if ($this->isMysql() && $this->isEnum()) {
             return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
         }
@@ -232,6 +248,14 @@ class ColumnToCode
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
+
+        if ($this->isMysql() || $this->isMariaDb()) { // for MySQL `AFTER` is supported for `ALTER table` queries and not supported for `CREATE table` queries
+            if ($this->previousColumnName) {
+                $this->fluentParts['after'] = 'after(\''.$this->previousColumnName.'\')';
+                $this->rawParts['after'] = 'AFTER '.$this->previousColumnName;
+            }
+        }
+
         $this->resolveDefaultValue();
     }
 

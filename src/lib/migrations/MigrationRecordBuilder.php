@@ -62,9 +62,13 @@ final class MigrationRecordBuilder
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    public function addColumn(string $tableAlias, ColumnSchema $column):string
+    public function addColumn(
+        string $tableAlias,
+        ColumnSchema $column,
+        ?string $previousColumnName = null
+    ): string
     {
-        $converter = $this->columnToCode($column, false);
+        $converter = $this->columnToCode($column, false, false, $previousColumnName);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
@@ -204,8 +208,13 @@ final class MigrationRecordBuilder
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    private function columnToCode(ColumnSchema $column, bool $fromDb = false, bool $alter = false): ColumnToCode
+    private function columnToCode(
+        ColumnSchema $column,
+        bool $fromDb = false,
+        bool $alter = false,
+        ?string $previousColumnName = null
+    ): ColumnToCode
     {
-        return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter]);
+        return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter, $previousColumnName]);
     }
 }
