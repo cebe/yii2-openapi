@@ -76,9 +76,10 @@ class ColumnToCode
     private $alter;
 
     /**
+     * @var null|string
      * Used for `AFTER` in SQL to preserve order as in OpenAPI schema
      */
-    private ?string $previousColumnName = null;
+    private $previousColumnName;
 
     /**
      * ColumnToCode constructor.
