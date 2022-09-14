@@ -431,9 +431,11 @@ abstract class BaseMigrationBuilder
         if ($key > 0) {
             $prevColName = $columnNames[$key-1];
 
-            $columnSchema = $this->tableSchema->getColumn($prevColName);
-            if ($columnSchema) {
-                return $prevColName;
+            if ($this->tableSchema) {
+                $columnSchema = $this->tableSchema->getColumn($prevColName);
+                if ($columnSchema) {
+                    return $prevColName;
+                }
             }
             // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
         }
