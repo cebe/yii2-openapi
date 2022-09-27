@@ -2,6 +2,7 @@
 
 namespace tests\unit;
 
+use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\generator\ApiGenerator;
@@ -137,11 +138,6 @@ class MultiDbFreshMigrationTest extends DbTestCase
                 'username' => 'string',
                 'email' => 'string',
             ])->execute();
-
-            Yii::$app->db->createCommand()->insert('{{%users_after}}', [
-                'username' => 'foo',
-                'email' => 'foo@email.com',
-            ])->execute();
         }
 
         $dbModel = new DbModel([
@@ -162,5 +158,17 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $builder->build();
         $name = $builder->previousColumnName(new ColumnSchema(['name' => 'email']));
         $this->assertSame($name, 'username');
+    }
+
+    public function testAfterKeyword()
+    {
+        $dbName = 'mysql';
+        Yii::$app->set('db', Yii::$app->mysql);
+        $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
+
+        // TODO
+        // $column = new ColumnToCode(
+        //     Yii::$app->db->schema
+        // );
     }
 }
