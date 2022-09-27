@@ -166,9 +166,28 @@ class MultiDbFreshMigrationTest extends DbTestCase
         Yii::$app->set('db', Yii::$app->mysql);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
 
-        // TODO
-        // $column = new ColumnToCode(
-        //     Yii::$app->db->schema
-        // );
+        $dbSchema = Yii::$app->db->schema;
+        $columnSchema = new ColumnSchema([
+            'type' => 'integer',
+            'dbType' => \version_compare($version, '8.0.17', '>') ? 'int unsigned' : 'int(11) unsigned',
+            'phpType' => 'integer',
+            'allowNull' => true,
+            'autoIncrement' => false,
+            'enumValues' => null,
+            'size' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'precision' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'scale' => null,
+            'defaultValue' => 1,
+        ]);
+
+        $column = new ColumnToCode(
+            $dbSchema, $columnSchema, false, false, 'username'
+        );
+        $columnWithoutPreviousCol = new ColumnToCode(
+            $dbSchema, $columnSchema, false, false
+        );
+
+        $this->assertContains('AFTER', $column->getCode());
+        $this->assertNotContains('AFTER', $columnWithoutPreviousCol->getCode());
     }
 }
