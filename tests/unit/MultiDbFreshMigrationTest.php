@@ -187,7 +187,20 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $dbSchema, $columnSchema, false, false
         );
 
-        $this->assertContains('AFTER', $column->getCode());
-        $this->assertNotContains('AFTER', $columnWithoutPreviousCol->getCode());
+        $this->assertContains('AFTER username', $column->getCode());
+        $this->assertNotContains('AFTER username', $columnWithoutPreviousCol->getCode());
+
+        // test `after` for fluent part in function call `after()`
+        unset($column, $columnWithoutPreviousCol);
+
+        $column = new ColumnToCode(
+            $dbSchema, $columnSchema, true, false, 'username'
+        );
+        $columnWithoutPreviousCol = new ColumnToCode(
+            $dbSchema, $columnSchema, true, false
+        );
+
+        $this->assertContains("->after('username')", $column->getCode());
+        $this->assertNotContains("->after('username')", $columnWithoutPreviousCol->getCode());
     }
 }

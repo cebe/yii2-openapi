@@ -77,7 +77,8 @@ class ColumnToCode
 
     /**
      * @var null|string
-     * Used for `AFTER` in SQL to preserve order as in OpenAPI schema
+     * Column name of previous column/field.
+     * Used for `AFTER` in SQL to preserve order as in OpenAPI schema defination
      */
     private $previousColumnName;
 
