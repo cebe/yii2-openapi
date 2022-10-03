@@ -389,7 +389,10 @@ class ColumnToCode
             case 'geometry':
             case 'text':
             case 'json':
-                return ($this->isMysql() && !$this->isMariaDb()) === false;
+                if ($this->isMysql()) {
+                    return false;
+                }
+                return true;
             case 'enum':
             default:
                 return true;
