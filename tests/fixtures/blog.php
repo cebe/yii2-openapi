@@ -17,7 +17,7 @@ return [
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
-            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string']))
+            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string', 'xDbType' => 'string']))
                 ->setRequired()->setFakerStub('$faker->password'),
             'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(20)
@@ -60,7 +60,7 @@ return [
         'tableName' => 'blog_posts',
         'description' => 'A blog post (uid used as pk for test purposes)',
         'attributes' => [
-            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string']))
+            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string', 'xDbType' => 'varchar']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setSize(128)
                 ->setFakerStub('substr($uniqueFaker->sha256, 0, 128)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
@@ -116,9 +116,9 @@ return [
                 ->asReference('User')
                 ->setDescription('The User')
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
-            'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json']))
+            'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setRequired()->setDefault([])->setFakerStub('[]'),
-            'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json']))
+            'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setDefault([])->setFakerStub('[]'),
             'created_at' => (new Attribute('created_at',['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()->setFakerStub('$faker->unixTime'),
