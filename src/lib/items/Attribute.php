@@ -297,9 +297,9 @@ class Attribute extends BaseObject
         /**
          * Custom db type
          */
-        if ($this->xDbType){
-            return $this->xDbType;
-        }
+        // if ($this->xDbType){
+        //     return $this->xDbType;
+        // }
 
         if (stripos($type, 'int') === 0) {
             return 'integer';
