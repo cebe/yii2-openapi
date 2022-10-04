@@ -58,7 +58,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             $desired->size = $current->size;
         }
         
-        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)){
+        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
             $desired->type = 'decimal';

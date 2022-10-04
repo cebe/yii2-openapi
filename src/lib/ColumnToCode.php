@@ -174,7 +174,7 @@ class ColumnToCode
             $scale = $matches[4][0];
         }
 
-        if (empty($precision)){
+        if (empty($precision)) {
             preg_match_all('/(decimal\()+(\d)+(\))/', $dbType, $matches);
             if (!empty($matches[2][0])) {
                 $precision = $matches[2][0];
@@ -182,14 +182,14 @@ class ColumnToCode
             }
         }
 
-        if (empty($precision)){
-            if (strtolower($dbType) === 'decimal'){
+        if (empty($precision)) {
+            if (strtolower($dbType) === 'decimal') {
                 $precision = $precisionDefault;
                 $scale = $scaleDefault;
             }
         }
 
-        if (empty($precision)){
+        if (empty($precision)) {
             return false;
         }
 
@@ -293,10 +293,10 @@ class ColumnToCode
      */
     private function getIsBuiltinType($type, $dbType)
     {
-        if ($this->isEnum() && $this->isMariaDb()){
+        if ($this->isEnum() && $this->isMariaDb()) {
             return false;
         }
-        if ($this->fromDb === true){
+        if ($this->fromDb === true) {
             return isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
         } else {
             return  isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
@@ -382,7 +382,7 @@ class ColumnToCode
     private function isDefaultAllowed():bool
     {
         $type = strtolower($this->column->dbType);
-        switch ($type){
+        switch ($type) {
             case 'tsvector':
                 return false;
             case 'blob':

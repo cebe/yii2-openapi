@@ -324,7 +324,7 @@ class Attribute extends BaseObject
 
     private function allowNull()
     {
-        if (is_bool($this->nullable)){
+        if (is_bool($this->nullable)) {
             return $this->nullable;
         }
         return !$this->isRequired();
