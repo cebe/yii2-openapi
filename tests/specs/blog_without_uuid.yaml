@@ -227,7 +227,7 @@ components:
           type: integer
         uuid:
           type: string
-          x-db-type: UUID # uuid is supported in only PgSQL
+          # x-db-type: UUID # uuid is supported in only PgSQL
           x-faker: '$faker->uuid'
         str_text:
           type: string

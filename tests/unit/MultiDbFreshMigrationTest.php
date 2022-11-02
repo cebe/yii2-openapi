@@ -19,7 +19,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $dbName = 'maria';
         Yii::$app->set('db', Yii::$app->maria);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
-        $testFile = Yii::getAlias('@specs/blog.php');
+        $testFile = Yii::getAlias('@specs/blog_without_uuid.php');
         $this->runGenerator($testFile, $dbName);
         $expectedFiles = $this->findExpectedFiles($testFile, $dbName);
         $actualFiles = $this->findActualFiles();
@@ -45,7 +45,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $dbName = 'mysql';
         Yii::$app->set('db', Yii::$app->mysql);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
-        $testFile = Yii::getAlias('@specs/blog.php');
+        $testFile = Yii::getAlias('@specs/blog_without_uuid.php');
         $this->runGenerator($testFile, $dbName);
         $expectedFiles = $this->findExpectedFiles($testFile, $dbName);
         $actualFiles = $this->findActualFiles();

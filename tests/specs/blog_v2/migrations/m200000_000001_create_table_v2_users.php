@@ -14,7 +14,7 @@ class m200000_000001_create_table_v2_users extends \yii\db\Migration
             'password' => $this->string()->notNull(),
             'role' => 'enum(\'admin\', \'editor\', \'reader\') NULL DEFAULT NULL',
             'flags' => $this->integer()->null()->defaultValue(0),
-            'created_at' => $this->timestamp()->null()->defaultValue(null),
+            'created_at' => $this->datetime()->null()->defaultValue(null),
         ]);
         $this->createIndex('v2_users_login_key', '{{%v2_users}}', 'login', true);
         $this->createIndex('v2_users_email_key', '{{%v2_users}}', 'email', true);

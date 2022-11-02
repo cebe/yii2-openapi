@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * Table for Fakerable
+ */
+class m200000_000003_create_table_fakerable extends \yii\db\Migration
+{
+    public function safeUp()
+    {
+        $this->createTable('{{%fakerable}}', [
+            'id' => $this->bigPrimaryKey(),
+            'active' => $this->boolean()->null()->defaultValue(null),
+            'floatval' => $this->float()->null()->defaultValue(null),
+            'floatval_lim' => $this->float()->null()->defaultValue(null),
+            'doubleval' => $this->double()->null()->defaultValue(null),
+            'int_min' => $this->integer()->null()->defaultValue(3),
+            'int_max' => $this->integer()->null()->defaultValue(null),
+            'int_minmax' => $this->integer()->null()->defaultValue(null),
+            'int_created_at' => $this->integer()->null()->defaultValue(null),
+            'int_simple' => $this->integer()->null()->defaultValue(null),
+            'uuid' => $this->string(100)->null()->defaultValue(null),
+            'str_text' => $this->text()->null()->defaultValue(null),
+            'str_varchar' => $this->string(100)->null()->defaultValue(null),
+            'str_date' => $this->date()->null()->defaultValue(null),
+            'str_datetime' => $this->timestamp()->null()->defaultValue(null),
+            'str_country' => $this->text()->null()->defaultValue(null),
+        ]);
+    }
+
+    public function safeDown()
+    {
+        $this->dropTable('{{%fakerable}}');
+    }
+}

@@ -7,9 +7,14 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use \Yii;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\Inflector;
+use yii\db\mysql\Schema as MySqlSchema;
+use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
+use yii\db\pgsql\Schema as PgSqlSchema;
+use yii\base\NotSupportedException;
 use function is_array;
 use function strtolower;
 
@@ -48,7 +53,8 @@ class Attribute extends BaseObject
 
     /**
      * Custom db type
-     * string | null
+     * string | null | false
+     * if `false` then this attribute is virtual
      */
     public $xDbType;
 
@@ -292,33 +298,53 @@ class Attribute extends BaseObject
         return $column;
     }
 
+    // actually the name of this method should be yiiAbstractTypeForDbSpecificType
+    // todo docs - it throw new NotSupportedException
     private function dbTypeAbstract(string $type):string
     {
-        /**
-         * Custom db type
-         */
-        // if ($this->xDbType){
-        //     return $this->xDbType;
-        // }
+        if (is_string($this->xDbType) && !empty($this->xDbType)) {
+            $xDbType = strtolower($this->xDbType);
+            if (Yii::$app->db->schema instanceof MySqlSchema) {
+                $mysqlSchema = new MySqlSchema;
+                if ($mysqlSchema->typeMap[$xDbType] === null) {
+                    // var_dump($mysqlSchema->typeMap[$xDbType]);
+                    // var_dump($xDbType);
+                    // var_dump($type); die;
+                }
+                return $mysqlSchema->typeMap[$xDbType];
+            } elseif (strpos(Yii::$app->db->getServerVersion(), 'MariaDB') !== false) {
+                $mariadbSchema = new MariaDbSchema;
+                return $mariadbSchema->typeMap[$xDbType];
+            } elseif (Yii::$app->db->schema instanceof PgSqlSchema) {
+                $pgsqlSchema = new PgSqlSchema;
+                if ($pgsqlSchema->typeMap[$xDbType] === null) {
+                    // var_dump($pgsqlSchema->typeMap[$xDbType]);
+                    // var_dump($xDbType);
+                    // var_dump($type); die;
+                }
+                return $pgsqlSchema->typeMap[$xDbType];
+            } else {
+                // var_dump(Yii::$app->db); die;
+                throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. Only for PostgreSQL, MySQL and MariaDB, it is implemented');
+            }
+        } else {
+            if (stripos($type, 'int') === 0) {
+                return 'integer';
+            }
+            if (stripos($type, 'string') === 0) {
+                return 'string';
+            }
+            if (stripos($type, 'varchar') === 0) {
+                return 'string';
+            }
+            if (stripos($type, 'tsvector') === 0) {
+                return 'string';
+            }
+            if (stripos($type, 'json') === 0) {
+                return 'json';
+            }
+        }
 
-        if (stripos($type, 'int') === 0) {
-            return 'integer';
-        }
-        if (stripos($type, 'string') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'varchar') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'tsvector') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'json') === 0) {
-            return 'json';
-        }
-        if (stripos($type, 'datetime') === 0) {
-            return 'timestamp';
-        }
         return $type;
     }
 

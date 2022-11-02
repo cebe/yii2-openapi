@@ -42,6 +42,9 @@ return [
             'password' => 'dbpass',
             'charset' => 'utf8',
             'tablePrefix'=>'itt_',
+            'schemaMap' => [
+                'mysql' => \SamIT\Yii2\MariaDb\Schema::class
+            ]
         ],
         'db'=>[
             'class' => \yii\db\Connection::class,
