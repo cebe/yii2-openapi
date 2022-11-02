@@ -66,7 +66,6 @@ components:
                     default: '{"foo": "bar", "bar": "baz"}'
                 status:
                     type: string
-                    x-db-type: enum
                     default: draft
                     enum:
                         - active
