@@ -330,4 +330,3 @@ class Attribute extends BaseObject
         return !$this->isRequired();
     }
 }
-
