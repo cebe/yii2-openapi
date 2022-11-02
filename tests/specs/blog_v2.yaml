@@ -261,7 +261,6 @@ components:
           format: password
         role:
           type: string
-          x-db-type: enum
           enum:
             - admin
             - editor
@@ -333,7 +332,6 @@ components:
           maxLength: 200
         lang:
           type: string
-          x-db-type: enum
           enum:
             - ru
             - eng
@@ -409,7 +407,6 @@ components:
           maxLength: 100
         lang:
           type: string
-          x-db-type: enum
           enum:
             - ru
             - eng
