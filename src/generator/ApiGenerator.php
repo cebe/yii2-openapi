@@ -213,7 +213,9 @@ class ApiGenerator extends Generator
                         'transformerNamespace',
                     ],
                     'filter',
-                    'filter' => 'trim',
+                    'filter' => function ($value) {
+                        return $value !== null ? trim($value) : $value;
+                    },
                 ],
 
                 [['controllerNamespace', 'migrationNamespace'], 'default', 'value' => null],
