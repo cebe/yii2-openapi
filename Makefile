@@ -45,3 +45,20 @@ testdocker:
 
 .PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker
 
+
+
+# outside docker
+#     clean_all
+#     clean (in both)
+#     up
+#     cli
+#     migrate
+#     installdocker
+#     testdocker
+
+# inside docker
+#     check-style
+#     fix-style
+#     install
+#     test
+#     clean (in both)
