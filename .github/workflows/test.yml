@@ -67,16 +67,19 @@ jobs:
 
       - name: Check style
         run: make up
+
       - name: Check style
         run: make installdocker
 
-      - name: Check style
-        run: make migrate
+      # - name: Check style
+      #   run: make migrate
 
       - name: Check style
         run: make cli
+
       - name: Check style
         run: make check-style
+
       - name: Check style
         run: make test
 
