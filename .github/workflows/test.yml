@@ -56,10 +56,11 @@ jobs:
       # - name: Check style
       #   run: make check-style
 
-      - name: Install docker-compose
-        uses: KengoTODA/actions-setup-docker-compose@main
+      - name: Install Compose
+        uses: ndeloof/install-docker-compose
         with:
-          version: '3.5'
+          version: v3.5 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
 
       - name: Check style
         run: make clean_all
