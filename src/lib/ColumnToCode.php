@@ -390,6 +390,10 @@ class ColumnToCode
             case 'text':
             case 'json':
                 if ($this->isMysql()) {
+                    // var_dump($this->isMariaDb());
+                    // var_dump($this->isMysql());
+                    // var_dump(\Yii::$app->db->schema); die;
+                    // here <------
                     return false;
                 }
                 return true;
@@ -411,7 +415,7 @@ class ColumnToCode
 
     private function isMysql():bool
     {
-        return $this->dbSchema instanceof MySqlSchema;
+        return ($this->dbSchema instanceof MySqlSchema && !$this->isMariaDb());
     }
 
     private function isMariaDb():bool

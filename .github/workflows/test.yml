@@ -82,6 +82,3 @@ jobs:
 
       - name: Run tests
         run: make testdocker
-
-
-

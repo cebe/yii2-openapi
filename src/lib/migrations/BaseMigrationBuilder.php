@@ -117,6 +117,7 @@ abstract class BaseMigrationBuilder
 
         $this->migration->addUpCode($builder->createTable($tableName, $this->newColumns))
                         ->addDownCode($builder->dropTable($tableName));
+        // var_dump($builder->createTable($tableName, $this->newColumns)); die;
         $nonAutoincrementPk = false;
         foreach ($this->newColumns as $col) {
             if ($col->isPrimaryKey && !$col->autoIncrement) {
