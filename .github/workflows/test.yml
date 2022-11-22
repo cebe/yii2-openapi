@@ -56,8 +56,8 @@ jobs:
       # - name: Check style
       #   run: make check-style
 
-      - name: Install Compose
-        uses: ndeloof/install-docker-compose@main
+      - name: Docker Compose Setup
+        uses: ndeloof/install-compose-action@v0.0.1
         with:
           version: v3.5 # defaults to 'latest'
           legacy: true    # will also install in PATH as `docker-compose`
