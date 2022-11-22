@@ -59,7 +59,7 @@ jobs:
       - name: Docker Compose Setup
         uses: ndeloof/install-compose-action@v0.0.1
         with:
-          version: v3.5 # defaults to 'latest'
+          # version: v3.5 # defaults to 'latest'
           legacy: true    # will also install in PATH as `docker-compose`
 
       - name: Check style
