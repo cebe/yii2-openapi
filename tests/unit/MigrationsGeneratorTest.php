@@ -10,6 +10,7 @@ use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use cebe\yii2openapi\lib\migrations\MigrationRecordBuilder;
 use tests\TestCase;
+use tests\DbTestCase;
 use Yii;
 use yii\db\Schema;
 use yii\db\TableSchema;
@@ -17,13 +18,15 @@ use yii\helpers\VarDumper;
 use function count;
 use function preg_replace;
 
-class MigrationsGeneratorTest extends TestCase
+// class MigrationsGeneratorTest extends TestCase
+class MigrationsGeneratorTest extends DbTestCase
 {
 
     public function testNoMigrations()
     {
         $this->prepareTempDir();
-        $this->mockApplication($this->mockDbSchemaAsEmpty());
+        // $this->mockApplication($this->mockDbSchemaAsEmpty());
+        $this->mockApplication();
         $model = new DbModel(['name' => 'dummy', 'tableName' => 'dummy', 'attributes' => []]);
         $generator = new MigrationsGenerator(new Config(), [$model], Yii::$app->db);
         $migrations = $generator->buildMigrations();
@@ -39,7 +42,8 @@ class MigrationsGeneratorTest extends TestCase
     {
         $this->prepareTempDir();
         // $this->mockApplication($this->mockDbSchemaAsEmpty());
-        $this->mockRealApplication();
+        // $this->mockRealApplication();
+        $this->mockApplication();
         $generator = new MigrationsGenerator(new Config(), $dbModels, Yii::$app->db);
         $models = $generator->buildMigrations();
         $model = \array_values($models)[0];
