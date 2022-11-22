@@ -17,7 +17,7 @@ return [
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
-            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string', 'xDbType' => 'string']))
+            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string'/*, 'xDbType' => 'string'*/]))
                 ->setRequired()->setFakerStub('$faker->password'),
             'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(20)
@@ -25,7 +25,7 @@ return [
                 ->setFakerStub('$faker->randomElement([\'admin\', \'editor\', \'reader\'])'),
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 1000000)'),
-            'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
+            'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime', 'defaultValue' => 'CURRENT_TIMESTAMP']))
                 ->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
         ],
         'relations' => [],

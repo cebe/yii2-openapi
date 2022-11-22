@@ -11,6 +11,7 @@ use \Yii;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\Inflector;
+use yii\helpers\StringHelper;
 use yii\db\mysql\Schema as MySqlSchema;
 use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
@@ -276,7 +277,7 @@ class Attribute extends BaseObject
             'name' => $this->columnName,
             'phpType'=>$this->phpType,
             'dbType' => strtolower($this->dbType),
-            'type' => $this->dbTypeAbstract($this->dbType),
+            'type' => $this->yiiAbstractTypeForDbSpecificType($this->dbType),
             'allowNull' => $this->allowNull(),
             'size' => $this->size > 0 ? $this->size : null,
         ]);
@@ -298,50 +299,56 @@ class Attribute extends BaseObject
         return $column;
     }
 
-    // actually the name of this method should be yiiAbstractTypeForDbSpecificType
     // todo docs - it throw new NotSupportedException
-    private function dbTypeAbstract(string $type):string
+    private function yiiAbstractTypeForDbSpecificType(string $type): string
     {
         if (is_string($this->xDbType) && !empty($this->xDbType)) {
             $xDbType = strtolower($this->xDbType);
+
+            list($isXDbTypeWithArray, $modifiedXDbType) = $this->isTypeWithArray($xDbType);
+
             if (Yii::$app->db->schema instanceof MySqlSchema) {
                 $mysqlSchema = new MySqlSchema;
-                if ($mysqlSchema->typeMap[$xDbType] === null) {
-                    // var_dump($mysqlSchema->typeMap[$xDbType]);
-                    // var_dump($xDbType);
-                    // var_dump($type); die;
-                }
-                return $mysqlSchema->typeMap[$xDbType];
+                // if ($mysqlSchema->typeMap[$modifiedXDbType] === null) {
+                //     var_dump($mysqlSchema->typeMap[$modifiedXDbType]);
+                //     var_dump($modifiedXDbType);
+                //     var_dump($type); die;
+                // }
+                return $mysqlSchema->typeMap[$modifiedXDbType] .
+                    $isXDbTypeWithArray ? '[]' : '';
             } elseif (strpos(Yii::$app->db->getServerVersion(), 'MariaDB') !== false) {
                 $mariadbSchema = new MariaDbSchema;
-                return $mariadbSchema->typeMap[$xDbType];
+                return $mariadbSchema->typeMap[$modifiedXDbType] .
+                    $isXDbTypeWithArray ? '[]' : '';
             } elseif (Yii::$app->db->schema instanceof PgSqlSchema) {
                 $pgsqlSchema = new PgSqlSchema;
-                if ($pgsqlSchema->typeMap[$xDbType] === null) {
-                    // var_dump($pgsqlSchema->typeMap[$xDbType]);
-                    // var_dump($xDbType);
-                    // var_dump($type); die;
-                }
-                return $pgsqlSchema->typeMap[$xDbType];
+                // if ($pgsqlSchema->typeMap[$modifiedXDbType] === null) {
+                // var_dump($pgsqlSchema->typeMap[$modifiedXDbType]);
+                // var_dump($modifiedXDbType);
+                // var_dump($type); die;
+                // }
+                return $pgsqlSchema->typeMap[$modifiedXDbType] .
+                    $isXDbTypeWithArray ? '[]' : '';
             } else {
-                // var_dump(Yii::$app->db); die;
+                // var_dump(get_class(Yii::$app->db)); die;
                 throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. Only for PostgreSQL, MySQL and MariaDB, it is implemented');
             }
         } else {
+            list($isTypeWithArray, $modifiedType) = $this->isTypeWithArray($type);
             if (stripos($type, 'int') === 0) {
-                return 'integer';
+                return $isTypeWithArray ? 'integer[]' : 'integer';
             }
             if (stripos($type, 'string') === 0) {
-                return 'string';
+                return $isTypeWithArray ? 'string[]' : 'string';
             }
             if (stripos($type, 'varchar') === 0) {
-                return 'string';
+                return $isTypeWithArray ? 'string[]' : 'string';
             }
             if (stripos($type, 'tsvector') === 0) {
-                return 'string';
+                return $isTypeWithArray ? 'string[]' : 'string';
             }
             if (stripos($type, 'json') === 0) {
-                return 'json';
+                return $isTypeWithArray ? 'json[]' : 'json';
             }
         }
 
@@ -354,5 +361,17 @@ class Attribute extends BaseObject
             return $this->nullable;
         }
         return !$this->isRequired();
+    }
+
+    private function isTypeWithArray(string $type): array
+    {
+        $modifiedType = $type;
+        $isDataTypeWithArray = false;
+
+        if (StringHelper::endsWith($type, '[]')) {
+            $isDataTypeWithArray = true;
+            $modifiedType = str_replace('[]', '', $type); // remove `[]` (array) e.g. 'text[]' -> 'text'
+        }
+        return [$isDataTypeWithArray, $modifiedType];
     }
 }

@@ -21,6 +21,7 @@ class GeneratorTest extends TestCase
 //            }
             $ret[] = [substr($testFile, strlen(Yii::getAlias('@specs')) + 1)];
         }
+        // return [$ret[0]]; // TODO
         return $ret;
     }
 
@@ -33,7 +34,8 @@ class GeneratorTest extends TestCase
 
         $this->prepareTempDir();
 
-        $this->mockApplication($this->mockDbSchemaAsEmpty());
+        // $this->mockApplication($this->mockDbSchemaAsEmpty());
+        $this->mockRealApplication();
 
         $generator = $this->createGenerator($testFile);
         $this->assertTrue($generator->validate(), print_r($generator->getErrors(), true));

@@ -38,7 +38,8 @@ class MigrationsGeneratorTest extends TestCase
     public function testGenerateSimple(array $dbModels, array $expected):void
     {
         $this->prepareTempDir();
-        $this->mockApplication($this->mockDbSchemaAsEmpty());
+        // $this->mockApplication($this->mockDbSchemaAsEmpty());
+        $this->mockRealApplication();
         $generator = new MigrationsGenerator(new Config(), $dbModels, Yii::$app->db);
         $models = $generator->buildMigrations();
         $model = \array_values($models)[0];
