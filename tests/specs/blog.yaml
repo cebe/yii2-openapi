@@ -225,10 +225,10 @@ components:
           type: integer
         int_simple:
           type: integer
-        uuid:
-          type: string
-          x-db-type: UUID # uuid is supported in only PgSQL # TODO remove this test case for MariaDB and MySQL
-          x-faker: '$faker->uuid'
+        # uuid:
+        #   type: string
+        #   x-db-type: UUID # uuid is supported in only PgSQL # TODO remove this test case for MariaDB and MySQL
+        #   x-faker: '$faker->uuid'
         str_text:
           type: string
         str_varchar:

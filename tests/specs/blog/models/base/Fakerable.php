@@ -15,7 +15,6 @@ namespace app\models\base;
  * @property int $int_minmax
  * @property int $int_created_at
  * @property int $int_simple
- * @property string $uuid
  * @property string $str_text
  * @property string $str_varchar
  * @property string $str_date
@@ -33,7 +32,7 @@ abstract class Fakerable extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['uuid', 'str_text', 'str_varchar', 'str_date', 'str_datetime', 'str_country'], 'trim'],
+            'trim' => [['str_text', 'str_varchar', 'str_date', 'str_datetime', 'str_country'], 'trim'],
             'active_boolean' => [['active'], 'boolean'],
             'floatval_double' => [['floatval'], 'double'],
             'floatval_lim_double' => [['floatval_lim'], 'double', 'min' => 0, 'max' => 1],
@@ -43,7 +42,6 @@ abstract class Fakerable extends \yii\db\ActiveRecord
             'int_minmax_integer' => [['int_minmax'], 'integer', 'min' => 5, 'max' => 25],
             'int_created_at_integer' => [['int_created_at'], 'integer'],
             'int_simple_integer' => [['int_simple'], 'integer'],
-            'uuid_string' => [['uuid'], 'string'],
             'str_text_string' => [['str_text'], 'string'],
             'str_varchar_string' => [['str_varchar'], 'string', 'max' => 100],
             'str_date_date' => [['str_date'], 'date'],
