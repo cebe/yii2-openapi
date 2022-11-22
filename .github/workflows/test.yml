@@ -62,26 +62,26 @@ jobs:
           # version: v3.5 # defaults to 'latest'
           legacy: true    # will also install in PATH as `docker-compose`
 
-      - name: Check style
+      - name: Clean
         run: make clean_all
 
-      - name: Check style
+      - name: docker-compose up
         run: make up
 
-      - name: Check style
+      - name: Install Docker and composer dependencies
         run: make installdocker
 
       # - name: Check style
       #   run: make migrate
 
-      - name: Check style
-        run: make cli
+      # - name: Enter in container CLI
+      #   run: make cli
 
       - name: Check style
-        run: make check-style
+        run: make check-style-from-host
 
-      - name: Check style
-        run: make test
+      - name: Run tests
+        run: make testdocker
 
 
 

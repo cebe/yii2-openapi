@@ -7,6 +7,9 @@ all:
 check-style:
 	vendor/bin/php-cs-fixer fix --diff --dry-run
 
+check-style-from-host:
+	docker-compose run --rm php sh -c 'vendor/bin/php-cs-fixer fix --diff --dry-run'
+
 fix-style:
 	vendor/bin/indent --tabs composer.json
 	vendor/bin/indent --spaces .php_cs.dist
@@ -41,7 +44,7 @@ installdocker:
 	docker-compose run --rm php composer install && chmod +x tests/yii
 
 testdocker:
-	docker-compose run --rm php sh -c 'vendor/bin/phpunit tests/unit'
+	docker-compose run --rm php sh -c 'vendor/bin/phpunit'
 
 .PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker
 
