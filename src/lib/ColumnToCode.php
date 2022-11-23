@@ -147,6 +147,7 @@ class ColumnToCode
 
     public function isEnum():bool
     {
+        // return StringHelper::startsWith($this->column->dbType, 'enum');
         return !empty($this->column->enumValues);
     }
 

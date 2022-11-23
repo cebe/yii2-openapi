@@ -172,6 +172,7 @@ class MigrationsGeneratorTest extends DbTestCase
     }
 
     /**
+     * TODO refactor
      * @dataProvider simpleDbModelsProviderForNonMysqlDb
      * @param array|DbModel[]        $dbModels
      * @param array|MigrationModel[] $expected

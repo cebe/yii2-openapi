@@ -352,7 +352,7 @@ class Attribute extends BaseObject
             if (stripos($type, 'json') === 0) {
                 return $isTypeWithArray ? 'json[]' : 'json';
             }
-            // TODO?
+            // TODO? behaviour in Pgsql should remain same but timestamp/datetime bug which is only reproduced in Mysql and Mariadb should be fixed
             if (stripos($type, 'datetime') === 0) {
                 return $isTypeWithArray ? 'timestamp[]' : 'timestamp';
             }
