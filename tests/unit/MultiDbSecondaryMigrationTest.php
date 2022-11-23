@@ -41,6 +41,9 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $this->compareFiles($expectedFiles, $testFile);
     }
 
+    /**
+     * @group a123 TODO
+     */
     public function testPostgres()
     {
         $dbName = 'pgsql';
