@@ -390,10 +390,8 @@ class ColumnToCode
             case 'text':
             case 'json':
                 if ($this->isMysql()) {
-                    // var_dump($this->isMariaDb());
-                    // var_dump($this->isMysql());
-                    // var_dump(\Yii::$app->db->schema); die;
-                    // here <------
+                    // The BLOB, TEXT, GEOMETRY, and JSON data types cannot be assigned a default value.
+                    // https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
                     return false;
                 }
                 return true;
@@ -408,6 +406,7 @@ class ColumnToCode
         return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
     }
 
+    // TODO avoid duplication. also present in lib/items/Attribute
     private function isPostgres():bool
     {
         return $this->dbSchema instanceof PgSqlSchema;

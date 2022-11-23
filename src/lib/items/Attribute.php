@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\items;
 
 use \Yii;
+use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
 use yii\helpers\Inflector;
@@ -307,30 +308,31 @@ class Attribute extends BaseObject
 
             list($isXDbTypeWithArray, $modifiedXDbType) = $this->isTypeWithArray($xDbType);
 
-            if (Yii::$app->db->schema instanceof MySqlSchema) {
+            if ($this->isMysql()) {
                 $mysqlSchema = new MySqlSchema;
-                // if ($mysqlSchema->typeMap[$modifiedXDbType] === null) {
-                //     var_dump($mysqlSchema->typeMap[$modifiedXDbType]);
-                //     var_dump($modifiedXDbType);
-                //     var_dump($type); die;
-                // }
+
+                if (!array_key_exists($modifiedXDbType, $mysqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for MySQL');
+                }
+
                 return $mysqlSchema->typeMap[$modifiedXDbType] .
-                    $isXDbTypeWithArray ? '[]' : '';
-            } elseif (strpos(Yii::$app->db->getServerVersion(), 'MariaDB') !== false) {
+                    ($isXDbTypeWithArray ? '[]' : '');
+            } elseif ($this->isMariaDb()) {
                 $mariadbSchema = new MariaDbSchema;
+
+                if (!array_key_exists($modifiedXDbType, $mariadbSchema->typeMap)) {
+                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for MariaDB');
+                }
                 return $mariadbSchema->typeMap[$modifiedXDbType] .
-                    $isXDbTypeWithArray ? '[]' : '';
-            } elseif (Yii::$app->db->schema instanceof PgSqlSchema) {
+                    ($isXDbTypeWithArray ? '[]' : '');
+            } elseif ($this->isPostgres()) {
                 $pgsqlSchema = new PgSqlSchema;
-                // if ($pgsqlSchema->typeMap[$modifiedXDbType] === null) {
-                // var_dump($pgsqlSchema->typeMap[$modifiedXDbType]);
-                // var_dump($modifiedXDbType);
-                // var_dump($type); die;
-                // }
+                if (!array_key_exists($modifiedXDbType, $pgsqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for PostgreSQL');
+                }
                 return $pgsqlSchema->typeMap[$modifiedXDbType] .
-                    $isXDbTypeWithArray ? '[]' : '';
+                    ($isXDbTypeWithArray ? '[]' : '');
             } else {
-                // var_dump(get_class(Yii::$app->db)); die;
                 throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. Only for PostgreSQL, MySQL and MariaDB, it is implemented');
             }
         } else {
@@ -349,6 +351,10 @@ class Attribute extends BaseObject
             }
             if (stripos($type, 'json') === 0) {
                 return $isTypeWithArray ? 'json[]' : 'json';
+            }
+            // TODO?
+            if (stripos($type, 'datetime') === 0) {
+                return $isTypeWithArray ? 'timestamp[]' : 'timestamp';
             }
         }
 
@@ -373,5 +379,21 @@ class Attribute extends BaseObject
             $modifiedType = str_replace('[]', '', $type); // remove `[]` (array) e.g. 'text[]' -> 'text'
         }
         return [$isDataTypeWithArray, $modifiedType];
+    }
+
+    // TODO avoid duplication. also present in lib/ColumnToCode
+    private function isPostgres():bool
+    {
+        return Yii::$app->db->schema instanceof PgSqlSchema;
+    }
+
+    private function isMysql():bool
+    {
+        return (Yii::$app->db->schema instanceof MySqlSchema && !$this->isMariaDb());
+    }
+
+    private function isMariaDb():bool
+    {
+        return strpos(Yii::$app->db->schema->getServerVersion(), 'MariaDB') !== false;
     }
 }
