@@ -71,6 +71,9 @@ jobs:
       - name: Install Docker and composer dependencies
         run: make installdocker
 
+      - name: Migrate
+        run: make migrate
+
       # - name: Check style
       #   run: make migrate
 
