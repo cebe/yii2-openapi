@@ -29,6 +29,7 @@ This library is currently work in progress, current features are checked here wh
 ## Requirements
 
 - PHP 7.1 or higher (works fine with PHP 8)
+- MariaDB >= 10.8 if MariaDB is used as database
 
 
 ## Install

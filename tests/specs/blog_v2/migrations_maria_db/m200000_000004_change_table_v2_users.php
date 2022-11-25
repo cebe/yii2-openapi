@@ -22,7 +22,7 @@ class m200000_000004_change_table_v2_users extends \yii\db\Migration
         $this->dropIndex('v2_users_login_key', '{{%v2_users}}');
         $this->createIndex('v2_users_username_key', '{{%v2_users}}', 'username', true);
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(200)->notNull());
-        $this->alterColumn('{{%v2_users}}', 'created_at', $this->timestamp()->null()->defaultExpression("CURRENT_TIMESTAMP"));
+        $this->alterColumn('{{%v2_users}}', 'created_at', $this->timestamp()->null()->defaultExpression("current_timestamp()"));
         $this->addColumn('{{%v2_users}}', 'username', $this->string(200)->notNull());
         $this->dropColumn('{{%v2_users}}', 'login');
     }
