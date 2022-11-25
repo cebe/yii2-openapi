@@ -312,7 +312,7 @@ class Attribute extends BaseObject
                 $mysqlSchema = new MySqlSchema;
 
                 if (!array_key_exists($modifiedXDbType, $mysqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for MySQL');
+                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for MySQL. "'.$modifiedXDbType.'" is not a real data type in MySQL.');
                 }
 
                 return $mysqlSchema->typeMap[$modifiedXDbType] .
@@ -321,19 +321,19 @@ class Attribute extends BaseObject
                 $mariadbSchema = new MariaDbSchema;
 
                 if (!array_key_exists($modifiedXDbType, $mariadbSchema->typeMap)) {
-                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for MariaDB');
+                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for MariaDB. "'.$modifiedXDbType.'" is not a real data type in MariaDb.');
                 }
                 return $mariadbSchema->typeMap[$modifiedXDbType] .
                     ($isXDbTypeWithArray ? '[]' : '');
             } elseif ($this->isPostgres()) {
                 $pgsqlSchema = new PgSqlSchema;
                 if (!array_key_exists($modifiedXDbType, $pgsqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('x-db-type: '.$modifiedXDbType.' is incorrect for PostgreSQL');
+                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for PostgreSQL. "'.$modifiedXDbType.'" is not a real data type in PostgreSQL.');
                 }
                 return $pgsqlSchema->typeMap[$modifiedXDbType] .
                     ($isXDbTypeWithArray ? '[]' : '');
             } else {
-                throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. Only for PostgreSQL, MySQL and MariaDB, it is implemented');
+                throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
             }
         } else {
             list($isTypeWithArray, $modifiedType) = $this->isTypeWithArray($type);

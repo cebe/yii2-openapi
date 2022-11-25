@@ -23,7 +23,6 @@ class GeneratorTest extends DbTestCase
 //            }
             $ret[] = [substr($testFile, strlen(Yii::getAlias('@specs')) + 1)];
         }
-        return [$ret[0]]; // TODO
         return $ret;
     }
 
@@ -57,7 +56,7 @@ class GeneratorTest extends DbTestCase
         },
             FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]));
 
-        //Skip database-specific migrations and json-api controllers
+        // Skip database-specific migrations and json-api controllers
         $expectedFiles = array_filter($expectedFiles,
             function($file) {
                 return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;

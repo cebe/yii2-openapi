@@ -42,7 +42,8 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
     }
 
     /**
-     * @group a123 TODO
+     * TODO
+     * @group a123
      */
     public function testPostgres()
     {
