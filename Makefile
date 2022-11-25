@@ -36,8 +36,9 @@ cli:
 	docker-compose exec php bash
 
 migrate:
-	mkdir -p "tests/tmp/app"
-	mkdir -p "tests/tmp/docker_app"
+	mkdir -p "tests/tmp/app" # TODO this should be run inside the container
+	mkdir -p "tests/tmp/docker_app"  # TODO this should be run inside the container
+	# temporary work-around: `make cli` and `make migrate`. Later will fail. Now exit from container and go to host CLI, hit `make migrate`
 	docker-compose run --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
 
 installdocker:
