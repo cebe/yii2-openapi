@@ -33,7 +33,6 @@ class UserFaker extends BaseModelFaker
         $model->login = $faker->userName;
         $model->email = $faker->safeEmail;
         $model->password = $faker->password;
-        $model->role = $faker->randomElement(['admin', 'editor', 'reader']);
         $model->flags = $faker->numberBetween(0, 1000000);
         $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
         if (!is_callable($attributes)) {

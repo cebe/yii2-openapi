@@ -29,7 +29,6 @@ class m100000_000000_pgsql extends Migration
                 'username' => $this->string(200)->notNull()->unique(),
                 'email' => $this->string(200)->notNull()->unique(),
                 'password' => $this->string()->notNull(),
-                'role' => $this->string(20)->null()->defaultValue('reader'),
                 'flags' => $this->integer()->null()->defaultValue(0),
                 'created_at' => $this->timestamp()->null()->defaultExpression("CURRENT_TIMESTAMP"),
             ]);
@@ -91,7 +90,6 @@ class m100000_000000_pgsql extends Migration
                 'str_country' => $this->text()->null()->defaultValue(null),
             ]);
 
-        $this->execute('CREATE TYPE status_enum AS ENUM(\'active\', \'draft\')');
         $this->createTable('{{%v3_pgcustom}}',
             [
                 'id' => $this->bigPrimaryKey(),
@@ -100,7 +98,6 @@ class m100000_000000_pgsql extends Migration
                 'json2' => $this->json()->null()->defaultValue(null),
                 'json3' => $this->json()->defaultValue(Json::encode(['foo' => 'bar', 'bar' => 'baz'])),
                 'json4' => "json DEFAULT '" . new Expression(Json::encode(['ffo' => 'bar'])) . "'",
-                'status' => 'status_enum',
                 'search' => 'tsvector'
             ]);
         $columns = [
@@ -138,7 +135,6 @@ class m100000_000000_pgsql extends Migration
         $this->dropTable('{{%v2_users}}');
         $this->dropTable('{{%v2_categories}}');
         $this->dropTable('{{%v3_pgcustom}}');
-        $this->execute('DROP TYPE status_enum');
         $this->dropTable('{{%default_sizes}}');
     }
 }

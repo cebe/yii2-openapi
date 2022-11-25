@@ -51,7 +51,7 @@ components:
       x-indexes:
         - unique:username
         - unique:email
-        - role,flags
+        - flags
       properties:
         id:
           type: integer
@@ -66,12 +66,6 @@ components:
         password:
           type: string
           format: password
-          # x-db-type: string # present in mysql but not in pgsql
-        role:
-          type: string
-          maxLength: 20
-          x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
-          default: reader
         flags:
           type: integer
           default: 0

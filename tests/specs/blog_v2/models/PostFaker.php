@@ -32,7 +32,6 @@ class PostFaker extends BaseModelFaker
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->title = substr($faker->sentence, 0, 255);
         $model->slug = substr($uniqueFaker->slug, 0, 200);
-        $model->lang = $faker->randomElement(['ru','eng']);
         $model->active = $faker->boolean;
         $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d');
         if (!is_callable($attributes)) {

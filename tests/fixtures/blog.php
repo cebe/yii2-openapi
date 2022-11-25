@@ -19,10 +19,6 @@ return [
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
             'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string'/*, 'xDbType' => 'string'*/]))
                 ->setRequired()->setFakerStub('$faker->password'),
-            'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(20)
-                ->setDefault('reader')
-                ->setFakerStub('$faker->randomElement([\'admin\', \'editor\', \'reader\'])'),
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 1000000)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
@@ -32,7 +28,7 @@ return [
         'indexes' => [
             'users_email_key' => DbIndex::make('users', ['email'], null, true),
             'users_username_key' => DbIndex::make('users', ['username'], null, true),
-            'users_role_flags_index' => DbIndex::make('users', ['role', 'flags'])
+            'users_flags_index' => DbIndex::make('users', ['flags'])
         ]
     ]),
     'category' => new DbModel([

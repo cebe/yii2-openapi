@@ -43,7 +43,6 @@ class PropertySchemaTest extends TestCase
         self::assertEquals(null, $prop->getMaxLength());
         self::assertEquals(null, $prop->getMinLength());
         self::assertEquals(false, $prop->isReadonly());
-        self::assertFalse($prop->hasEnum());
     }
 
     public function testRefProperty()
