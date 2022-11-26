@@ -34,13 +34,6 @@ services:
             MYSQL_PASSWORD: dbpass
             MYSQL_DATABASE: testdb
 
-    # image: mariadb:10.8
-    # environment:
-    #   - MARIADB_ROOT_PASSWORD=verysecret
-    #   - MARIADB_DATABASE=api_db_test
-    #   - MARIADB_USER=api_test
-    #   - MARIADB_PASSWORD=apisecret
-
     maria:
         image: mariadb:10.8
         ports:
