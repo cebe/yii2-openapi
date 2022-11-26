@@ -62,9 +62,9 @@ components:
         kwargs:
           type: string
           x-db-type: json
-          default:
-            - foo: bar
-            - buzz: fizz
+          # default:
+          #   - foo: bar
+          #   - buzz: fizz
     Error:
       required:
         - code

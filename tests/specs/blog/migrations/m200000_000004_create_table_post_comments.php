@@ -11,8 +11,8 @@ class m200000_000004_create_table_post_comments extends \yii\db\Migration
             'id' => $this->bigPrimaryKey(),
             'post_id' => $this->string(128)->notNull(),
             'author_id' => $this->integer()->notNull(),
-            'message' => 'json NOT NULL DEFAULT \'[]\'',
-            'meta_data' => 'json NOT NULL DEFAULT \'[]\'',
+            'message' => 'json NOT NULL',
+            'meta_data' => 'json NOT NULL',
             'created_at' => $this->integer()->notNull(),
         ]);
         $this->addForeignKey('fk_post_comments_post_id_blog_posts_uid', '{{%post_comments}}', 'post_id', '{{%blog_posts}}', 'uid');
