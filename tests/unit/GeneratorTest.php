@@ -35,9 +35,13 @@ class GeneratorTest extends DbTestCase
 
         $this->prepareTempDir();
 
-        // $this->mockApplication($this->mockDbSchemaAsEmpty());
-        // $this->mockRealApplication();
         $this->mockApplication();
+        // $this->mockApplication($this->mockDbSchemaAsEmpty());
+
+        if ($testFile === '/app/tests/specs/postgres_custom.php') { // TODO docs + add separate tests for this + refactor tests
+            $dbo = Yii::$app->db;
+            Yii::$app->set('db', Yii::$app->pgsql);
+        }
 
         $generator = $this->createGenerator($testFile);
         $this->assertTrue($generator->validate(), print_r($generator->getErrors(), true));
@@ -45,6 +49,20 @@ class GeneratorTest extends DbTestCase
         $codeFiles = $generator->generate();
         foreach ($codeFiles as $file) {
             $file->save();
+        }
+
+        // TODO docs + add separate tests for this + refactor tests
+        if ($testFile === '/app/tests/specs/blog_v2.php') {
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations_mysql_db');
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::createDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::copyDirectory('/app/tests/specs/blog_v2/migrations', '/app/tests/tmp/docker_app/migrations');
+        }
+        if ($testFile === '/app/tests/specs/postgres_custom.php') {
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations_pgsql_db');
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::createDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::copyDirectory('/app/tests/specs/postgres_custom/migrations', '/app/tests/tmp/docker_app/migrations');
         }
 
         $expectedFiles = array_map(function($file) use ($testFile) {
@@ -76,6 +94,10 @@ class GeneratorTest extends DbTestCase
             $this->assertFileExists($expectedFile);
             $this->assertFileExists($actualFile);
             $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
+        }
+
+        if ($testFile === '/app/tests/specs/postgres_custom.php') {
+            Yii::$app->set('db', $dbo); // Mysql is default so set it back
         }
     }
 
