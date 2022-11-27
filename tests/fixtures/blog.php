@@ -17,7 +17,7 @@ return [
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
             'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
-            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string'/*, 'xDbType' => 'string'*/]))
+            'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setFakerStub('$faker->password'),
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 1000000)'),

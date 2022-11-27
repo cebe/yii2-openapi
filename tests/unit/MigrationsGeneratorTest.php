@@ -46,9 +46,7 @@ class MigrationsGeneratorTest extends DbTestCase
         // $this->mockRealApplication();
         $this->mockApplication();
         $generator = new MigrationsGenerator(new Config(), $dbModels, Yii::$app->db);
-        // var_dump(Yii::$app->db); die;
         $models = $generator->buildMigrations();
-        // var_dump($models); die;
         $model = \array_values($models)[0];
         self::assertInstanceOf(MigrationModel::class, $model);
         self::assertEquals($expected[0]->fileName, $model->fileName);
