@@ -2,7 +2,7 @@
 
 use cebe\yii2openapi\Bootstrap;
 
-return [
+$config = [
     'id' => 'cebe/yii2-openapi',
     'timeZone' => 'UTC',
     'basePath' => dirname(__DIR__) . '/tmp/docker_app',
@@ -15,7 +15,13 @@ return [
     'controllerMap' => [
         'migrate' => [
             'class' => \yii\console\controllers\MigrateController::class,
-            'migrationPath' => dirname(__DIR__).'/migrations',
+            'migrationPath' => [
+                dirname(__DIR__).'/migrations',
+                dirname(__DIR__).'/tmp/docker_app/migrations', // TODO remove
+                dirname(__DIR__).'/tmp/docker_app/migrations_mysql_db', // TODO remove
+                dirname(__DIR__).'/tmp/docker_app/migrations_maria_db', // TODO remove
+                dirname(__DIR__).'/tmp/docker_app/migrations_pgsql_db', // TODO remove
+            ],
         ],
     ],
     'components' => [
@@ -56,3 +62,17 @@ return [
         ],
     ],
 ];
+
+if (true) { // TODO remove this entire section
+    // enable Gii module
+    $config['bootstrap'][] = 'gii';
+    $config['modules']['gii'] = [
+        'class' => \yii\gii\Module::class,
+        'generators' => [
+            // add ApiGenerator to Gii module
+            'api' => \cebe\yii2openapi\generator\ApiGenerator::class,
+        ],
+    ];
+}
+
+return $config;
