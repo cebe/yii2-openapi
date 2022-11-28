@@ -129,14 +129,14 @@ Example values of `x-db-type` are:
      - text[]
      - INTEGER PRIMARY KEY AUTO_INCREMENT
      - decimal(12,4)
-     - decimal(12)
-     - decimal
      - json
      - varchar
      - VARCHAR
 
 Such values are not allowed:
    - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
+   - decimal(12)
+   - decimal
 
 ### `x-indexes`
 Specify table indexes

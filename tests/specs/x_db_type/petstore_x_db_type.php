@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'openApiPath' => '@specs/petstore_x_db_type.yaml',
+    'openApiPath' => '@specs/x_db_type/petstore_x_db_type.yaml',
     'generateUrls' => true,
     'generateModels' => true,
     'excludeModels' => [

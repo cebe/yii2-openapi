@@ -114,16 +114,28 @@ components:
           x-db-type: text
         varchar_4_col:
           type: string
-          x-db-type: VARCHAR(4)
+          x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
         char_4_col:
           type: string
-          x-db-type: CHAR(4)
+          x-db-type: CHAR(4) # (4) has no effect, use maxLength instead
+        char_5_col:
+          type: string
+          x-db-type: CHAR
+        char_6_col:
+          type: string
+          x-db-type: char
         # int_col:
         #   type: integer
         #   x-db-type: INT NULL DEFAULT NULL AFTER `Low_price`
         decimal_col:
           type: float
           x-db-type: decimal(12,3)
+        # decimal_col_2:
+        #   type: float
+        #   x-db-type: decimal(12)
+        # decimal_col_3:
+        #   type: float
+        #   x-db-type: decimal
 
     Pets:
       type: array
