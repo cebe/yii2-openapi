@@ -71,6 +71,8 @@ On console you can run the generator with `./yii gii/api --openApiPath=@app/open
 
 Run `./yii gii/api --help` for all options.
 
+See [Petstore example](https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/petstore.yaml) for example OpenAPI spec.
+
 
 ## OpenAPI extensions
 
@@ -115,9 +117,26 @@ Explicitly specify primary key name for table, if it is different from "id"
 
 ### `x-db-type`
 
-Explicitly specify the database type for a column. (MUST contains only db type! (json, jsonb, uuid, varchar etc))
-If x-db-type sets as false, property will be processed as virtual;
-It will be added in model as public property, but skipped for migrations generation
+Explicitly specify the database type for a column. (MUST contains only real DB type! (`json`, `jsonb`, `uuid`, `varchar` etc.)).
+If x-db-type sets as `false`, property will be processed as virtual;
+It will be added in model as public property, but skipped for migrations generation.
+
+Example values of `x-db-type` are:
+
+ - `false` (boolean false)
+ - as string and its value can be like:
+     - text
+     - text[]
+     - INTEGER PRIMARY KEY AUTO_INCREMENT
+     - decimal(12,4)
+     - decimal(12)
+     - decimal
+     - json
+     - varchar
+     - VARCHAR
+
+Such values are not allowed:
+   - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
 
 ### `x-indexes`
 Specify table indexes

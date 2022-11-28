@@ -303,58 +303,54 @@ class Attribute extends BaseObject
     // todo docs - it throw new NotSupportedException
     private function yiiAbstractTypeForDbSpecificType(string $type): string
     {
-        if (is_string($this->xDbType) && !empty($this->xDbType)) {
+        if (is_string($this->xDbType) && !empty($this->xDbType) && trim($this->xDbType)) {
             $xDbType = strtolower($this->xDbType);
 
-            list($isXDbTypeWithArray, $modifiedXDbType) = $this->isTypeWithArray($xDbType);
+            list(, $justYiiAbstractType) = $this->isTypeWithMoreInfo($xDbType);
 
             if ($this->isMysql()) {
                 $mysqlSchema = new MySqlSchema;
 
-                if (!array_key_exists($modifiedXDbType, $mysqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for MySQL. "'.$modifiedXDbType.'" is not a real data type in MySQL.');
+                if (!array_key_exists($justYiiAbstractType, $mysqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for MySQL. "'.$justYiiAbstractType.'" is not a real data type in MySQL.');
                 }
 
-                return $mysqlSchema->typeMap[$modifiedXDbType] .
-                    ($isXDbTypeWithArray ? '[]' : '');
+                return $mysqlSchema->typeMap[$justYiiAbstractType];
             } elseif ($this->isMariaDb()) {
                 $mariadbSchema = new MariaDbSchema;
 
-                if (!array_key_exists($modifiedXDbType, $mariadbSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for MariaDB. "'.$modifiedXDbType.'" is not a real data type in MariaDb.');
+                if (!array_key_exists($justYiiAbstractType, $mariadbSchema->typeMap)) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for MariaDB. "'.$justYiiAbstractType.'" is not a real data type in MariaDb.');
                 }
-                return $mariadbSchema->typeMap[$modifiedXDbType] .
-                    ($isXDbTypeWithArray ? '[]' : '');
+                return $mariadbSchema->typeMap[$justYiiAbstractType];
             } elseif ($this->isPostgres()) {
                 $pgsqlSchema = new PgSqlSchema;
-                if (!array_key_exists($modifiedXDbType, $pgsqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$modifiedXDbType.'" is incorrect for PostgreSQL. "'.$modifiedXDbType.'" is not a real data type in PostgreSQL.');
+                if (!array_key_exists($justYiiAbstractType, $pgsqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for PostgreSQL. "'.$justYiiAbstractType.'" is not a real data type in PostgreSQL.');
                 }
-                return $pgsqlSchema->typeMap[$modifiedXDbType] .
-                    ($isXDbTypeWithArray ? '[]' : '');
+                return $pgsqlSchema->typeMap[$justYiiAbstractType];
             } else {
                 throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
             }
         } else {
-            list($isTypeWithArray, $modifiedType) = $this->isTypeWithArray($type);
             if (stripos($type, 'int') === 0) {
-                return $isTypeWithArray ? 'integer[]' : 'integer';
+                return 'integer';
             }
             if (stripos($type, 'string') === 0) {
-                return $isTypeWithArray ? 'string[]' : 'string';
+                return 'string';
             }
             if (stripos($type, 'varchar') === 0) {
-                return $isTypeWithArray ? 'string[]' : 'string';
+                return 'string';
             }
             if (stripos($type, 'tsvector') === 0) {
-                return $isTypeWithArray ? 'string[]' : 'string';
+                return 'string';
             }
             if (stripos($type, 'json') === 0) {
-                return $isTypeWithArray ? 'json[]' : 'json';
+                return 'json';
             }
             // TODO? behaviour in Pgsql should remain same but timestamp/datetime bug which is only reproduced in Mysql and Mariadb should be fixed
             if (stripos($type, 'datetime') === 0) {
-                return $isTypeWithArray ? 'timestamp[]' : 'timestamp';
+                return 'timestamp';
             }
         }
 
@@ -369,16 +365,54 @@ class Attribute extends BaseObject
         return !$this->isRequired();
     }
 
-    private function isTypeWithArray(string $type): array
+    /**
+     * TODO docs + unit tests
+     * Value of `x-db-type` can be:
+     *    - `false` (boolean false)
+     *     - as string and its value can be like:
+     *         - text
+     *         - text[]
+     *         - INTEGER PRIMARY KEY AUTO_INCREMENT
+     *         - decimal(12,4)
+     *         - decimal(12)
+     *         - decimal
+     *         - json
+     *         - varchar
+     *         - VARCHAR
+     *
+     */
+    public function isTypeWithMoreInfo(string $type): array
     {
-        $modifiedType = $type;
-        $isDataTypeWithArray = false;
+        $justYiiAbstractType = $type;
+        $isTypeWithMoreInfo = false;
 
-        if (StringHelper::endsWith($type, '[]')) {
-            $isDataTypeWithArray = true;
-            $modifiedType = str_replace('[]', '', $type); // remove `[]` (array) e.g. 'text[]' -> 'text'
+        // 'text' => match `text`
+        // 'text[]' => match `text`
+        // 'INTEGER PRIMARY KEY AUTO_INCREMENT' => match `INTEGER`
+        // 'decimal(12,4)' => match `decimal`
+        // 'decimal(12)' => match `decimal`
+        preg_match('/(\w+)/', $type, $matches);
+
+        if (isset($matches[0])) {
+            $justYiiAbstractType = $matches[0];
+            $justYiiAbstractType = strtolower($justYiiAbstractType);
         }
-        return [$isDataTypeWithArray, $modifiedType];
+
+        // $isTypeWithMoreInfo = true for following:
+        // - text[]
+        // - INTEGER PRIMARY KEY AUTO_INCREMENT
+        // - decimal(12,4)
+        // - decimal(12)
+
+        // $isTypeWithMoreInfo = false for following:
+        // json
+        // text
+        // VARCHAR
+        if (strlen($justYiiAbstractType) < strlen($type)) {
+            $isTypeWithMoreInfo = true;
+        }
+
+        return [$isTypeWithMoreInfo, $justYiiAbstractType];
     }
 
     // TODO avoid duplication. also present in lib/ColumnToCode
