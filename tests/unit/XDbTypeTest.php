@@ -15,61 +15,46 @@ use function strpos;
 
 class XDbTypeTest extends DbTestCase
 {
-
     public function testXDbTypeFresh()
     {
+        // $this->changeDbToMysql();
         $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type.php");
-
         $this->runGenerator($testFile, 'mysql');
 
-        // $expectedFiles = array_map(function($file) use ($testFile) {
-        //     return '@app' . substr($file, strlen($testFile) - 4);
-        // },
-        //     FileHelper::findFiles(substr($testFile, 0, -4), ['recursive' => true]));
-        // $actualFiles = array_map(function($file) {
-        //     return '@app' . substr($file, strlen(Yii::getAlias('@app')));
-        // },
-        //     FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]));
-        // // pd($actualFiles);
+        // $this->changeDbToMariadb();
+        // $testFile = Yii::getAlias("@specs/x_db_type/maria/petstore_x_db_type.php");
+        // $this->runGenerator($testFile, 'maria');
 
-        // // Skip database-specific migrations and json-api controllers
-        // $expectedFiles = array_filter($expectedFiles,
-        //     function($file) {
-        //         return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;
-        //     });
-        // $actualFiles = array_filter($actualFiles,
-        //     function($file) {
-        //         return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;
-        //     });
-
-        // sort($expectedFiles);
-        // sort($actualFiles);
-        // $this->assertEquals($expectedFiles, $actualFiles);
-
-        // foreach ($expectedFiles as $file) {
-        //     $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
-        //     $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
-        //     $this->assertFileExists($expectedFile);
-        //     $this->assertFileExists($actualFile);
-        //     $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
-        // }
+        // $this->changeDbToPgsql();
+        // $testFile = Yii::getAlias("@specs/x_db_type/pgsql/petstore_x_db_type.php");
+        // $this->runGenerator($testFile, 'pgsql');
     }
 
-    // public function testXDbTypeSecondaryWithNewColumn()
-    // {
-    //     // TODO load fixture
-    //     $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v2.php");
+    public function testXDbTypeSecondaryWithNewColumn() // v2
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%animals}}')->execute();
+        Yii::$app->db->createCommand()->createTable('{{%animals}}', [
+            'id' => 'pk',
+            'name' => 'text not null',
+            'tag' => 'text null',
+        ])->execute();
 
-    //     $this->generateFiles($testFile);
-    // }
+        $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v2.php");
+        $this->runGenerator($testFile, 'mysql');
+    }
 
-    // public function testXDbTypeSecondaryWithEditColumn()
-    // {
-    //     // TODO load fixture
-    //     $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v3.php");
+    public function testXDbTypeSecondaryWithEditColumn() // v3
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%animals}}')->execute();
+        Yii::$app->db->createCommand()->createTable('{{%animals}}', [
+            'id' => 'pk',
+            'name' => 'varchar(255) not null default "Horse"',
+            'tag' => 'text null',
+        ])->execute();
 
-    //     $this->generateFiles($testFile);
-    // }
+        $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v3.php");
+        $this->runGenerator($testFile, 'mysql');
+    }
 
     // private function generateFiles(string $testFile): void
     // {

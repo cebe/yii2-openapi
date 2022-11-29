@@ -502,4 +502,19 @@ class ApiGenerator extends Generator
         }
         return $this->_openApiWithoutRef;
     }
+
+    public static function isPostgres():bool
+    {
+        return Yii::$app->db->schema instanceof PgSqlSchema;
+    }
+
+    public static function isMysql():bool
+    {
+        return (Yii::$app->db->schema instanceof MySqlSchema && !static::isMariaDb());
+    }
+
+    public static function isMariaDb():bool
+    {
+        return strpos(Yii::$app->db->schema->getServerVersion(), 'MariaDB') !== false;
+    }
 }

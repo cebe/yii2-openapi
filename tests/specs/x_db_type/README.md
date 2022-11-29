@@ -1,0 +1,1 @@
+Default database in MySQL.

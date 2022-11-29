@@ -95,6 +95,10 @@ components:
           type: string
         tag:
           type: string
+          x-db-type: string
+        new_col:
+          type: string
+          x-db-type: string
     Checktypes:
       type: object
       required:
@@ -112,7 +116,6 @@ components:
         text_col:
           type: string
           x-db-type: text
-          default: hii # this has no effect (will be ignored without errors) as default literal in text in Mysql is not allowed
         varchar_4_col:
           type: string
           x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
