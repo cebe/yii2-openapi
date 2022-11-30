@@ -31,8 +31,8 @@ clean:
 
 up:
 	docker-compose up -d
-# 	echo "Waiting for mariadb to start up..."
-# 	docker-compose exec -T php timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
+	echo "Waiting for mariadb to start up..."
+	docker-compose exec -T php timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
 
 cli:
 	docker-compose exec php bash
