@@ -183,6 +183,12 @@ class MigrationsGeneratorTest extends DbTestCase
         // $this->mockRealApplication();
         $this->mockApplication();
         foreach(['maria', 'pgsql'] as $database) {
+            if ($database === 'maria') {
+                $this->changeDbToMariadb();
+            }
+            if ($database === 'pgsql') {
+                $this->changeDbToPgsql();
+            }
             $generator = new MigrationsGenerator(new Config(), $dbModels, Yii::$app->{$database});
             // var_dump(Yii::$app->db); die;
             $models = $generator->buildMigrations();

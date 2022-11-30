@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib;
 
 use yii\db\ArrayExpression;
+use cebe\yii2openapi\generator\ApiGenerator;
 use yii\db\ColumnSchema;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Expression;
@@ -103,7 +104,7 @@ class ColumnToCode
         }
         if (!$this->rawParts['default']) {
             $default = '';
-        } elseif ($this->isPostgres() && $this->isEnum()) {
+        } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
                 $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
@@ -111,7 +112,7 @@ class ColumnToCode
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
-        if ($this->isMysql() && $this->isEnum()) {
+        if (ApiGenerator::isMysql() && $this->isEnum()) {
             return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
         }
         return $quoted ? "'" . $code . "'" : $code;
@@ -119,13 +120,13 @@ class ColumnToCode
 
     public function getAlterExpression(bool $addUsingExpression = false):string
     {
-        if ($this->isEnum() && $this->isPostgres()) {
+        if ($this->isEnum() && ApiGenerator::isPostgres()) {
             return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
         }
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
         }
-        if ($addUsingExpression && $this->isPostgres()) {
+        if ($addUsingExpression && ApiGenerator::isPostgres()) {
             return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
         }
@@ -293,7 +294,7 @@ class ColumnToCode
      */
     private function getIsBuiltinType($type, $dbType)
     {
-        if ($this->isEnum() && $this->isMariaDb()) {
+        if ($this->isEnum() && ApiGenerator::isMariaDb()) {
             return false;
         }
         if ($this->fromDb === true) {
@@ -305,7 +306,7 @@ class ColumnToCode
 
     private function resolveEnumType():void
     {
-        if ($this->isPostgres()) {
+        if (ApiGenerator::isPostgres()) {
             $this->rawParts['type'] = 'enum_' . $this->column->name;
             return;
         }
@@ -338,7 +339,7 @@ class ColumnToCode
                 break;
             case 'boolean':
                 $this->fluentParts['default'] = (bool)$value === true ? 'defaultValue(true)' : 'defaultValue(false)';
-                if ($this->isPostgres()) {
+                if (ApiGenerator::isPostgres()) {
                     $this->rawParts['default'] = ((bool)$value === true ? "'t'" : "'f'");
                 } else {
                     $this->rawParts['default'] = ((bool)$value === true ? '1' : '0');
@@ -373,7 +374,7 @@ class ColumnToCode
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                 }
                 $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-                if ($this->isMysql() && $this->isEnum()) {
+                if (ApiGenerator::isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
         }
@@ -389,7 +390,7 @@ class ColumnToCode
             case 'geometry':
             case 'text':
             case 'json':
-                if ($this->isMysql()) {
+                if (ApiGenerator::isMysql()) {
                     // The BLOB, TEXT, GEOMETRY, and JSON data types cannot be assigned a default value.
                     // https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
                     return false;
@@ -404,21 +405,5 @@ class ColumnToCode
     private function typeWithoutSize(string $type):string
     {
         return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
-    }
-
-    // TODO avoid duplication. also present in lib/items/Attribute
-    private function isPostgres():bool
-    {
-        return $this->dbSchema instanceof PgSqlSchema;
-    }
-
-    private function isMysql():bool
-    {
-        return ($this->dbSchema instanceof MySqlSchema && !$this->isMariaDb());
-    }
-
-    private function isMariaDb():bool
-    {
-        return strpos($this->dbSchema->getServerVersion(), 'MariaDB') !== false;
     }
 }

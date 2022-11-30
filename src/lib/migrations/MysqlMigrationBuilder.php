@@ -70,7 +70,9 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             }
         }
         
-        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
+        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
+                    , 'dbType', 'phpType'
+        ] as $attr) {
             if ($current->$attr !== $desired->$attr) {
                 $changedAttributes[] = $attr;
             }

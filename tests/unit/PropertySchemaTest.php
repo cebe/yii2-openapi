@@ -6,10 +6,10 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\openapi\PropertySchema;
 use cebe\yii2openapi\lib\openapi\ComponentSchema;
-use tests\TestCase;
+use tests\DbTestCase;
 use Yii;
 
-class PropertySchemaTest extends TestCase
+class PropertySchemaTest extends DbTestCase
 {
     public function testPkProperty()
     {

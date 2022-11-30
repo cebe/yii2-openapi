@@ -38,7 +38,9 @@ class GeneratorTest extends DbTestCase
         $this->mockApplication();
         // $this->mockApplication($this->mockDbSchemaAsEmpty());
 
-        if ($testFile === '/app/tests/specs/postgres_custom.php') { // TODO docs + add separate tests for this + refactor tests
+        if ($testFile === '/app/tests/specs/postgres_custom.php' ||
+            $testFile === '/app/tests/specs/menu.php'
+        ) { // TODO docs + add separate tests for this + refactor tests
             $dbo = Yii::$app->db;
             Yii::$app->set('db', Yii::$app->pgsql);
         }
@@ -96,7 +98,9 @@ class GeneratorTest extends DbTestCase
             $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
         }
 
-        if ($testFile === '/app/tests/specs/postgres_custom.php') {
+        if ($testFile === '/app/tests/specs/postgres_custom.php' ||
+            $testFile === '/app/tests/specs/menu.php'
+        ) {
             Yii::$app->set('db', $dbo); // Mysql is default so set it back
         }
     }

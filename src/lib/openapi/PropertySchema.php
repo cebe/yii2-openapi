@@ -7,6 +7,13 @@
 
 namespace cebe\yii2openapi\lib\openapi;
 
+use yii\db\ColumnSchema;
+use cebe\yii2openapi\generator\ApiGenerator;
+use yii\db\mysql\Schema as MySqlSchema;
+use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
+use yii\db\pgsql\Schema as PgSqlSchema;
+use cebe\yii2openapi\lib\items\Attribute;
+use yii\base\NotSupportedException;
 use BadMethodCallException;
 use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\Reference;
@@ -315,6 +322,11 @@ class PropertySchema
             return 'array';
         }
 
+        if ($customDbType) {
+            list(, , $phpType, ) = static::f798($customDbType);
+            return $phpType;
+        }
+
         switch ($this->getAttr('type')) {
             case 'integer':
                 return 'int';
@@ -346,9 +358,11 @@ class PropertySchema
             if ($customDbType === 'varchar') {
                 return YiiDbSchema::TYPE_STRING;
             }
-            if ($customDbType !== null) {
+            list($justRealDbType, , , $haveMoreInfo) = static::f798($customDbType);
+            if ($haveMoreInfo && $customDbType !== null) {
                 return $customDbType;
             }
+            return $justRealDbType;
         }
         $format = $this->getAttr('format');
         $type = $this->getAttr('type');
@@ -424,5 +438,85 @@ class PropertySchema
         }
 
         return $default;
+    }
+
+    public static function f798(string $xDbType) // TODO rename
+    {
+        list($haveMoreInfo, $justRealDbType) = Attribute::isXDbTypeWithMoreInfo($xDbType);
+
+        if (ApiGenerator::isMysql()) {
+            $mysqlSchema = new MySqlSchema;
+
+            if (!array_key_exists($justRealDbType, $mysqlSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for MySQL. "'.$justRealDbType.'" is not a real data type in MySQL.');
+            }
+
+            $yiiAbstractDataType = $mysqlSchema->typeMap[$justRealDbType];
+        } elseif (ApiGenerator::isMariaDb()) {
+            $mariadbSchema = new MariaDbSchema;
+
+            if (!array_key_exists($justRealDbType, $mariadbSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for MariaDB. "'.$justRealDbType.'" is not a real data type in MariaDb.');
+            }
+            $yiiAbstractDataType = $mariadbSchema->typeMap[$justRealDbType];
+        } elseif (ApiGenerator::isPostgres()) {
+            $pgsqlSchema = new PgSqlSchema;
+            if (!array_key_exists($justRealDbType, $pgsqlSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for PostgreSQL. "'.$justRealDbType.'" is not a real data type in PostgreSQL.');
+            }
+            $yiiAbstractDataType = $pgsqlSchema->typeMap[$justRealDbType];
+        } else {
+            throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
+        }
+
+        $phpType = static::getColumnPhpType(new ColumnSchema(['type' => $yiiAbstractDataType]));
+        if (StringHelper::endsWith($xDbType, '[]')) {
+            $phpType = 'array';
+        }
+
+        return [
+            // real db type $justRealDbType
+            // $yiiAbstractDataType
+            // $phpType
+
+            // TODO refactor
+            $justRealDbType,
+            $yiiAbstractDataType,
+            $phpType,
+            $haveMoreInfo,
+        ];
+    }
+
+    /**
+     * This method is copied from protected method `getColumnPhpType()` of \yii\db\Schema class
+     * Extracts the PHP type from abstract DB type.
+     * @param \yii\db\ColumnSchema $column the column schema information
+     * @return string PHP type name
+     */
+    public static function getColumnPhpType(ColumnSchema $column): string
+    {
+        static $typeMap = [
+            // abstract type => php type
+            YiiDbSchema::TYPE_TINYINT => 'integer',
+            YiiDbSchema::TYPE_SMALLINT => 'integer',
+            YiiDbSchema::TYPE_INTEGER => 'integer',
+            YiiDbSchema::TYPE_BIGINT => 'integer',
+            YiiDbSchema::TYPE_BOOLEAN => 'boolean',
+            YiiDbSchema::TYPE_FLOAT => 'double',
+            YiiDbSchema::TYPE_DOUBLE => 'double',
+            YiiDbSchema::TYPE_BINARY => 'resource',
+            YiiDbSchema::TYPE_JSON => 'array',
+        ];
+        if (isset($typeMap[$column->type])) {
+            if ($column->type === 'bigint') {
+                return PHP_INT_SIZE === 8 && !$column->unsigned ? 'integer' : 'string';
+            } elseif ($column->type === 'integer') {
+                return PHP_INT_SIZE === 4 && $column->unsigned ? 'string' : 'integer';
+            }
+
+            return $typeMap[$column->type];
+        }
+
+        return 'string';
     }
 }

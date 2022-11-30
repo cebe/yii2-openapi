@@ -8,6 +8,8 @@
 namespace cebe\yii2openapi\lib\items;
 
 use \Yii;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use yii\base\BaseObject;
 use yii\db\ColumnSchema;
@@ -276,7 +278,7 @@ class Attribute extends BaseObject
     {
         $column = new ColumnSchema([
             'name' => $this->columnName,
-            'phpType'=>$this->phpType,
+            'phpType'=> $this->phpType,
             'dbType' => strtolower($this->dbType),
             'type' => $this->yiiAbstractTypeForDbSpecificType($this->dbType),
             'allowNull' => $this->allowNull(),
@@ -301,60 +303,34 @@ class Attribute extends BaseObject
     }
 
     // todo docs - it throw new NotSupportedException
-    private function yiiAbstractTypeForDbSpecificType(string $type): string
+    private function yiiAbstractTypeForDbSpecificType(string $dbType): string
     {
         if (is_string($this->xDbType) && !empty($this->xDbType) && trim($this->xDbType)) {
-            $xDbType = strtolower($this->xDbType);
-
-            list(, $justYiiAbstractType) = $this->isTypeWithMoreInfo($xDbType);
-
-            if ($this->isMysql()) {
-                $mysqlSchema = new MySqlSchema;
-
-                if (!array_key_exists($justYiiAbstractType, $mysqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for MySQL. "'.$justYiiAbstractType.'" is not a real data type in MySQL.');
-                }
-
-                return $mysqlSchema->typeMap[$justYiiAbstractType];
-            } elseif ($this->isMariaDb()) {
-                $mariadbSchema = new MariaDbSchema;
-
-                if (!array_key_exists($justYiiAbstractType, $mariadbSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for MariaDB. "'.$justYiiAbstractType.'" is not a real data type in MariaDb.');
-                }
-                return $mariadbSchema->typeMap[$justYiiAbstractType];
-            } elseif ($this->isPostgres()) {
-                $pgsqlSchema = new PgSqlSchema;
-                if (!array_key_exists($justYiiAbstractType, $pgsqlSchema->typeMap)) {
-                    throw new InvalidDefinitionException('"x-db-type: '.$justYiiAbstractType.'" is incorrect for PostgreSQL. "'.$justYiiAbstractType.'" is not a real data type in PostgreSQL.');
-                }
-                return $pgsqlSchema->typeMap[$justYiiAbstractType];
-            } else {
-                throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
-            }
+            list(, $yiiAbstractDataType, , ) = PropertySchema::f798($this->xDbType);
+            return $yiiAbstractDataType;
         } else {
-            if (stripos($type, 'int') === 0) {
+            if (stripos($dbType, 'int') === 0) {
                 return 'integer';
             }
-            if (stripos($type, 'string') === 0) {
+            if (stripos($dbType, 'string') === 0) {
                 return 'string';
             }
-            if (stripos($type, 'varchar') === 0) {
+            if (stripos($dbType, 'varchar') === 0) {
                 return 'string';
             }
-            if (stripos($type, 'tsvector') === 0) {
+            if (stripos($dbType, 'tsvector') === 0) {
                 return 'string';
             }
-            if (stripos($type, 'json') === 0) {
+            if (stripos($dbType, 'json') === 0) {
                 return 'json';
             }
             // TODO? behaviour in Pgsql should remain same but timestamp/datetime bug which is only reproduced in Mysql and Mariadb should be fixed
-            if (stripos($type, 'datetime') === 0) {
+            if (stripos($dbType, 'datetime') === 0) {
                 return 'timestamp';
             }
         }
 
-        return $type;
+        return $dbType;
     }
 
     private function allowNull()
@@ -381,53 +357,37 @@ class Attribute extends BaseObject
      *         - VARCHAR
      *
      */
-    public function isTypeWithMoreInfo(string $type): array
+    public static function isXDbTypeWithMoreInfo(string $xDbType): array
     {
-        $justYiiAbstractType = $type;
-        $isTypeWithMoreInfo = false;
+        $justRealDbType = $xDbType;
+        $isXDbTypeWithMoreInfo = false;
 
         // 'text' => match `text`
         // 'text[]' => match `text`
         // 'INTEGER PRIMARY KEY AUTO_INCREMENT' => match `INTEGER`
         // 'decimal(12,4)' => match `decimal`
         // 'decimal(12)' => match `decimal`
-        preg_match('/(\w+)/', $type, $matches);
+        preg_match('/(\w+)/', $xDbType, $matches);
 
         if (isset($matches[0])) {
-            $justYiiAbstractType = $matches[0];
-            $justYiiAbstractType = strtolower($justYiiAbstractType);
+            $justRealDbType = $matches[0];
+            $justRealDbType = strtolower($justRealDbType);
         }
 
-        // $isTypeWithMoreInfo = true for following:
+        // $isXDbTypeWithMoreInfo = true for following:
         // - text[]
         // - INTEGER PRIMARY KEY AUTO_INCREMENT
         // - decimal(12,4)
         // - decimal(12)
 
-        // $isTypeWithMoreInfo = false for following:
+        // $isXDbTypeWithMoreInfo = false for following:
         // json
         // text
         // VARCHAR
-        if (strlen($justYiiAbstractType) < strlen($type)) {
-            $isTypeWithMoreInfo = true;
+        if (strlen($justRealDbType) < strlen($xDbType)) {
+            $isXDbTypeWithMoreInfo = true;
         }
 
-        return [$isTypeWithMoreInfo, $justYiiAbstractType];
-    }
-
-    // TODO avoid duplication. also present in lib/ColumnToCode
-    private function isPostgres():bool
-    {
-        return Yii::$app->db->schema instanceof PgSqlSchema;
-    }
-
-    private function isMysql():bool
-    {
-        return (Yii::$app->db->schema instanceof MySqlSchema && !$this->isMariaDb());
-    }
-
-    private function isMariaDb():bool
-    {
-        return strpos(Yii::$app->db->schema->getServerVersion(), 'MariaDB') !== false;
+        return [$isXDbTypeWithMoreInfo, $justRealDbType];
     }
 }
