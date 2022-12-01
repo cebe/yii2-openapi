@@ -13,7 +13,9 @@ use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
 use yii\db\IndexConstraint;
 use yii\db\Schema;
+use \Yii;
 use yii\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 
 final class MysqlMigrationBuilder extends BaseMigrationBuilder
 {
@@ -69,11 +71,19 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
                 }
             }
         }
-        
+
+        // if ($current->name === 'flags') {
+        //     VarDumper::dump($desired);
+        // }
+        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        // if ($current->name === 'flags') {
+        //     VarDumper::dump($desiredFromDb);
+        // }
+
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
-                    , 'dbType', 'phpType'
+                    , 'dbType', /*'phpType' TODO phpType*/
         ] as $attr) {
-            if ($current->$attr !== $desired->$attr) {
+            if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
         }
@@ -122,5 +132,42 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         } catch (NotSupportedException $e) {
             return [];
         }
+    }
+
+    private function tmpSaveNewCol(ColumnSchema $columnSchema)//: ColumnSchema TODO
+    {
+        $tableName = 'tmp_table_';
+
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+
+        Yii::$app->db->createCommand()->createTable($tableName, [
+            $columnSchema->name => $this->newColStr($columnSchema), // TODO
+        ])->execute();
+
+        $table = Yii::$app->db->getTableSchema($tableName);
+
+        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+
+        return $table->columns[$columnSchema->name];
+    }
+
+    private function newColStr(ColumnSchema $columnSchema): string
+    {
+        $mysqlCsb = new \yii\db\mysql\ColumnSchemaBuilder($columnSchema->dbType, $columnSchema->size);
+        if ($columnSchema->allowNull) {
+            $mysqlCsb->null();
+        } else {
+            $mysqlCsb->notNull();
+        }
+
+        if ($columnSchema->defaultValue !== null) {
+            $mysqlCsb->defaultValue($columnSchema->defaultValue);
+        }
+
+        if ($columnSchema->unsigned) {
+            $mysqlCsb->unsigned();
+        }
+
+        return $mysqlCsb->__toString();
     }
 }

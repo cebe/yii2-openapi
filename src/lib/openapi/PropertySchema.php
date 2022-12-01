@@ -26,6 +26,7 @@ use yii\db\Schema as YiiDbSchema;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function is_int;
 use function strpos;
 
@@ -358,11 +359,11 @@ class PropertySchema
             if ($customDbType === 'varchar') {
                 return YiiDbSchema::TYPE_STRING;
             }
-            list($justRealDbType, , , $haveMoreInfo) = static::f798($customDbType);
-            if ($haveMoreInfo && $customDbType !== null) {
-                return $customDbType;
-            }
-            return $justRealDbType;
+            list($justRealDbType, $yiiAbstractDataType, , $haveMoreInfo) = static::f798($customDbType);
+            // if ($haveMoreInfo && $customDbType !== null) {
+            //     return $customDbType;
+            // }
+            return $customDbType;
         }
         $format = $this->getAttr('format');
         $type = $this->getAttr('type');

@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use yii\helpers\VarDumper;
 use \Yii;
 use cebe\yii2openapi\lib\openapi\PropertySchema;
 use cebe\yii2openapi\generator\ApiGenerator;
