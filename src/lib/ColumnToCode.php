@@ -391,7 +391,7 @@ class ColumnToCode
             case 'text':
             case 'json':
                 if (ApiGenerator::isMysql()) {
-                    // The BLOB, TEXT, GEOMETRY, and JSON data types cannot be assigned a default value.
+                    // The BLOB, TEXT, GEOMETRY, and JSON data types cannot be assigned a literal default value.
                     // https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
                     return false;
                 }

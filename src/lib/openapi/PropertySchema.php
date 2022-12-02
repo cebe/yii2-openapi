@@ -359,11 +359,9 @@ class PropertySchema
             if ($customDbType === 'varchar') {
                 return YiiDbSchema::TYPE_STRING;
             }
-            list($justRealDbType, $yiiAbstractDataType, , $haveMoreInfo) = static::f798($customDbType);
-            // if ($haveMoreInfo && $customDbType !== null) {
-            //     return $customDbType;
-            // }
-            return $customDbType;
+            if ($customDbType !== null) {
+                return $customDbType;
+            }
         }
         $format = $this->getAttr('format');
         $type = $this->getAttr('type');

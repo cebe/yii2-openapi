@@ -135,8 +135,8 @@ Example values of `x-db-type` are:
 
 Such values are not allowed:
    - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
-   - decimal(12)
-   - decimal
+   - decimal(12) TODO
+   - decimal TODO
 
 ### `x-indexes`
 Specify table indexes
