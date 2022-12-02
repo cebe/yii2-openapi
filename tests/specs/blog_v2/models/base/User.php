@@ -28,7 +28,7 @@ abstract class User extends \yii\db\ActiveRecord
             'login_unique' => [['login'], 'unique'],
             'email_unique' => [['email'], 'unique'],
             'login_string' => [['login'], 'string'],
-            'email_string' => [['email'], 'string'],
+            'email_string' => [['email'], 'string', 'max' => 255],
             'email_email' => [['email'], 'email'],
             'password_string' => [['password'], 'string'],
             'flags_integer' => [['flags'], 'integer'],

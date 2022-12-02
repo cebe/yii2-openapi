@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbIndex;
 use yii\base\NotSupportedException;
@@ -134,40 +135,12 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         }
     }
 
-    private function tmpSaveNewCol(ColumnSchema $columnSchema)//: ColumnSchema TODO
+    public static function getColumnSchemaBuilderClass(): string
     {
-        $tableName = 'tmp_table_';
-
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
-
-        Yii::$app->db->createCommand()->createTable($tableName, [
-            $columnSchema->name => $this->newColStr($columnSchema), // TODO
-        ])->execute();
-
-        $table = Yii::$app->db->getTableSchema($tableName);
-
-        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
-
-        return $table->columns[$columnSchema->name];
-    }
-
-    private function newColStr(ColumnSchema $columnSchema): string
-    {
-        $mysqlCsb = new \yii\db\mysql\ColumnSchemaBuilder($columnSchema->dbType, $columnSchema->size);
-        if ($columnSchema->allowNull) {
-            $mysqlCsb->null();
-        } else {
-            $mysqlCsb->notNull();
+        if (ApiGenerator::isMysql()) {
+            return \yii\db\mysql\ColumnSchemaBuilder::class;
+        } elseif (ApiGenerator::isMariaDb()) {
+            return \SamIT\Yii2\MariaDb\ColumnSchemaBuilder::class;
         }
-
-        if ($columnSchema->defaultValue !== null) {
-            $mysqlCsb->defaultValue($columnSchema->defaultValue);
-        }
-
-        if ($columnSchema->unsigned) {
-            $mysqlCsb->unsigned();
-        }
-
-        return $mysqlCsb->__toString();
     }
 }

@@ -256,6 +256,8 @@ components:
           type: string
         email:
           type: string
+          x-db-type: varchar
+          maxLength: 255
         password:
           type: string
           format: password

@@ -265,6 +265,8 @@ abstract class BaseMigrationBuilder
 
     abstract protected function isDbDefaultSize(ColumnSchema $current):bool;
 
+    abstract public static function getColumnSchemaBuilderClass(): string;
+
     /**
      * @return array|\cebe\yii2openapi\lib\items\DbIndex[]
      */
@@ -414,5 +416,43 @@ abstract class BaseMigrationBuilder
         }
         $dates = ['date', 'timestamp'];
         return !(in_array($fromType, $dates) && in_array($toType, $dates));
+    }
+
+    public function tmpSaveNewCol(ColumnSchema $columnSchema)//: ColumnSchema TODO
+    {
+        $tableName = 'tmp_table_';
+
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+
+        Yii::$app->db->createCommand()->createTable($tableName, [
+            $columnSchema->name => $this->newColStr($columnSchema), // TODO
+        ])->execute();
+
+        $table = Yii::$app->db->getTableSchema($tableName);
+
+        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+
+        return $table->columns[$columnSchema->name];
+    }
+
+    public function newColStr(ColumnSchema $columnSchema): string
+    {
+        $builderClass = static::getColumnSchemaBuilderClass();
+        $mysqlCsb = new $builderClass($columnSchema->dbType, $columnSchema->size);
+        if ($columnSchema->allowNull) {
+            $mysqlCsb->null();
+        } else {
+            $mysqlCsb->notNull();
+        }
+
+        if ($columnSchema->defaultValue !== null) {
+            $mysqlCsb->defaultValue($columnSchema->defaultValue);
+        }
+
+        if ($columnSchema->unsigned) {
+            $mysqlCsb->unsigned();
+        }
+
+        return $mysqlCsb->__toString();
     }
 }

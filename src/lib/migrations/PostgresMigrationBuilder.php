@@ -190,4 +190,9 @@ SQL;
         }
         return $dbIndexes;
     }
+
+    public static function getColumnSchemaBuilderClass(): string
+    {
+        return \yii\db\ColumnSchemaBuilder::class;
+    }
 }
