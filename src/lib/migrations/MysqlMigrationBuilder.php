@@ -73,13 +73,15 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             }
         }
 
-        // if ($current->name === 'flags') {
-        //     VarDumper::dump($desired);
-        // }
+        if ($current->name === 'email') {
+            // VarDumper::dump($current);
+        }
+        // TODO docs
         $desiredFromDb = $this->tmpSaveNewCol($desired);
-        // if ($current->name === 'flags') {
-        //     VarDumper::dump($desiredFromDb);
-        // }
+        if ($current->name === 'email') {
+            // VarDumper::dump($desired);
+            // VarDumper::dump($desiredFromDb);
+        }
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
                     , 'dbType', 'phpType'
@@ -87,6 +89,9 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
+        }
+        if ($current->name === 'email') {
+            // VarDumper::dump($changedAttributes);
         }
         return $changedAttributes;
     }

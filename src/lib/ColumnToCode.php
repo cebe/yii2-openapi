@@ -18,6 +18,7 @@ use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\db\Schema;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function in_array;
 use function is_string;
 use function preg_replace;
@@ -64,6 +65,14 @@ class ColumnToCode
 
     /**
      * @var bool
+     * if set to `true`, `getCode()` method will return SQL migration in raw form instead of SchemaBuilderTrait methods
+     * Example: `string null default null`
+     * It won't return `$this->string()->null()->defaultValue(null)`
+     */
+    private $raw = false;
+
+    /**
+     * @var bool
      */
     private $isPk = false;
 
@@ -82,13 +91,21 @@ class ColumnToCode
      * @param \yii\db\ColumnSchema $column
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
      * @param bool                 $alter (flag for resolve quotes that is different for create and alter)
+     * @param bool                 $raw see @property $raw above for docs
      */
-    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false, bool $alter = false)
+    public function __construct(
+        Schema $dbSchema,
+        ColumnSchema $column,
+        bool $fromDb = false,
+        bool $alter = false,
+        bool $raw = false
+    )
     {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
+        $this->raw = $raw;
         $this->resolve();
     }
 
@@ -102,13 +119,20 @@ class ColumnToCode
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
-        if (!$this->rawParts['default']) {
+        if ($this->rawParts['default'] === null) {
             $default = '';
         } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
-                $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
+                $this->rawParts['default'] !== null ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
-            $default = $this->rawParts['default'] ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
+            $default = $this->rawParts['default'] !== null ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
+        }
+        if ($this->column->name === 'email') { // TODO remove
+            // VarDumper::dump('---------------');echo PHP_EOL;
+            // VarDumper::dump($this->rawParts['default']);echo PHP_EOL;
+            // VarDumper::dump($this->column->defaultValue);echo PHP_EOL;
+            // VarDumper::dump($default);echo PHP_EOL;
+            // VarDumper::dump('++++++++++++++++++++++++');echo PHP_EOL;
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
@@ -206,6 +230,11 @@ class ColumnToCode
         return str_replace(["'", '"', '$'], ["\\'", "\\'", '\$'], $str);
     }
 
+    public static function undoEscapeQuotes(string $str):string
+    {
+        return str_replace(["\\'", "\\'", '\$'], ["'", '"', '$'], $str);
+    }
+
     public static function wrapQuotes(string $str, string $quotes = "'", bool $escape = true):string
     {
         if ($escape && strpos($str, $quotes) !== false) {
@@ -282,7 +311,7 @@ class ColumnToCode
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
         
-        $this->isBuiltinType = $this->getIsBuiltinType($type, $dbType);
+        $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
 
         $this->resolveDefaultValue();
     }
@@ -319,9 +348,13 @@ class ColumnToCode
             return;
         }
         $value = $this->column->defaultValue;
+        if ($this->column->name === 'email') {
+            // VarDumper::dump('*************************');
+            // VarDumper::dump($value);
+        }
         if ($value === null || (is_string($value) && (stripos($value, 'null::') !== false))) {
-            $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : '';
-            $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : '';
+            $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : $this->fluentParts['default'];
+            $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : $this->rawParts['default'];
             return;
         }
         $expectInteger = is_numeric($value) && stripos($this->column->dbType, 'int') !== false;
@@ -377,6 +410,10 @@ class ColumnToCode
                 if (ApiGenerator::isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
+        }
+        if ($this->column->name === 'email') {
+            // VarDumper::dump($this->rawParts);
+            // VarDumper::dump($this->fluentParts);
         }
     }
 

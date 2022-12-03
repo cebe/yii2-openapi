@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\lib\migrations;
 
 use cebe\yii2openapi\lib\items\DbIndex;
 use yii\db\ColumnSchema;
+use yii\helpers\VarDumper;
 use yii\helpers\ArrayHelper;
 
 final class PostgresMigrationBuilder extends BaseMigrationBuilder
@@ -104,6 +105,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
+        // TODO decimal precision ? See adjacent MysqlMigrationBuilder
         $changedAttributes = [];
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
@@ -115,10 +117,34 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $desired->size = $current->size;
         }
 
-        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
+        if ($current->name === 'json1') {
+            // VarDumper::dump($current);
+            // VarDumper::dump($desired);//die;
+        }
+        // TODO docs
+        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        if ($desiredFromDb->phpType === 'integer' && $desiredFromDb->defaultValue !== null) {
+            $desiredFromDb->defaultValue = (int)$desiredFromDb->defaultValue;
+        }
+        if ($current->name === 'json1') {
+            // VarDumper::dump($desired);die;
+            // VarDumper::dump($desiredFromDb);
+        }
+
+        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
+                    // , 'dbType', 'phpType'
+        ] as $attr) {
             if ($current->$attr !== $desired->$attr) {
+            // if ($current->$attr !== $desiredFromDb->$attr) {
+                // if ($current->$attr == $desiredFromDb->$attr && is_int($current->$attr)) { // TODO remove this if condition; tmp for flags column
+                //     continue;
+                // }
+
                 $changedAttributes[] = $attr;
             }
+        }
+        if ($current->name === 'json1') {
+            // VarDumper::dump($changedAttributes);
         }
         return $changedAttributes;
     }

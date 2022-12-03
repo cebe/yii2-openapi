@@ -7,11 +7,13 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
+use yii\helpers\VarDumper;
 use yii\db\Connection;
 
 abstract class BaseMigrationBuilder
@@ -424,9 +426,16 @@ abstract class BaseMigrationBuilder
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
 
+        if ($columnSchema->name === 'json1') {
+            // VarDumper::dump($columnSchema);
+            // VarDumper::dump($this->newColStr($columnSchema));
+            // die;
+        }
+
         Yii::$app->db->createCommand()->createTable($tableName, [
             $columnSchema->name => $this->newColStr($columnSchema), // TODO
         ])->execute();
+
 
         $table = Yii::$app->db->getTableSchema($tableName);
 
@@ -437,22 +446,30 @@ abstract class BaseMigrationBuilder
 
     public function newColStr(ColumnSchema $columnSchema): string
     {
-        $builderClass = static::getColumnSchemaBuilderClass();
-        $mysqlCsb = new $builderClass($columnSchema->dbType, $columnSchema->size);
-        if ($columnSchema->allowNull) {
-            $mysqlCsb->null();
-        } else {
-            $mysqlCsb->notNull();
-        }
+        $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
+        // VarDumper::dump($ctc->getCode()); die;
+        // if ($columnSchema->name === 'email') {
+        //     VarDumper::dump(ColumnToCode::undoEscapeQuotes($ctc->getCode()));
+        // }
+        return ColumnToCode::undoEscapeQuotes($ctc->getCode());
 
-        if ($columnSchema->defaultValue !== null) {
-            $mysqlCsb->defaultValue($columnSchema->defaultValue);
-        }
+        // $builderClass = static::getColumnSchemaBuilderClass();
+        // $mysqlCsb = new $builderClass($columnSchema->dbType, $columnSchema->size); // TODO rename var $mysqlCsb
+        // if ($columnSchema->allowNull) {
+        //     $mysqlCsb->null();
+        // } else {
+        //     $mysqlCsb->notNull();
+        // }
 
-        if ($columnSchema->unsigned) {
-            $mysqlCsb->unsigned();
-        }
+        // if ($columnSchema->defaultValue !== null) {
+        //     $mysqlCsb->defaultValue($columnSchema->defaultValue);
+        // }
 
-        return $mysqlCsb->__toString();
+        // if ($columnSchema->unsigned) {
+        //     $mysqlCsb->unsigned();
+        // }
+        // // TODO enum values
+
+        // return $mysqlCsb->__toString();
     }
 }
