@@ -99,8 +99,7 @@ class ColumnToCode
         bool $fromDb = false,
         bool $alter = false,
         bool $raw = false
-    )
-    {
+    ) {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;

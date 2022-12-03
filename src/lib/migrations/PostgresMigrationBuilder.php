@@ -132,10 +132,10 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         }
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
-                    // , 'dbType', 'phpType'
+                    , 'dbType', 'phpType'
         ] as $attr) {
-            if ($current->$attr !== $desired->$attr) {
-            // if ($current->$attr !== $desiredFromDb->$attr) {
+            // if ($current->$attr !== $desired->$attr) {
+            if ($current->$attr !== $desiredFromDb->$attr) {
                 // if ($current->$attr == $desiredFromDb->$attr && is_int($current->$attr)) { // TODO remove this if condition; tmp for flags column
                 //     continue;
                 // }
