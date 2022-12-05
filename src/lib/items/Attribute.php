@@ -299,6 +299,7 @@ class Attribute extends BaseObject
         if (is_array($this->enumValues)) {
             $column->enumValues = $this->enumValues;
         }
+        $this->handleDecimal($column);
 
         return $column;
     }
@@ -390,5 +391,14 @@ class Attribute extends BaseObject
         }
 
         return [$isXDbTypeWithMoreInfo, $justRealDbType];
+    }
+
+    public function handleDecimal(ColumnSchema $columnSchema): void
+    {
+        if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($columnSchema->dbType)) {
+            $columnSchema->precision = $decimalAttributes['precision'];
+            $columnSchema->scale = $decimalAttributes['scale'];
+            $columnSchema->dbType = $decimalAttributes['dbType'];
+        }
     }
 }

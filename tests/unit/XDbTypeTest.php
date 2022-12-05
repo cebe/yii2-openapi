@@ -17,8 +17,11 @@ class XDbTypeTest extends DbTestCase
 {
     public function testXDbTypeFresh()
     {
-        // $this->changeDbToMysql();
-        $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type.php");
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumn}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumn}}')->execute();
+
+        $testFile = Yii::getAlias("@specs/x_db_type/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
 
         // $this->changeDbToMariadb();

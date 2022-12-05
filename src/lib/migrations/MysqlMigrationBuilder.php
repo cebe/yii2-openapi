@@ -73,12 +73,12 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             }
         }
 
-        if ($current->name === 'email') {
+        if ($current->name === 'col_6') {
             // VarDumper::dump($current);
         }
         // TODO docs
         $desiredFromDb = $this->tmpSaveNewCol($desired);
-        if ($current->name === 'email') {
+        if ($current->name === 'col_6') {
             // VarDumper::dump($desired);
             // VarDumper::dump($desiredFromDb);
         }
@@ -90,7 +90,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
                 $changedAttributes[] = $attr;
             }
         }
-        if ($current->name === 'email') {
+        if ($current->name === 'col_6') {
             // VarDumper::dump($changedAttributes);
         }
         return $changedAttributes;

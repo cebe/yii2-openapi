@@ -192,14 +192,14 @@ class ColumnToCode
         $precisionDefault = 10;
         $scaleDefault = 2;
 
-        preg_match_all('/(decimal\()+(\d)+(,)+(\d)+(\))/', $dbType, $matches);
+        preg_match_all('/(decimal\()+([0-9]+)+(,)+([0-9]+)+(\))/', $dbType, $matches);
         if (!empty($matches[4][0])) {
             $precision = $matches[2][0];
             $scale = $matches[4][0];
         }
 
         if (empty($precision)) {
-            preg_match_all('/(decimal\()+(\d)+(\))/', $dbType, $matches);
+            preg_match_all('/(decimal\()+([0-9]+)+(\))/', $dbType, $matches);
             if (!empty($matches[2][0])) {
                 $precision = $matches[2][0];
                 $scale = $scaleDefault;
@@ -302,8 +302,8 @@ class ColumnToCode
         } elseif ($this->isEnum()) {
             $this->resolveEnumType();
         } elseif ($this->isDecimal()) {
-            $this->fluentParts['type'] = $dbType;
-            $this->rawParts['type'] = $dbType;
+            $this->fluentParts['type'] = $this->column->dbType;
+            $this->rawParts['type'] = $this->column->dbType;
         } else {
             $this->fluentParts['type'] = $type . $fluentSize;
             $this->rawParts['type'] =
