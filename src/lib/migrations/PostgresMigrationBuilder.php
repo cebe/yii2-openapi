@@ -107,44 +107,24 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     {
         // TODO decimal precision ? See adjacent MysqlMigrationBuilder
         $changedAttributes = [];
-        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
-            $current->defaultValue = (int)$current->defaultValue;
-        }
-        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
-            $desired->defaultValue = (int)$desired->defaultValue;
-        }
-        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
-            $desired->size = $current->size;
-        }
 
-        if ($current->name === 'json1') {
-            // VarDumper::dump($current);
-            // VarDumper::dump($desired);//die;
-        }
+        $this->modifyCurrent($current);
+        $this->modifyDesired($desired);
+        $this->modifyDesiredInContextOfCurrent($current, $desired);
+
         // TODO docs
         $desiredFromDb = $this->tmpSaveNewCol($desired);
-        if ($desiredFromDb->phpType === 'integer' && $desiredFromDb->defaultValue !== null) {
-            $desiredFromDb->defaultValue = (int)$desiredFromDb->defaultValue;
-        }
-        if ($current->name === 'json1') {
-            // VarDumper::dump($desired);die;
-            // VarDumper::dump($desiredFromDb);
-        }
+        $this->modifyDesired($desiredFromDb);
+        $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
                     , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
         ] as $attr) {
             // if ($current->$attr !== $desired->$attr) {
             if ($current->$attr !== $desiredFromDb->$attr) {
-                // if ($current->$attr == $desiredFromDb->$attr && is_int($current->$attr)) { // TODO remove this if condition; tmp for flags column
-                //     continue;
-                // }
-
                 $changedAttributes[] = $attr;
             }
-        }
-        if ($current->name === 'json1') {
-            // VarDumper::dump($changedAttributes);
         }
         return $changedAttributes;
     }
@@ -220,5 +200,31 @@ SQL;
     public static function getColumnSchemaBuilderClass(): string
     {
         return \yii\db\ColumnSchemaBuilder::class;
+    }
+
+    public function modifyCurrent(ColumnSchema $current): void
+    {
+        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
+            $current->defaultValue = (int)$current->defaultValue;
+        }
+    }
+
+    public function modifyDesired(ColumnSchema $desired): void
+    {
+        if (in_array($desired->phpType, ['int', 'integer']) && $desired->defaultValue !== null) {
+            $desired->defaultValue = (int)$desired->defaultValue;
+        }
+        if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($desired->dbType)) {
+            $desired->precision = $decimalAttributes['precision'];
+            $desired->scale = $decimalAttributes['scale'];
+            $desired->size = $decimalAttributes['precision'];
+        }
+    }
+
+    public function modifyDesiredInContextOfCurrent(ColumnSchema $current, ColumnSchema $desired): void
+    {
+        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
+            $desired->size = $current->size;
+        }
     }
 }

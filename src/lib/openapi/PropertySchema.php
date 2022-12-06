@@ -447,7 +447,7 @@ class PropertySchema
             $mysqlSchema = new MySqlSchema;
 
             if (!array_key_exists($justRealDbType, $mysqlSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for MySQL. "'.$justRealDbType.'" is not a real data type in MySQL.');
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in MySQL or not implemented in Yii MySQL. See allowed data types list in `\yii\db\mysql\Schema::$typeMap`');
             }
 
             $yiiAbstractDataType = $mysqlSchema->typeMap[$justRealDbType];
@@ -455,13 +455,13 @@ class PropertySchema
             $mariadbSchema = new MariaDbSchema;
 
             if (!array_key_exists($justRealDbType, $mariadbSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for MariaDB. "'.$justRealDbType.'" is not a real data type in MariaDb.');
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in MariaDb or not implemented in Yii MariaDB. See allowed data types list in `\SamIT\Yii2\MariaDb\Schema::$typeMap`');
             }
             $yiiAbstractDataType = $mariadbSchema->typeMap[$justRealDbType];
         } elseif (ApiGenerator::isPostgres()) {
             $pgsqlSchema = new PgSqlSchema;
             if (!array_key_exists($justRealDbType, $pgsqlSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect for PostgreSQL. "'.$justRealDbType.'" is not a real data type in PostgreSQL.');
+                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
             }
             $yiiAbstractDataType = $pgsqlSchema->typeMap[$justRealDbType];
         } else {

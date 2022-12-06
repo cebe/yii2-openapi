@@ -21,6 +21,8 @@ class XDbTypeTest extends DbTestCase
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumn}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumn}}')->execute();
 
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+
         $testFile = Yii::getAlias("@specs/x_db_type/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
 

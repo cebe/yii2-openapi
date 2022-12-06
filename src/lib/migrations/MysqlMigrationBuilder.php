@@ -39,59 +39,23 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
         $changedAttributes = [];
-        if ($current->dbType === 'tinyint(1)' && $desired->type === 'boolean') {
-            if (is_bool($desired->defaultValue) || is_string($desired->defaultValue)) {
-                $desired->defaultValue = (int)$desired->defaultValue;
-            }
-            if ($current->defaultValue !== $desired->defaultValue) {
-                $changedAttributes[] = 'defaultValue';
-            }
-            if ($current->allowNull !== $desired->allowNull) {
-                $changedAttributes[] = 'allowNull';
-            }
-            return $changedAttributes;
-        }
-        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
-            $current->defaultValue = (int)$current->defaultValue;
-        }
-        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
-            $desired->defaultValue = (int)$desired->defaultValue;
-        }
-        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
-            $desired->size = $current->size;
-        }
-        
-        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
-            $desired->precision = $decimalAttributes['precision'];
-            $desired->scale = $decimalAttributes['scale'];
-            $desired->type = 'decimal';
-            $desired->size = $decimalAttributes['precision'];
-            foreach (['precision', 'scale', 'dbType'] as $decimalAttr) {
-                if ($current->$decimalAttr !== $desired->$decimalAttr) {
-                    $changedAttributes[] = $decimalAttr;
-                }
-            }
-        }
 
-        if ($current->name === 'col_6') {
-            // VarDumper::dump($current);
-        }
+        $this->modifyCurrent($current);
+        $this->modifyDesired($desired);
+        $this->modifyDesiredInContextOfCurrent($current, $desired);
+
         // TODO docs
         $desiredFromDb = $this->tmpSaveNewCol($desired);
-        if ($current->name === 'col_6') {
-            // VarDumper::dump($desired);
-            // VarDumper::dump($desiredFromDb);
-        }
+        $this->modifyDesired($desiredFromDb);
+        $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
                     , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
         ] as $attr) {
             if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
-        }
-        if ($current->name === 'col_6') {
-            // VarDumper::dump($changedAttributes);
         }
         return $changedAttributes;
     }
@@ -146,6 +110,39 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             return \yii\db\mysql\ColumnSchemaBuilder::class;
         } elseif (ApiGenerator::isMariaDb()) {
             return \SamIT\Yii2\MariaDb\ColumnSchemaBuilder::class;
+        }
+    }
+
+    public function modifyCurrent(ColumnSchema $current): void
+    {
+        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
+            $current->defaultValue = (int)$current->defaultValue;
+        }
+    }
+
+    public function modifyDesired(ColumnSchema $desired): void
+    {
+        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
+            $desired->defaultValue = (int)$desired->defaultValue;
+        }
+
+        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
+            $desired->precision = $decimalAttributes['precision'];
+            $desired->scale = $decimalAttributes['scale'];
+            $desired->size = $decimalAttributes['precision'];
+        }
+    }
+
+    public function modifyDesiredInContextOfCurrent(ColumnSchema $current, ColumnSchema $desired): void
+    {
+        if ($current->dbType === 'tinyint(1)' && $desired->type === 'boolean') {
+            if (is_bool($desired->defaultValue) || is_string($desired->defaultValue)) {
+                $desired->defaultValue = (int)$desired->defaultValue;
+            }
+        }
+
+        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
+            $desired->size = $current->size;
         }
     }
 }
