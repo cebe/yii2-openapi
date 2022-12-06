@@ -132,11 +132,12 @@ Example values of `x-db-type` are:
      - json
      - varchar
      - VARCHAR
+     - SMALLINT UNSIGNED ZEROFILL
+     - MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT 'comment'
 
 Such values are not allowed:
    - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
-   - decimal(12) TODO
-   - decimal TODO
+   - MEDIUMINT(10) UNSIGNED ZEROFILL NULL DEFAULT '7' COMMENT 'comment' AFTER `seti`, ADD INDEX `t` (`w`)
 
 ### `x-indexes`
 Specify table indexes

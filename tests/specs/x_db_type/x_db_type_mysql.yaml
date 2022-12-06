@@ -115,47 +115,107 @@ components:
         # set:
         #   type: string
         #   x-db-type: SET('a', 'b', 'c', 'd') # set is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
+        bit:
+          type: string
+          x-db-type: bit
+        bit_2:
+          type: string
+          x-db-type: bit(1)
+        bit_3:
+          type: string
+          x-db-type: bit(64)
 
+        ti:
+          type: string
+          x-db-type: tinyint
+        ti_2:
+          type: string
+          x-db-type: tinyint(1)
+        ti_3:
+          type: string
+          x-db-type: tinyint(2)
 
-    # Editcolumn:
-    #   type: object
-    #   description: Edit Column in existing table
-    #   required:
-    #     - id
-    #   properties:
-    #     id:
-    #       type: integer
-    #       format: int64
-    #     string_col:
-    #       type: string
-    #       x-db-type: string
-    #     varchar_col:
-    #       type: string
-    #       x-db-type: varchar
-    #     text_col:
-    #       type: string
-    #       x-db-type: text
-    #     varchar_4_col:
-    #       type: string
-    #       x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
-    #     char_4_col:
-    #       type: string
-    #       x-db-type: CHAR(4) # (4) has no effect, use maxLength instead
-    #     char_5_col:
-    #       type: string
-    #       x-db-type: CHAR
-    #     char_6_col:
-    #       type: string
-    #       x-db-type: char
-    #     # int_col:
-    #     #   type: integer
-    #     #   x-db-type: INT NULL DEFAULT NULL AFTER `Low_price`
-    #     decimal_col:
-    #       type: float
-    #       x-db-type: decimal(12,3)
-    #     # decimal_col_2:
-    #     #   type: float
-    #     #   x-db-type: decimal(12)
-    #     # decimal_col_3:
-    #     #   type: float
-    #     #   x-db-type: decimal
+        si_col:
+          type: string
+          x-db-type: smallint
+        si_col_2:
+          type: string
+          x-db-type: SMALLINT UNSIGNED ZEROFILL
+
+        mi:
+          type: string
+          x-db-type: MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT 'comment'
+          default: 7
+        bi:
+          type: string
+          x-db-type: bigint
+        int_col:
+          type: string
+          x-db-type: int
+        int_col_2:
+          type: string
+          x-db-type: integer
+
+        # dec:
+        #   type: string
+        #   x-db-type: dec # not supported
+
+        # fixed:
+        #   type: string
+        #   x-db-type: fixed # not supported
+
+        numeric:
+          type: string
+          x-db-type: numeric
+        float:
+          type: string
+          x-db-type: float
+        float_2:
+          type: string
+          x-db-type: float(10, 2)
+        float_3:
+          type: string
+          x-db-type: float(88)
+
+        double:
+          type: string
+          x-db-type: double
+        double_p:
+          type: string
+          x-db-type: double precision(10,2)
+        real:
+          type: string
+          x-db-type: real
+
+        date:
+          type: string
+          x-db-type: date
+        time:
+          type: string
+          x-db-type: time
+        datetime:
+          type: string
+          x-db-type: datetime
+        timestamp:
+          type: string
+          x-db-type: timestamp
+        year:
+          type: string
+          x-db-type: year
+
+        # geometry:
+        #   type: string
+        #   x-db-type: geometry
+        # below are not implemented in Yii
+        # GEOMETRY
+        # point
+        # LINESTRING
+        # POLYGON
+        # MULTIPOINT
+        # MULTILINESTRING
+        # MULTIPOLYGON
+        # GEOMETRYCOLLECTION
+
+        json:
+          type: string
+          x-db-type: json
