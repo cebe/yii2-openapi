@@ -219,3 +219,18 @@ components:
         json:
           type: string
           x-db-type: json
+
+        # literal default not supportted for blob, text, json and geometry
+        # below default will have no effect
+        blob_def:
+          type: string
+          x-db-type: blob
+          default: the blob
+        text_def:
+          type: string
+          x-db-type: text
+          default: the text
+        json_def:
+          type: string
+          x-db-type: json
+          default: "{'a':'b'}"

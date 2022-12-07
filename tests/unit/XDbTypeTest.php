@@ -23,8 +23,9 @@ class XDbTypeTest extends DbTestCase
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
 
-        $testFile = Yii::getAlias("@specs/x_db_type/x_db_type_mysql.php");
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
+        $this->compareFiles($testFile);
 
         // $this->changeDbToMariadb();
         // $testFile = Yii::getAlias("@specs/x_db_type/maria/petstore_x_db_type.php");
@@ -61,17 +62,20 @@ class XDbTypeTest extends DbTestCase
         $this->runGenerator($testFile, 'mysql');
     }
 
-    // private function generateFiles(string $testFile): void
-    // {
-    //     $this->prepareTempDir();
-    //     $this->mockApplication();
+    protected function compareFiles(string $testFile)
+    {
+        $actual = FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]);
+        $expected = FileHelper::findFiles(dirname($testFile).'/app', ['recursive' => true]);
+        self::assertEquals(
+            count($actual),
+            count($expected)
+        );
+        foreach ($actual as $index => $file) {
+            $expectedFilePath = $expected[$index];
+            self::assertFileExists($file);
+            self::assertFileExists($expectedFilePath);
 
-    //     $generator = $this->createGenerator($testFile);
-    //     $this->assertTrue($generator->validate(), print_r($generator->getErrors(), true));
-
-    //     $codeFiles = $generator->generate();
-    //     foreach ($codeFiles as $file) {
-    //         $file->save();
-    //     }
-    // }
+            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
+        }
+    }
 }
