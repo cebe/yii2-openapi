@@ -217,7 +217,6 @@ SQL;
         if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($desired->dbType)) {
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
-            $desired->size = $decimalAttributes['precision'];
         }
     }
 

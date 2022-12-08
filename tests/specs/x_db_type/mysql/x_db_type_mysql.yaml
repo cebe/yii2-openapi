@@ -144,7 +144,7 @@ components:
 
         mi:
           type: string
-          x-db-type: MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT 'comment'
+          x-db-type: MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT "comment" # note the double quotes here
           default: 7
         bi:
           type: string
@@ -233,4 +233,68 @@ components:
         json_def:
           type: string
           x-db-type: json
-          default: "{'a':'b'}"
+          default: '{"a":"b"}'
+
+
+    Newcolumn:
+      type: object
+      description: New Fresh table with new columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: string
+          nullable: false
+        first_name:
+          type: string
+          x-db-type: string
+        last_name:
+          type: string
+        dec:
+          type: string
+          x-db-type: decimal(12,4)
+        json:
+          type: string
+          x-db-type: json
+        varchar:
+          type: string
+          x-db-type: varchar
+
+    Editcolumn:
+      type: object
+      description: Table with edit columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar
+          maxLength: 254
+          nullable: false
+          default: Horse-2
+        tag:
+          type: string
+        first_name:
+          type: string
+          x-db-type: string
+        string_col:
+          type: string # text in DB
+          nullable: true
+        dec_col:
+          type: string
+          x-db-type: decimal(12,2)
+          default: 3.14
+        str_col_def:
+          type: string
+          x-db-type: string
+          nullable: false
+        json_col:
+          type: string
+          x-db-type: text

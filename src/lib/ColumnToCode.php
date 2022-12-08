@@ -326,9 +326,13 @@ class ColumnToCode
             return false;
         }
         if ($this->fromDb === true) {
-            return isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
+            return isset(
+                (new ColumnSchemaBuilder(''))->categoryMap[$type]
+            );
         } else {
-            return  isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
+            return  isset(
+                (new ColumnSchemaBuilder(''))->categoryMap[$dbType]
+            );
         }
     }
 

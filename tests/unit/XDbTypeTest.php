@@ -18,8 +18,8 @@ class XDbTypeTest extends DbTestCase
     public function testXDbTypeFresh()
     {
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumn}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumn}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
 
@@ -38,28 +38,45 @@ class XDbTypeTest extends DbTestCase
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
     {
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%animals}}')->execute();
-        Yii::$app->db->createCommand()->createTable('{{%animals}}', [
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
+
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+
+        Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
             'id' => 'pk',
-            'name' => 'text not null',
-            'tag' => 'text null',
+            'name' => 'string not null',
         ])->execute();
 
-        $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v2.php");
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
+        // TODO compare changes
+        // Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
     }
 
     public function testXDbTypeSecondaryWithEditColumn() // v3
     {
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%animals}}')->execute();
-        Yii::$app->db->createCommand()->createTable('{{%animals}}', [
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
+
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+
+        Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
             'id' => 'pk',
             'name' => 'varchar(255) not null default "Horse"',
             'tag' => 'text null',
+            'string_col' => 'string not null',
+            'dec_col' => 'decimal(12, 4)',
+            'str_col_def' => 'string default "hi there"',
+            'json_col' => 'json',
         ])->execute();
 
-        $testFile = Yii::getAlias("@specs/x_db_type/petstore_x_db_type_v3.php");
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
+        // TODO compare changes
+        // Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
     }
 
     protected function compareFiles(string $testFile)

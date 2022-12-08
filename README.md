@@ -133,7 +133,7 @@ Example values of `x-db-type` are:
      - varchar
      - VARCHAR
      - SMALLINT UNSIGNED ZEROFILL
-     - MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT 'comment'
+     - MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT "comment" (note the double quotes here)
 
 Such values are not allowed:
    - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
