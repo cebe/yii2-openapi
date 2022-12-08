@@ -29,7 +29,7 @@ components:
           x-db-type: text
         tag:
           type: string
-          # default: 4 leg
+          default: 4 leg
         new_col:
           type: string
           x-db-type: string

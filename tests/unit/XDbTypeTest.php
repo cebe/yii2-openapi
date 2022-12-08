@@ -25,11 +25,11 @@ class XDbTypeTest extends DbTestCase
 
         $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
-        // $this->compareFiles($testFile);
+        // $this->compareFiles($testFile); # TODO
 
-        // $this->changeDbToMariadb();
-        // $testFile = Yii::getAlias("@specs/x_db_type/maria/petstore_x_db_type.php");
-        // $this->runGenerator($testFile, 'maria');
+        $this->changeDbToMariadb();
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
+        $this->runGenerator($testFile, 'maria');
 
         // $this->changeDbToPgsql();
         // $testFile = Yii::getAlias("@specs/x_db_type/pgsql/petstore_x_db_type.php");
