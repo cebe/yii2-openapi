@@ -105,7 +105,6 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
-        // TODO decimal precision ? See adjacent MysqlMigrationBuilder
         $changedAttributes = [];
 
         $this->modifyCurrent($current);

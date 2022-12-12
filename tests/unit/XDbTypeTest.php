@@ -27,13 +27,16 @@ class XDbTypeTest extends DbTestCase
         $this->runGenerator($testFile, 'mysql');
         // $this->compareFiles($testFile); # TODO
 
+        // same yaml file is used for MySQL and MariaDB
         $this->changeDbToMariadb();
         $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'maria');
+        // $this->compareFiles($testFile); # TODO
 
-        // $this->changeDbToPgsql();
-        // $testFile = Yii::getAlias("@specs/x_db_type/pgsql/petstore_x_db_type.php");
-        // $this->runGenerator($testFile, 'pgsql');
+        $this->changeDbToPgsql();
+        $testFile = Yii::getAlias("@specs/x_db_type/pgsql/x_db_type_pgsql.php");
+        $this->runGenerator($testFile, 'pgsql');
+        // $this->compareFiles($testFile); # TODO
     }
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
@@ -95,4 +98,31 @@ class XDbTypeTest extends DbTestCase
             $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
         }
     }
+
+    // public function testTestDataTypeWithSpace() # TODO remove
+    // {
+    //     $types = [
+    //         'double precision(10,2)',
+    //         'double',
+    //         'text',
+    //         'text[]',
+    //         'decimal(12,2)',
+    //         'decimal',
+    //         'pg_lsn',
+    //         'pg_snapshot',
+    //         'integer primary key',
+    //         'time with time zone',
+    //         'time(3) with time zone',
+    //         'smallint unsigned zerofill',
+    //         'mediumint(10) unsigned zerofill comment "comment"',
+    //     ];
+
+    //     foreach ($types as $type) {
+    //         preg_match('/\w+\ \w+/', $type, $matches);
+    //         echo PHP_EOL; echo PHP_EOL;
+    //         VarDumper::dump($type); echo PHP_EOL;
+    //         VarDumper::dump($matches); echo PHP_EOL;
+    //         VarDumper::dump('-------------------'); echo PHP_EOL;
+    //     }
+    // }
 }

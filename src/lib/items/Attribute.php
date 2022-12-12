@@ -308,7 +308,7 @@ class Attribute extends BaseObject
     private function yiiAbstractTypeForDbSpecificType(string $dbType): string
     {
         if (is_string($this->xDbType) && !empty($this->xDbType) && trim($this->xDbType)) {
-            list(, $yiiAbstractDataType, , ) = PropertySchema::f798($this->xDbType);
+            list(, $yiiAbstractDataType, ) = PropertySchema::f798($this->xDbType);
             return $yiiAbstractDataType;
         } else {
             if (stripos($dbType, 'int') === 0) {
@@ -359,39 +359,46 @@ class Attribute extends BaseObject
      *         - VARCHAR
      *
      */
-    public static function isXDbTypeWithMoreInfo(string $xDbType): array
-    {
-        $justRealDbType = $xDbType;
-        $isXDbTypeWithMoreInfo = false;
+    // public static function isXDbTypeWithMoreInfo(string $xDbType): array
+    // {
+    //     $justRealDbType = $xDbType;
+    //     $isXDbTypeWithMoreInfo = false;
 
-        // 'text' => match `text`
-        // 'text[]' => match `text`
-        // 'INTEGER PRIMARY KEY AUTO_INCREMENT' => match `INTEGER`
-        // 'decimal(12,4)' => match `decimal`
-        // 'decimal(12)' => match `decimal`
-        preg_match('/(\w+)/', $xDbType, $matches);
+    //     // 'text' => match `text`
+    //     // 'text[]' => match `text`
+    //     // 'INTEGER PRIMARY KEY AUTO_INCREMENT' => match `INTEGER`
+    //     // 'decimal(12,4)' => match `decimal`
+    //     // 'decimal(12)' => match `decimal`
+    //     // 'double precision(12)' => match `double precision`
 
-        if (isset($matches[0])) {
-            $justRealDbType = $matches[0];
-            $justRealDbType = strtolower($justRealDbType);
-        }
+    //     // 'INTEGER PRIMARY KEY AUTO_INCREMENT' => match `INTEGER PRIMARY` in such we should remove 'PRIMARY'
+    //     preg_match('/([a-z_]+)([\ ]*)(\w*)([\ ]*)(\w*)([\ ]*)(\w*)/', $xDbType, $matches);
+    //     if ($xDbType === 'integer primary key auto_increment') {
+    //         VarDumper::dump($matches); die;
+    //     }
+    //     // above regex in english: a compulsory word + a optional space + a optional word
 
-        // $isXDbTypeWithMoreInfo = true for following:
-        // - text[]
-        // - INTEGER PRIMARY KEY AUTO_INCREMENT
-        // - decimal(12,4)
-        // - decimal(12)
+    //     if (isset($matches[0])) {
+    //         $justRealDbType = $matches[0];
+    //         $justRealDbType = strtolower($justRealDbType);
+    //     }
 
-        // $isXDbTypeWithMoreInfo = false for following:
-        // json
-        // text
-        // VARCHAR
-        if (strlen($justRealDbType) < strlen($xDbType)) {
-            $isXDbTypeWithMoreInfo = true;
-        }
+    //     // $isXDbTypeWithMoreInfo = true for following:
+    //     // - text[]
+    //     // - INTEGER PRIMARY KEY AUTO_INCREMENT
+    //     // - decimal(12,4)
+    //     // - decimal(12)
 
-        return [$isXDbTypeWithMoreInfo, $justRealDbType];
-    }
+    //     // $isXDbTypeWithMoreInfo = false for following:
+    //     // json
+    //     // text
+    //     // VARCHAR
+    //     if (strlen($justRealDbType) < strlen($xDbType)) {
+    //         $isXDbTypeWithMoreInfo = true;
+    //     }
+
+    //     return [$isXDbTypeWithMoreInfo, $justRealDbType];
+    // }
 
     public function handleDecimal(ColumnSchema $columnSchema): void
     {
@@ -401,4 +408,28 @@ class Attribute extends BaseObject
             $columnSchema->dbType = $decimalAttributes['dbType'];
         }
     }
+
+    // public static function dataTypesWithMoreThanOneWord(): array
+    // {
+    //     return [
+    //         // SQL Standard
+    //         'double precision',
+
+    //         // PgSQL
+    //         'bit varying',
+    //         'character varying',
+    //         'time with time zone',
+    //         'time without time zone',
+    //         'timestamp with time zone',
+    //         'timestamp without time zone',
+    //     ];
+    // }
+
+    // public static function secondWordOfdataType(): array
+    // {
+    //     return array_map(function($dataType) {
+    //         $words = explode(' ', $dataType);
+    //         return $words[1];
+    //     }, static::dataTypesWithMoreThanOneWord());
+    // }
 }

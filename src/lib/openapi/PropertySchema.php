@@ -324,7 +324,7 @@ class PropertySchema
         }
 
         if ($customDbType) {
-            list(, , $phpType, ) = static::f798($customDbType);
+            list(, , $phpType) = static::f798($customDbType);
             return $phpType;
         }
 
@@ -441,29 +441,74 @@ class PropertySchema
 
     public static function f798(string $xDbType) // TODO rename
     {
-        list($haveMoreInfo, $justRealDbType) = Attribute::isXDbTypeWithMoreInfo($xDbType);
+        // We can have various values in `x-db-type`. Few examples are:
+        // double precision(10,2)
+        // double
+        // text
+        // text[]
+        // decimal(12,2)
+        // decimal
+        // pg_lsn
+        // pg_snapshot
+        // integer primary key
+        // time with time zone
+        // time(3) with time zone
+        // smallint unsigned zerofill
+        // mediumint(10) unsigned zerofill comment "comment"
+
+        // We only consider first word of DB type that has more than one word e.g. :
+        // SQL Standard
+        // 'double precision',
+
+        // // PgSQL
+        // 'bit varying',
+        // 'character varying',
+        // 'time with time zone',
+        // 'time(3) with time zone',
+        // 'time without time zone',
+        // 'timestamp with time zone',
+        // 'timestamp(6) with time zone',
+        // 'timestamp without time zone',
+
+        // Because abstract data type (e.g. yii\db\pgsql\Schema::$typeMap) is same for:
+        // `double` and `double precision`
+        // `time` and `time with time zone`
+        // `time` and `time without time zone`
+        // `timestamp` and `timestamp without time zone` etc
+
+
+        preg_match('/\w+/', $xDbType, $matches);
+        if (!isset($matches[0])) {
+            throw new \yii\base\InvalidConfigException('Abnormal x-db-type: "'.$xDbType.'" detected');
+        }
+        $firstWordOfRealJustDbType = strtolower($matches[0]);
 
         if (ApiGenerator::isMysql()) {
             $mysqlSchema = new MySqlSchema;
 
-            if (!array_key_exists($justRealDbType, $mysqlSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in MySQL or not implemented in Yii MySQL. See allowed data types list in `\yii\db\mysql\Schema::$typeMap`');
+            if (!array_key_exists($firstWordOfRealJustDbType, $mysqlSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in MySQL or not implemented in Yii MySQL. See allowed data types list in `\yii\db\mysql\Schema::$typeMap`');
             }
 
-            $yiiAbstractDataType = $mysqlSchema->typeMap[$justRealDbType];
+            $yiiAbstractDataType = $mysqlSchema->typeMap[$firstWordOfRealJustDbType];
         } elseif (ApiGenerator::isMariaDb()) {
             $mariadbSchema = new MariaDbSchema;
 
-            if (!array_key_exists($justRealDbType, $mariadbSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in MariaDb or not implemented in Yii MariaDB. See allowed data types list in `\SamIT\Yii2\MariaDb\Schema::$typeMap`');
+            if (!array_key_exists($firstWordOfRealJustDbType, $mariadbSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in MariaDb or not implemented in Yii MariaDB. See allowed data types list in `\SamIT\Yii2\MariaDb\Schema::$typeMap`');
             }
-            $yiiAbstractDataType = $mariadbSchema->typeMap[$justRealDbType];
+            $yiiAbstractDataType = $mariadbSchema->typeMap[$firstWordOfRealJustDbType];
         } elseif (ApiGenerator::isPostgres()) {
             $pgsqlSchema = new PgSqlSchema;
-            if (!array_key_exists($justRealDbType, $pgsqlSchema->typeMap)) {
-                throw new InvalidDefinitionException('"x-db-type: '.$justRealDbType.'" is incorrect. "'.$justRealDbType.'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
+            if (!array_key_exists($firstWordOfRealJustDbType, $pgsqlSchema->typeMap)) {
+                preg_match('/\w+\ \w+/', $xDbType, $doublePrecisionDataType);
+                if (!isset($doublePrecisionDataType[0])) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
+                }
+                $yiiAbstractDataType = $pgsqlSchema->typeMap[$doublePrecisionDataType[0]];
+            } else {
+                $yiiAbstractDataType = $pgsqlSchema->typeMap[$firstWordOfRealJustDbType];
             }
-            $yiiAbstractDataType = $pgsqlSchema->typeMap[$justRealDbType];
         } else {
             throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
         }
@@ -474,15 +519,15 @@ class PropertySchema
         }
 
         return [
-            // real db type $justRealDbType
+            // real db type $firstWordOfRealJustDbType
             // $yiiAbstractDataType
             // $phpType
 
             // TODO refactor
-            $justRealDbType,
+            $firstWordOfRealJustDbType,
             $yiiAbstractDataType,
             $phpType,
-            $haveMoreInfo,
+            // $haveMoreInfo,
         ];
     }
 
