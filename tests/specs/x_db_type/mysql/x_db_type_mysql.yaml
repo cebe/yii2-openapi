@@ -32,7 +32,7 @@ components:
           default: 4 leg
         new_col:
           type: string
-          x-db-type: string
+          x-db-type: varchar
         col_5:
           type: string
           x-db-type: decimal(12,4)
@@ -68,7 +68,7 @@ components:
           format: int64
         string_col:
           type: string
-          x-db-type: string
+          x-db-type: varchar
         varchar_col:
           type: string
           x-db-type: varchar
@@ -250,11 +250,11 @@ components:
           type: integer
         name:
           type: string
-          x-db-type: string
+          x-db-type: varchar
           nullable: false
-        first_name:
-          type: string
-          x-db-type: string
+        # first_name:
+        #   type: string
+        #   x-db-type: string # TODO this should lead to error as string is not real DB type in MySQL but (bug in Yii?) it is present in \yii\db\mysql\Schema
         last_name:
           type: string
         dec:
@@ -286,7 +286,7 @@ components:
           type: string
         first_name:
           type: string
-          x-db-type: string
+          x-db-type: varchar
         string_col:
           type: string # text in DB
           nullable: true
@@ -296,7 +296,7 @@ components:
           default: 3.14
         str_col_def:
           type: string
-          x-db-type: string
+          x-db-type: varchar
           nullable: false
         json_col:
           type: string

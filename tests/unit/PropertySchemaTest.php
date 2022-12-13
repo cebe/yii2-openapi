@@ -21,7 +21,7 @@ class PropertySchemaTest extends DbTestCase
         self::assertEquals('uid', $prop->getName());
         self::assertEquals(null, $prop->guessDefault());
         self::assertEquals('string', $prop->guessPhpType());
-        self::assertEquals('string', $prop->guessDbType());
+        self::assertEquals('varchar', $prop->guessDbType());
         self::assertEquals([null, null], $prop->guessMinMax());
         self::assertEquals(128, $prop->getMaxLength());
         self::assertEquals(null, $prop->getMinLength());

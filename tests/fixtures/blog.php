@@ -56,7 +56,7 @@ return [
         'tableName' => 'blog_posts',
         'description' => 'A blog post (uid used as pk for test purposes)',
         'attributes' => [
-            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string', 'xDbType' => 'varchar']))
+            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'varchar', 'xDbType' => 'varchar']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setSize(128)
                 ->setFakerStub('substr($uniqueFaker->sha256, 0, 128)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
