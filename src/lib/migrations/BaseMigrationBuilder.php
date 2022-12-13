@@ -434,6 +434,7 @@ abstract class BaseMigrationBuilder
 
         Yii::$app->db->createCommand()->createTable($tableName, [
             $columnSchema->name => $this->newColStr($columnSchema), // TODO
+            // $columnSchema->name.' '.$this->newColStr($columnSchema), // TODO for xDbType
         ])->execute();
 
 

@@ -23,7 +23,7 @@ components:
         custom_id_col:
           type: integer
           format: int64
-          x-db-type: INTEGER PRIMARY KEY AUTO_INCREMENT
+          x-db-type: SERIAL PRIMARY KEY
         name:
           type: integer
           x-db-type: text
@@ -104,12 +104,12 @@ components:
         #   type: string
         #   x-db-type: binary # binary is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
 
-        bytea_col:
-          type: string
-          x-db-type: bytea
-          # nullable: false
-          maxLength: 5 # length is required in bytea and binary
-        bytea:
+        # bytea_col:
+        #   type: string
+        #   x-db-type: bytea
+        #   # nullable: false
+        #   maxLength: 5 # length is required in bytea and binary
+        bytea_col_2:
           type: string
           x-db-type: bytea
         # set:
@@ -128,19 +128,13 @@ components:
         ti:
           type: string
           x-db-type: smallint
-        ti_2:
-          type: string
-          x-db-type: smallint(1)
-        ti_3:
-          type: string
-          x-db-type: smallint(2)
 
         si_col:
           type: string
           x-db-type: smallint
         si_col_2:
           type: string
-          x-db-type: SMALLINT UNSIGNED ZEROFILL
+          x-db-type: SMALLINT # UNSIGNED ZEROFILL
 
         bi:
           type: string
@@ -164,12 +158,10 @@ components:
           type: string
           x-db-type: numeric
 
-        double_p:
-          type: string
-          x-db-type: double precision(10,2)
         double_p_2:
           type: string
-          x-db-type: double precision
+          x-db-type: DOUBLE PRECISION
+
         real:
           type: string
           x-db-type: real
@@ -186,11 +178,29 @@ components:
         timestamp:
           type: string
           x-db-type: timestamp
-        # year:
-        #   type: string
-        #   x-db-type: year
 
-        # geometry: TODO
+        bit_varying:
+          type: string
+          x-db-type: bit varying
+        bit_varying_n:
+          type: string
+          x-db-type: bit varying(8)
+
+        character:
+          type: string
+          x-db-type: character
+        character_n:
+          type: string
+          x-db-type: character(12)
+        character_varying:
+          type: string
+          x-db-type: character varying
+        character_varying_n:
+          type: string
+          x-db-type: character varying(12)
+
+
+        # geometry:
         #   type: string
         #   x-db-type: geometry
         # below are not implemented in Yii

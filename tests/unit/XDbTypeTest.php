@@ -17,23 +17,21 @@ class XDbTypeTest extends DbTestCase
 {
     public function testXDbTypeFresh()
     {
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
-
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
-
+        // default db is Mysql
+        $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
         // $this->compareFiles($testFile); # TODO
 
         // same yaml file is used for MySQL and MariaDB
         $this->changeDbToMariadb();
+        $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'maria');
         // $this->compareFiles($testFile); # TODO
 
         $this->changeDbToPgsql();
+        $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/pgsql/x_db_type_pgsql.php");
         $this->runGenerator($testFile, 'pgsql');
         // $this->compareFiles($testFile); # TODO
@@ -125,4 +123,12 @@ class XDbTypeTest extends DbTestCase
     //         VarDumper::dump('-------------------'); echo PHP_EOL;
     //     }
     // }
+
+    private function deleteTables()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+    }
 }

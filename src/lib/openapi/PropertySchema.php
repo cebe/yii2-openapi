@@ -505,6 +505,10 @@ class PropertySchema
                 if (!isset($doublePrecisionDataType[0])) {
                     throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
                 }
+                $doublePrecisionDataType[0] = strtolower($doublePrecisionDataType[0]);
+                if (!array_key_exists($doublePrecisionDataType[0], $pgsqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$doublePrecisionDataType[0].'" is incorrect. "'.$doublePrecisionDataType[0].'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
+                }
                 $yiiAbstractDataType = $pgsqlSchema->typeMap[$doublePrecisionDataType[0]];
             } else {
                 $yiiAbstractDataType = $pgsqlSchema->typeMap[$firstWordOfRealJustDbType];
