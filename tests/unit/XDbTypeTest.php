@@ -18,16 +18,16 @@ class XDbTypeTest extends DbTestCase
     public function testXDbTypeFresh()
     {
         // default db is Mysql
-        $this->deleteTables();
-        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
-        $this->runGenerator($testFile, 'mysql');
-        // $this->compareFiles($testFile); # TODO
+        // $this->deleteTables();
+        // $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
+        // $this->runGenerator($testFile, 'mysql');
+        // // $this->compareFiles($testFile); # TODO
 
-        // same yaml file is used for MySQL and MariaDB
-        $this->changeDbToMariadb();
-        $this->deleteTables();
-        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
-        $this->runGenerator($testFile, 'maria');
+        // // same yaml file is used for MySQL and MariaDB
+        // $this->changeDbToMariadb();
+        // $this->deleteTables();
+        // $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
+        // $this->runGenerator($testFile, 'maria');
         // $this->compareFiles($testFile); # TODO
 
         $this->changeDbToPgsql();
@@ -39,12 +39,7 @@ class XDbTypeTest extends DbTestCase
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
     {
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
-
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
-
+        $this->deleteTables();
         Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
             'id' => 'pk',
             'name' => 'string not null',
@@ -58,12 +53,7 @@ class XDbTypeTest extends DbTestCase
 
     public function testXDbTypeSecondaryWithEditColumn() // v3
     {
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
-
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
-
+        $this->deleteTables();
         Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
             'id' => 'pk',
             'name' => 'varchar(255) not null default "Horse"',

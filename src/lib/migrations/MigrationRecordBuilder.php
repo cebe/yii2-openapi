@@ -55,6 +55,11 @@ final class MigrationRecordBuilder
         $codeColumns = array_map(function (ColumnSchema $column) {
             return $this->columnToCode($column, false)->getCode();
         }, $columns);
+
+        // VarDumper::dump('$codeColumns');
+        // VarDumper::dump($codeColumns);
+        // VarDumper::dump($columns);
+
         $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT, "'"], VarDumper::export($codeColumns));
         return sprintf(self::ADD_TABLE, $tableAlias, $codeColumns);
     }

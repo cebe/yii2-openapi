@@ -161,6 +161,9 @@ components:
         double_p_2:
           type: string
           x-db-type: DOUBLE PRECISION
+        double_p_3:
+          type: string
+          x-db-type: double precision
 
         real:
           type: string

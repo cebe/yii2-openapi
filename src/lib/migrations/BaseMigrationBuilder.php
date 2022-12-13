@@ -420,7 +420,7 @@ abstract class BaseMigrationBuilder
         return !(in_array($fromType, $dates) && in_array($toType, $dates));
     }
 
-    public function tmpSaveNewCol(ColumnSchema $columnSchema)//: ColumnSchema TODO
+    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema)//: ColumnSchema TODO
     {
         $tableName = 'tmp_table_';
 
@@ -431,6 +431,10 @@ abstract class BaseMigrationBuilder
             // VarDumper::dump($this->newColStr($columnSchema));
             // die;
         }
+
+        // echo PHP_EOL;
+        // VarDumper::dump($columnSchema->xDbType);echo PHP_EOL;
+
 
         Yii::$app->db->createCommand()->createTable($tableName, [
             $columnSchema->name => $this->newColStr($columnSchema), // TODO
@@ -445,7 +449,7 @@ abstract class BaseMigrationBuilder
         return $table->columns[$columnSchema->name];
     }
 
-    public function newColStr(ColumnSchema $columnSchema): string
+    public function newColStr(\cebe\yii2openapi\db\ColumnSchema $columnSchema): string
     {
         $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
         // VarDumper::dump($ctc->getCode()); die;

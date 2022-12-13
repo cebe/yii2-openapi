@@ -356,9 +356,9 @@ class PropertySchema
         }
         if ($this->hasAttr(CustomSpecAttr::DB_TYPE) && $this->getAttr(CustomSpecAttr::DB_TYPE) !== false) {
             $customDbType = strtolower($this->getAttr(CustomSpecAttr::DB_TYPE));
-            if ($customDbType === 'varchar') {
-                return YiiDbSchema::TYPE_STRING;
-            }
+            // if ($customDbType === 'varchar') {
+            //     return YiiDbSchema::TYPE_STRING;
+            // }
             if ($customDbType !== null) {
                 return $customDbType;
             }

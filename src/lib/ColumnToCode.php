@@ -110,6 +110,7 @@ class ColumnToCode
 
     public function getCode(bool $quoted = false):string
     {
+        // echo PHP_EOL;VarDumper::dump($this->column->xDbType);echo PHP_EOL;
         if ($this->isPk) {
             return '$this->' . $this->fluentParts['type'];
         }
