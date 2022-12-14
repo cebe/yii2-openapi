@@ -435,12 +435,13 @@ abstract class BaseMigrationBuilder
         // echo PHP_EOL;
         // VarDumper::dump($columnSchema->xDbType);echo PHP_EOL;
 
+        if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
+            $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
+        } else {
+            $column = [$columnSchema->name => $this->newColStr($columnSchema)];
+        }
 
-        Yii::$app->db->createCommand()->createTable($tableName, [
-            $columnSchema->name => $this->newColStr($columnSchema), // TODO
-            // $columnSchema->name.' '.$this->newColStr($columnSchema), // TODO for xDbType
-        ])->execute();
-
+        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
 
         $table = Yii::$app->db->getTableSchema($tableName);
 

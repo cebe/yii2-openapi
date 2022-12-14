@@ -32,7 +32,7 @@ components:
           default: 4 leg
         new_col:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(17)
         col_5:
           type: string
           x-db-type: decimal(12,4)
@@ -47,10 +47,10 @@ components:
           x-db-type: json
         col_9:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(9)
         col_10:
           type: string
-          x-db-type: VARCHAR
+          x-db-type: VARCHAR(10)
         col_11:
           type: string
           x-db-type: TEXT
@@ -68,10 +68,10 @@ components:
           format: int64
         string_col:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(255)
         varchar_col:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(132)
         text_col:
           type: string
           x-db-type: text
@@ -109,13 +109,13 @@ components:
           x-db-type: varbinary
           # nullable: false
           maxLength: 5 # length is required in varbinary and binary
-        blob:
+        blob_col:
           type: string
           x-db-type: blob
         # set:
         #   type: string
         #   x-db-type: SET('a', 'b', 'c', 'd') # set is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
-        bit:
+        bit_col:
           type: string
           x-db-type: bit
         bit_2:
@@ -164,10 +164,10 @@ components:
         #   type: string
         #   x-db-type: fixed # not supported
 
-        numeric:
+        numeric_col:
           type: string
           x-db-type: numeric
-        float:
+        float_col:
           type: string
           x-db-type: float
         float_2:
@@ -175,9 +175,9 @@ components:
           x-db-type: float(10, 2)
         float_3:
           type: string
-          x-db-type: float(88)
+          x-db-type: float(8)
 
-        double:
+        double_col:
           type: string
           x-db-type: double
         double_p:
@@ -186,23 +186,23 @@ components:
         double_p_2:
           type: string
           x-db-type: double precision
-        real:
+        real_col:
           type: string
           x-db-type: real
 
-        date:
+        date_col:
           type: string
           x-db-type: date
-        time:
+        time_col:
           type: string
           x-db-type: time
-        datetime:
+        datetime_col:
           type: string
           x-db-type: datetime
-        timestamp:
+        timestamp_col:
           type: string
           x-db-type: timestamp
-        year:
+        year_col:
           type: string
           x-db-type: year
 
@@ -219,7 +219,7 @@ components:
         # MULTIPOLYGON
         # GEOMETRYCOLLECTION
 
-        json:
+        json_col:
           type: string
           x-db-type: json
 
@@ -250,22 +250,22 @@ components:
           type: integer
         name:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(255)
           nullable: false
         # first_name:
         #   type: string
         #   x-db-type: string # TODO this should lead to error as string is not real DB type in MySQL but (bug in Yii?) it is present in \yii\db\mysql\Schema
         last_name:
           type: string
-        dec:
+        dec_col:
           type: string
           x-db-type: decimal(12,4)
-        json:
+        json_col:
           type: string
           x-db-type: json
-        varchar:
+        varchar_col:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(5)
 
     Editcolumn:
       type: object
@@ -278,7 +278,7 @@ components:
           type: integer
         name:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(255)
           maxLength: 254
           nullable: false
           default: Horse-2
@@ -286,7 +286,7 @@ components:
           type: string
         first_name:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(255)
         string_col:
           type: string # text in DB
           nullable: true
@@ -296,7 +296,7 @@ components:
           default: 3.14
         str_col_def:
           type: string
-          x-db-type: varchar
+          x-db-type: varchar(3)
           nullable: false
         json_col:
           type: string

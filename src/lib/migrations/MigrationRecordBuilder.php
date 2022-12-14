@@ -52,9 +52,17 @@ final class MigrationRecordBuilder
      */
     public function createTable(string $tableAlias, array $columns):string
     {
-        $codeColumns = array_map(function (ColumnSchema $column) {
-            return $this->columnToCode($column, false)->getCode();
-        }, $columns);
+        $codeColumns = [];
+        // $codeColumns = array_map(function (ColumnSchema $column) {
+        //     return $this->columnToCode($column, false)->getCode();
+        // }, $columns);
+        foreach ($columns as $columnName => $cebeDbColumnSchema) {
+            if (is_string($cebeDbColumnSchema->xDbType) && !empty($cebeDbColumnSchema->xDbType)) {
+                $codeColumns[] = $columnName.' '.$this->columnToCode($cebeDbColumnSchema, false)->getCode();
+            } else {
+                $codeColumns[$columnName] = $this->columnToCode($cebeDbColumnSchema, false)->getCode();
+            }
+        }
 
         // VarDumper::dump('$codeColumns');
         // VarDumper::dump($codeColumns);
@@ -213,4 +221,20 @@ final class MigrationRecordBuilder
     {
         return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter]);
     }
+
+    // public static function bnm789() // TODO rename
+    // {
+    //     $cols = [
+    //         'id' => '$this->primaryKey()',
+    //         'name' => '$this->string(254)->notNull()->defaultValue(\"Horse-2\")',
+    //         'tag' => '$this->text()->null()->defaultValue(null)',
+    //         'first_name' => '$this->string()->null()->defaultValue(null)',
+    //         'string_col' => '$this->text()->null()->defaultValue(null)',
+    //         'dec_col' => 'decimal(12,2) NULL DEFAULT 3.14',
+    //         'str_col_def' => '$this->string()->notNull()',
+    //         'json_col' => '$this->text()->null()->defaultValue(null)',
+    //     ];
+
+
+    // }
 }

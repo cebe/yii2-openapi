@@ -115,7 +115,7 @@ components:
         # set:
         #   type: string
         #   x-db-type: SET('a', 'b', 'c', 'd') # set is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
-        bit:
+        bit_col:
           type: string
           x-db-type: bit
         bit_2:
@@ -154,7 +154,7 @@ components:
         #   type: string
         #   x-db-type: fixed # not supported
 
-        numeric:
+        numeric_col:
           type: string
           x-db-type: numeric
 
@@ -165,20 +165,20 @@ components:
           type: string
           x-db-type: double precision
 
-        real:
+        real_col:
           type: string
           x-db-type: real
 
-        date:
+        date_col:
           type: string
           x-db-type: date
-        time:
+        time_col:
           type: string
           x-db-type: time
         date2:
           type: string
           x-db-type: date
-        timestamp:
+        timestamp_col:
           type: string
           x-db-type: timestamp
 
@@ -189,7 +189,7 @@ components:
           type: string
           x-db-type: bit varying(8)
 
-        character:
+        character_col:
           type: string
           x-db-type: character
         character_n:
@@ -216,10 +216,10 @@ components:
         # MULTIPOLYGON
         # GEOMETRYCOLLECTION
 
-        json:
+        json_col:
           type: string
           x-db-type: json
-        jsonb:
+        jsonb_col:
           type: string
           x-db-type: jsonb
 
@@ -255,13 +255,13 @@ components:
           x-db-type: varchar
         last_name:
           type: string
-        dec:
+        dec_col:
           type: string
           x-db-type: decimal(12,4)
-        json:
+        json_col:
           type: string
           x-db-type: json
-        varchar:
+        varchar_col:
           type: string
           x-db-type: varchar
 

@@ -18,16 +18,16 @@ class XDbTypeTest extends DbTestCase
     public function testXDbTypeFresh()
     {
         // default db is Mysql
-        // $this->deleteTables();
-        // $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
-        // $this->runGenerator($testFile, 'mysql');
-        // // $this->compareFiles($testFile); # TODO
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
+        $this->runGenerator($testFile, 'mysql');
+        // $this->compareFiles($testFile); # TODO
 
-        // // same yaml file is used for MySQL and MariaDB
-        // $this->changeDbToMariadb();
-        // $this->deleteTables();
-        // $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
-        // $this->runGenerator($testFile, 'maria');
+        // same yaml file is used for MySQL and MariaDB
+        $this->changeDbToMariadb();
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/mysql/x_db_type_mysql.php");
+        $this->runGenerator($testFile, 'maria');
         // $this->compareFiles($testFile); # TODO
 
         $this->changeDbToPgsql();

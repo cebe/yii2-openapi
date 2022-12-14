@@ -105,6 +105,12 @@ class ColumnToCode
         $this->fromDb = $fromDb;
         $this->alter = $alter;
         $this->raw = $raw;
+
+        // TODO docs why we use `property_exists()`
+        if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
+            $this->raw = true;
+        }
+
         $this->resolve();
     }
 
