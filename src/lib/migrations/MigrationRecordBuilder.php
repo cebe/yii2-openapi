@@ -32,6 +32,9 @@ final class MigrationRecordBuilder
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
+
+    public const ADD_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand(\"ALTER TABLE %s ADD COLUMN %s %s\")->execute();";
+
     public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
 
     /**
@@ -77,6 +80,11 @@ final class MigrationRecordBuilder
      */
     public function addColumn(string $tableAlias, ColumnSchema $column):string
     {
+        if (is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, false);
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+        }
+
         $converter = $this->columnToCode($column, false);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }

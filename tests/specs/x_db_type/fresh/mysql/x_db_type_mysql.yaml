@@ -266,6 +266,9 @@ components:
         varchar_col:
           type: string
           x-db-type: varchar(5)
+        numeric_col:
+          type: string
+          x-db-type: double precision
 
     Editcolumn:
       type: object
@@ -301,3 +304,6 @@ components:
         json_col:
           type: string
           x-db-type: text
+        numeric_col:
+          type: string
+          x-db-type: double precision

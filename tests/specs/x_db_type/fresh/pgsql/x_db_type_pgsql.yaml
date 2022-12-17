@@ -78,6 +78,10 @@ components:
         varchar_4_col:
           type: string
           x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
+        varchar_5_col:
+          type: string
+          x-db-type: VARCHAR
+          maxLength: 5
         char_4_col:
           type: string
           x-db-type: CHAR(4) # (4) has no effect, use maxLength instead
@@ -128,6 +132,18 @@ components:
         ti:
           type: string
           x-db-type: smallint
+        int2_col:
+          type: string
+          x-db-type: int2
+
+        smallserial_col:
+          type: string
+          x-db-type: smallserial
+          nullable: false
+        serial2_col:
+          type: string
+          x-db-type: serial2
+          nullable: false
 
         si_col:
           type: string
@@ -139,6 +155,20 @@ components:
         bi:
           type: string
           x-db-type: bigint
+        bi2:
+          type: string
+          x-db-type: int8
+        int4_col:
+          type: string
+          x-db-type: int4
+        bigserial_col:
+          type: string
+          x-db-type: bigserial
+          nullable: false
+        bigserial_col_2:
+          type: string
+          x-db-type: serial8
+          nullable: false
         int_col:
           type: string
           x-db-type: int
@@ -157,6 +187,12 @@ components:
         numeric_col:
           type: string
           x-db-type: numeric
+        numeric_col_2:
+          type: string
+          x-db-type: numeric(10)
+        numeric_col_3:
+          type: string
+          x-db-type: numeric(10,2)
 
         double_p_2:
           type: string
@@ -168,6 +204,9 @@ components:
         real_col:
           type: string
           x-db-type: real
+        float4_col:
+          type: string
+          x-db-type: float4
 
         date_col:
           type: string
@@ -175,10 +214,47 @@ components:
         time_col:
           type: string
           x-db-type: time
+        time_col_2:
+          type: string
+          x-db-type: time with time zone
+        time_col_3:
+          type: string
+          x-db-type: time without time zone
+        time_col_4:
+          type: string
+          x-db-type: time(3) without time zone
+        timetz_col:
+          type: string
+          x-db-type: timetz
+        timetz_col_2:
+          type: string
+          x-db-type: timetz(3)
+
+
+        timestamp_col:
+          type: string
+          x-db-type: timestamp
+        timestamp_col_2:
+          type: string
+          x-db-type: timestamp with time zone
+        timestamp_col_3:
+          type: string
+          x-db-type: timestamp without time zone
+        timestamp_col_4:
+          type: string
+          x-db-type: timestamp(3) without time zone
+        timestamptz_col:
+          type: string
+          x-db-type: timestamptz
+        timestamptz_col_2:
+          type: string
+          x-db-type: timestamptz(3)
+
+
         date2:
           type: string
           x-db-type: date
-        timestamp_col:
+        timestamp_col_z:
           type: string
           x-db-type: timestamp
 
@@ -188,6 +264,23 @@ components:
         bit_varying_n:
           type: string
           x-db-type: bit varying(8)
+        bit_varying_n_2:
+          type: string
+          x-db-type: varbit
+        bit_varying_n_3:
+          type: string
+          x-db-type: varbit(3)
+
+        bool_col:
+          type: string
+          x-db-type: boolean
+        bool_col_2:
+          type: string
+          x-db-type: bool
+
+        box_col:
+          type: string
+          x-db-type: box
 
         character_col:
           type: string
@@ -235,6 +328,89 @@ components:
           type: string
           x-db-type: json
           default: '{"a":"b"}'
+        jsonb_def:
+          type: string
+          x-db-type: jsonb
+          default: '{"ba":"bb"}'
+        cidr_col:
+          type: string
+          x-db-type: cidr
+        circle_col:
+          type: string
+          x-db-type: circle
+        date_col_z:
+          type: string
+          x-db-type: date
+        float8_col:
+          type: string
+          x-db-type: float8
+        inet_col:
+          type: string
+          x-db-type: inet
+        interval_col:
+          type: string
+          x-db-type: interval
+        interval_col_2:
+          type: string
+          x-db-type: interval year
+        interval_col_3:
+          type: string
+          x-db-type: interval day to second(3)
+        line_col:
+          type: string
+          x-db-type: line
+        lseg_col:
+          type: string
+          x-db-type: lseg
+        macaddr_col:
+          type: string
+          x-db-type: macaddr
+        # macaddr8_col:
+        #   type: string
+        #   x-db-type: macaddr8 # not in Yii Pgsql schema
+        money_col:
+          type: string
+          x-db-type: money
+        path_col:
+          type: string
+          x-db-type: path
+        pg_lsn_col:
+          type: string
+          x-db-type: pg_lsn
+        # pg_snapshot_col:
+        #   type: string
+        #   x-db-type: pg_snapshot # not in Yii Pgsql schema
+        point_col:
+          type: string
+          x-db-type: point
+        polygon_col:
+          type: string
+          x-db-type: polygon
+
+        serial_col:
+          type: string
+          x-db-type: serial
+          nullable: false
+        serial4_col:
+          type: string
+          x-db-type: serial4
+          nullable: false
+        tsquery_col:
+          type: string
+          x-db-type: tsquery
+        tsvector_col:
+          type: string
+          x-db-type: tsvector
+        txid_snapshot_col:
+          type: string
+          x-db-type: txid_snapshot
+        uuid_col:
+          type: string
+          x-db-type: uuid
+        xml_col:
+          type: string
+          x-db-type: xml
+
 
 
     Newcolumn:
@@ -264,6 +440,9 @@ components:
         varchar_col:
           type: string
           x-db-type: varchar
+        numeric_col:
+          type: string
+          x-db-type: double precision
 
     Editcolumn:
       type: object
@@ -299,3 +478,6 @@ components:
         json_col:
           type: string
           x-db-type: text
+        numeric_col:
+          type: string
+          x-db-type: double precision
