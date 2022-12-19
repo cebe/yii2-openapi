@@ -86,25 +86,38 @@ class ColumnToCode
     private $alter;
 
     /**
+     * @var bool
+     * Q. How does it differ from `$alter` and why it is needed?
+     * A. Pgsql alter column data type does not support NULL, DEFAULT etc value. We just have to provide new data type.
+     * NULL will be handled SET NULL/SET NOT NULL
+     * DEFAULT will be handled by SET DEFAULT ...
+     * This property is only used in Pgsql DB and for alter column data type cases
+     */
+    private $alterByXDbType;
+
+    /**
      * ColumnToCode constructor.
      * @param \yii\db\Schema       $dbSchema
      * @param \yii\db\ColumnSchema $column
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
      * @param bool                 $alter (flag for resolve quotes that is different for create and alter)
      * @param bool                 $raw see @property $raw above for docs
+     * @param bool                 $alterByXDbType see @alterByXDbType $raw above for docs
      */
     public function __construct(
         Schema $dbSchema,
         ColumnSchema $column,
         bool $fromDb = false,
         bool $alter = false,
-        bool $raw = false
+        bool $raw = false,
+        bool $alterByXDbType = false
     ) {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
         $this->raw = $raw;
+        $this->alterByXDbType = $alterByXDbType;
 
         // TODO docs why we use `property_exists()`
         if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
@@ -145,6 +158,9 @@ class ColumnToCode
         if (ApiGenerator::isMysql() && $this->isEnum()) {
             return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
         }
+        if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
+            return $quoted ? "'" . $this->rawParts['type'] . "'" : $this->rawParts['type'];
+        }
         return $quoted ? "'" . $code . "'" : $code;
     }
 
@@ -159,6 +175,10 @@ class ColumnToCode
         if ($addUsingExpression && ApiGenerator::isPostgres()) {
             return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
+        }
+
+        if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
+            return "'" . $this->rawParts['type'] . "'";
         }
 
         return $this->isBuiltinType
@@ -329,6 +349,10 @@ class ColumnToCode
      */
     private function getIsBuiltinType($type, $dbType)
     {
+        if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
+            return false;
+        }
+
         if ($this->isEnum() && ApiGenerator::isMariaDb()) {
             return false;
         }
