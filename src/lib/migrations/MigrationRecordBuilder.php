@@ -115,7 +115,9 @@ final class MigrationRecordBuilder
             $converter = $this->columnToCode($column, true, false, true, true);
             return sprintf(
                 ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
-                $tableAlias, $column->name, $converter->getCode()
+                $tableAlias,
+                $column->name,
+                $converter->getCode()
             );
         }
         $converter = $this->columnToCode($column, true);
@@ -264,8 +266,7 @@ final class MigrationRecordBuilder
         bool $alter = false,
         bool $raw = false,
         bool $alterByXDbType = false
-    ): ColumnToCode
-    {
+    ): ColumnToCode {
         return Yii::createObject(ColumnToCode::class, [
             $this->dbSchema,
             $column,
