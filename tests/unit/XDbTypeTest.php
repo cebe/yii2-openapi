@@ -21,42 +21,42 @@ class XDbTypeTest extends DbTestCase
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/fresh/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->compareFiles($actualFiles, $expectedFiles);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/mysql/app"), [
+            'recursive' => true,
+        ]);
+        $this->compareFiles($actualFiles, $expectedFiles);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/fresh/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'maria');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/maria/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->compareFiles($actualFiles, $expectedFiles);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/maria/app"), [
+            'recursive' => true,
+        ]);
+        $this->compareFiles($actualFiles, $expectedFiles);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/fresh/pgsql/x_db_type_pgsql.php");
         $this->runGenerator($testFile, 'pgsql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_maria_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/pgsql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->compareFiles($actualFiles, $expectedFiles);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/pgsql/app"), [
+            'recursive' => true,
+        ]);
+        $this->compareFiles($actualFiles, $expectedFiles);
     }
 
     public function testXDbTypeSecondaryWithNewColumn() // v2

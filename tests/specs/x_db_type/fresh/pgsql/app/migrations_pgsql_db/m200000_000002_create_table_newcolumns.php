@@ -15,6 +15,7 @@ class m200000_000002_create_table_newcolumns extends \yii\db\Migration
             2 => 'dec_col decimal(12,4) NULL DEFAULT NULL',
             3 => 'json_col json NOT NULL',
             4 => 'varchar_col varchar NULL DEFAULT NULL',
+            5 => 'numeric_col double precision NULL DEFAULT NULL',
         ]);
     }
 

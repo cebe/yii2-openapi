@@ -15,7 +15,7 @@ class m200000_000001_create_table_editcolumns extends \yii\db\Migration
             'string_col' => $this->text()->null(),
             2 => 'dec_col decimal(12,2) NULL DEFAULT 3.14',
             3 => 'str_col_def varchar(3) NOT NULL',
-            4 => 'json_col text NULL',
+            4 => 'json_col text NOT NULL',
             5 => 'numeric_col double precision NULL DEFAULT NULL',
         ]);
     }

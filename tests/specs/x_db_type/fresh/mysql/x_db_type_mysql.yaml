@@ -304,6 +304,8 @@ components:
         json_col:
           type: string
           x-db-type: text
+          nullable: false
+          default: fox jumps over dog
         numeric_col:
           type: string
           x-db-type: double precision
