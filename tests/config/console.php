@@ -21,7 +21,7 @@ $config = [
             ],
         ],
         // see usage instructions at https://www.yiiframework.com/doc/guide/2.0/en/db-migrations#separated-migrations
-        'migrate-mysql' => [ // just for development of tests + TODO dev docs
+        'migrate-mysql' => [ // just for development of tests
             'class' => \yii\console\controllers\MigrateController::class,
             'migrationPath' => [
                 dirname(__DIR__).'/migrations',
@@ -82,17 +82,5 @@ $config = [
         ],
     ],
 ];
-
-if (true) { // TODO remove this entire section
-    // enable Gii module
-    $config['bootstrap'][] = 'gii';
-    $config['modules']['gii'] = [
-        'class' => \yii\gii\Module::class,
-        'generators' => [
-            // add ApiGenerator to Gii module
-            'api' => ApiGenerator::class,
-        ],
-    ];
-}
 
 return $config;

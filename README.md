@@ -370,6 +370,21 @@ Generated files:
 
 ![Gii Generated Files](doc/screenshot-files.png)
 
+# Development
+
+There commands are available to develop and check the tests. It can be used inside the Docker container. To enter into bash of container run `make cli` .
+
+```bash
+./yii migrate-mysql/up
+./yii migrate-mysql/down 4
+
+./yii migrate-maria/up
+./yii migrate-maria/down 4
+
+./yii migrate-pgsql/up
+./yii migrate-pgsql/down 4
+```
+
 # Support
 
 **Need help with your API project?**

@@ -17,7 +17,7 @@ class XDbTypeTest extends DbTestCase
 {
     public function testXDbTypeFresh()
     {
-        // default db is Mysql ------------------------------------------------
+        // default DB is Mysql ------------------------------------------------
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/fresh/mysql/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');

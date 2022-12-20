@@ -262,7 +262,7 @@ components:
           nullable: false
         # first_name:
         #   type: string
-        #   x-db-type: string # TODO this should lead to error as string is not real DB type in MySQL but (bug in Yii?) it is present in \yii\db\mysql\Schema
+        #   x-db-type: string # This should lead to error as string is not real DB type in MySQL but (bug in Yii?) it is present in \yii\db\mysql\Schema
         last_name:
           type: string
         dec_col:
