@@ -60,6 +60,7 @@ class ColumnToCode
 
     /**
      * @var bool
+     * Built In Type means the \cebe\yii2openapi\lib\items\Attribute::$type or \cebe\yii2openapi\lib\items\Attribute::$dbType is in list of Yii abstract data type list or not. And if is found we can use \yii\db\SchemaBuilderTrait methods to build migration instead of putting raw SQL
      */
     private $isBuiltinType = false;
 
@@ -119,7 +120,7 @@ class ColumnToCode
         $this->raw = $raw;
         $this->alterByXDbType = $alterByXDbType;
 
-        // TODO docs why we use `property_exists()`
+        // We use `property_exists()` because sometimes we can have instance of \yii\db\mysql\ColumnSchema (or of Maria/Pgsql) or \cebe\yii2openapi\db\ColumnSchema
         if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
             $this->raw = true;
         }
@@ -129,7 +130,6 @@ class ColumnToCode
 
     public function getCode(bool $quoted = false):string
     {
-        // echo PHP_EOL;VarDumper::dump($this->column->xDbType);echo PHP_EOL;
         if ($this->isPk) {
             return '$this->' . $this->fluentParts['type'];
         }
@@ -145,13 +145,6 @@ class ColumnToCode
                 $this->rawParts['default'] !== null ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
             $default = $this->rawParts['default'] !== null ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
-        }
-        if ($this->column->name === 'email') { // TODO remove
-            // VarDumper::dump('---------------');echo PHP_EOL;
-            // VarDumper::dump($this->rawParts['default']);echo PHP_EOL;
-            // VarDumper::dump($this->column->defaultValue);echo PHP_EOL;
-            // VarDumper::dump($default);echo PHP_EOL;
-            // VarDumper::dump('++++++++++++++++++++++++');echo PHP_EOL;
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
@@ -361,7 +354,7 @@ class ColumnToCode
                 (new ColumnSchemaBuilder(''))->categoryMap[$type]
             );
         } else {
-            return  isset(
+            return isset(
                 (new ColumnSchemaBuilder(''))->categoryMap[$dbType]
             );
         }
@@ -382,10 +375,6 @@ class ColumnToCode
             return;
         }
         $value = $this->column->defaultValue;
-        if ($this->column->name === 'email') {
-            // VarDumper::dump('*************************');
-            // VarDumper::dump($value);
-        }
         if ($value === null || (is_string($value) && (stripos($value, 'null::') !== false))) {
             $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : $this->fluentParts['default'];
             $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : $this->rawParts['default'];
@@ -444,10 +433,6 @@ class ColumnToCode
                 if (ApiGenerator::isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
-        }
-        if ($this->column->name === 'email') {
-            // VarDumper::dump($this->rawParts);
-            // VarDumper::dump($this->fluentParts);
         }
     }
 

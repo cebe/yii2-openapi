@@ -33,8 +33,6 @@ $config = [
             'class' => \yii\console\controllers\MigrateController::class,
             'db' => 'maria',
             'migrationPath' => [
-                // dirname(__DIR__).'/migrations',
-                // dirname(__DIR__).'/tmp/docker_app/migrations',
                 dirname(__DIR__).'/tmp/docker_app/migrations_maria_db',
             ],
         ],
@@ -42,8 +40,6 @@ $config = [
             'class' => \yii\console\controllers\MigrateController::class,
             'db' => 'pgsql',
             'migrationPath' => [
-                // dirname(__DIR__).'/migrations',
-                // dirname(__DIR__).'/tmp/docker_app/migrations',
                 dirname(__DIR__).'/tmp/docker_app/migrations_pgsql_db',
             ],
         ],

@@ -420,20 +420,11 @@ abstract class BaseMigrationBuilder
         return !(in_array($fromType, $dates) && in_array($toType, $dates));
     }
 
-    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema)//: ColumnSchema TODO
+    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
         $tableName = 'tmp_table_';
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
-
-        if ($columnSchema->name === 'json1') {
-            // VarDumper::dump($columnSchema);
-            // VarDumper::dump($this->newColStr($columnSchema));
-            // die;
-        }
-
-        // echo PHP_EOL;
-        // VarDumper::dump($columnSchema->xDbType);echo PHP_EOL;
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
             $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
@@ -453,29 +444,6 @@ abstract class BaseMigrationBuilder
     public function newColStr(\cebe\yii2openapi\db\ColumnSchema $columnSchema): string
     {
         $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
-        // VarDumper::dump($ctc->getCode()); die;
-        // if ($columnSchema->name === 'email') {
-        //     VarDumper::dump(ColumnToCode::undoEscapeQuotes($ctc->getCode()));
-        // }
         return ColumnToCode::undoEscapeQuotes($ctc->getCode());
-
-        // $builderClass = static::getColumnSchemaBuilderClass();
-        // $mysqlCsb = new $builderClass($columnSchema->dbType, $columnSchema->size); // TODO rename var $mysqlCsb
-        // if ($columnSchema->allowNull) {
-        //     $mysqlCsb->null();
-        // } else {
-        //     $mysqlCsb->notNull();
-        // }
-
-        // if ($columnSchema->defaultValue !== null) {
-        //     $mysqlCsb->defaultValue($columnSchema->defaultValue);
-        // }
-
-        // if ($columnSchema->unsigned) {
-        //     $mysqlCsb->unsigned();
-        // }
-        // // TODO enum values
-
-        // return $mysqlCsb->__toString();
     }
 }

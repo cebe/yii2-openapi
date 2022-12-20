@@ -18,7 +18,6 @@ use yii\helpers\VarDumper;
 use function count;
 use function preg_replace;
 
-// class MigrationsGeneratorTest extends TestCase
 class MigrationsGeneratorTest extends DbTestCase
 {
 

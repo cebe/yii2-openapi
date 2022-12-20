@@ -324,7 +324,7 @@ class PropertySchema
         }
 
         if ($customDbType) {
-            list(, , $phpType) = static::f798($customDbType);
+            list(, , $phpType) = static::findMoreDetailOf($customDbType);
             return $phpType;
         }
 
@@ -439,7 +439,7 @@ class PropertySchema
         return $default;
     }
 
-    public static function f798(string $xDbType) // TODO rename
+    public static function findMoreDetailOf(string $xDbType): array
     {
         // We can have various values in `x-db-type`. Few examples are:
         // double precision(10,2)
@@ -523,15 +523,9 @@ class PropertySchema
         }
 
         return [
-            // real db type $firstWordOfRealJustDbType
-            // $yiiAbstractDataType
-            // $phpType
-
-            // TODO refactor
             $firstWordOfRealJustDbType,
             $yiiAbstractDataType,
             $phpType,
-            // $haveMoreInfo,
         ];
     }
 

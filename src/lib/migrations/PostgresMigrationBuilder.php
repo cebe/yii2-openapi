@@ -110,7 +110,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         $this->modifyDesired($desired);
         $this->modifyDesiredInContextOfCurrent($current, $desired);
 
-        // TODO docs
+        // for docs, please see MysqlMigrationBuilder file
         $desiredFromDb = $this->tmpSaveNewCol($desired);
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
@@ -119,7 +119,6 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
                     , 'dbType', 'phpType'
                     , 'precision', 'scale', 'unsigned'
         ] as $attr) {
-            // if ($current->$attr !== $desired->$attr) {
             if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
