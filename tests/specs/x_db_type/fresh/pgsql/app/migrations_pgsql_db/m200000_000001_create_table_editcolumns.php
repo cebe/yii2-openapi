@@ -20,6 +20,7 @@ class m200000_000001_create_table_editcolumns extends \yii\db\Migration
             6 => 'numeric_col double precision NULL DEFAULT NULL',
             7 => 'json_col_def_n json NOT NULL DEFAULT \'[]\'',
             8 => 'json_col_def_n_2 json NOT NULL DEFAULT \'[]\'',
+            9 => 'text_col_array text[] NULL DEFAULT NULL',
         ]);
     }
 

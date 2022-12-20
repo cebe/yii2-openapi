@@ -34,12 +34,12 @@ final class MigrationRecordBuilder
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
 
-    public const ADD_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand(\"ALTER TABLE %s ADD COLUMN %s %s\")->execute();";
+    public const ADD_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ADD COLUMN %s %s')->execute();";
 
     public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
 
-    public const ALTER_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand(\"ALTER TABLE %s MODIFY %s %s\")->execute();";
-    public const ALTER_COLUMN_RAW_PGSQL = MigrationRecordBuilder::INDENT . "\$this->db->createCommand(\"ALTER TABLE %s ALTER COLUMN %s SET DATA TYPE %s\")->execute();";
+    public const ALTER_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s MODIFY %s %s')->execute();";
+    public const ALTER_COLUMN_RAW_PGSQL = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ALTER COLUMN %s SET DATA TYPE %s')->execute();";
 
     /**
      * @var \yii\db\Schema
