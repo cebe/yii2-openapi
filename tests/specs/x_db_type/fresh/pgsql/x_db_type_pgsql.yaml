@@ -316,6 +316,15 @@ components:
           type: string
           x-db-type: jsonb
 
+        json_col_def:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_2:
+          type: string
+          x-db-type: json
+          default: '[]'
+
         bytea_def:
           type: string
           x-db-type: bytea
@@ -443,6 +452,14 @@ components:
         numeric_col:
           type: string
           x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_n_2:
+          type: string
+          x-db-type: json
+          default: '[]'
 
     Editcolumn:
       type: object
@@ -480,6 +497,19 @@ components:
           x-db-type: text
           nullable: false
           default: fox jumps over dog
+        json_col_2:
+          type: string
+          x-db-type: json
+          nullable: false
+          default: []
         numeric_col:
           type: string
           x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_n_2:
+          type: string
+          x-db-type: json
+          default: '[]'

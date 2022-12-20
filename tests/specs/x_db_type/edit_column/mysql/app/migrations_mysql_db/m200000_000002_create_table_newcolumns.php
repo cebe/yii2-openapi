@@ -15,6 +15,7 @@ class m200000_000002_create_table_newcolumns extends \yii\db\Migration
             2 => 'json_col json NOT NULL',
             3 => 'varchar_col varchar(5) NULL DEFAULT NULL',
             4 => 'numeric_col double precision NULL DEFAULT NULL',
+            5 => 'json_col_def_n json NOT NULL',
         ]);
     }
 

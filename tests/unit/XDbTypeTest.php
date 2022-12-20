@@ -198,6 +198,7 @@ class XDbTypeTest extends DbTestCase
             'dec_col' => 'decimal(12, 4)',
             'str_col_def' => 'string default \'hi there\'',
             'json_col' => 'json',
+            'json_col_2' => 'json',
             'numeric_col' => 'integer',
         ])->execute();
     }

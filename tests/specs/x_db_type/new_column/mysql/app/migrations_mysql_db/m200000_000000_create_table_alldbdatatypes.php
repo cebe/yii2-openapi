@@ -47,9 +47,11 @@ class m200000_000000_create_table_alldbdatatypes extends \yii\db\Migration
             35 => 'timestamp_col timestamp NULL DEFAULT NULL',
             36 => 'year_col year NULL DEFAULT NULL',
             37 => 'json_col json NOT NULL',
-            38 => 'blob_def blob NULL',
-            39 => 'text_def text NULL',
-            40 => 'json_def json NOT NULL',
+            38 => 'json_col_def json NOT NULL',
+            39 => 'json_col_def_2 json NOT NULL',
+            40 => 'blob_def blob NULL',
+            41 => 'text_def text NULL',
+            42 => 'json_def json NOT NULL',
         ]);
     }
 
