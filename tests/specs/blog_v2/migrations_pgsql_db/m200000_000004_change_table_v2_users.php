@@ -10,7 +10,7 @@ class m200000_000004_change_table_v2_users extends \yii\db\Migration
         $this->addColumn('{{%v2_users}}', 'login', $this->text()->notNull());
         $this->dropColumn('{{%v2_users}}', 'username');
         $this->alterColumn('{{%v2_users}}', 'created_at', "DROP DEFAULT");
-        $this->db->createCommand("ALTER TABLE {{%v2_users}} ALTER COLUMN email SET DATA TYPE varchar(255)")->execute();
+        $this->db->createCommand('ALTER TABLE {{%v2_users}} ALTER COLUMN email SET DATA TYPE varchar(255)')->execute();
         $this->dropIndex('v2_users_username_key', '{{%v2_users}}');
         $this->createIndex('v2_users_login_key', '{{%v2_users}}', 'login', true);
         $this->createIndex('v2_users_flags_hash_index', '{{%v2_users}}', 'flags', 'hash');
