@@ -385,6 +385,17 @@ There commands are available to develop and check the tests. It can be used insi
 ./yii migrate-pgsql/down 4
 ```
 
+To apply multiple migration with one command:
+
+```bash
+./yii migrate-mysql/up --interactive=0 && \
+./yii migrate-mysql/down --interactive=0 4 && \
+./yii migrate-maria/up --interactive=0 && \
+./yii migrate-maria/down --interactive=0 4 && \
+./yii migrate-pgsql/up --interactive=0 && \
+./yii migrate-pgsql/down --interactive=0 4
+```
+
 # Support
 
 **Need help with your API project?**
