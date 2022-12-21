@@ -11,7 +11,6 @@ class m200000_000002_create_table_v2_posts extends \yii\db\Migration
             'id' => $this->bigPrimaryKey(),
             'title' => $this->string(255)->notNull(),
             'slug' => $this->string(200)->null()->defaultValue(null),
-            'lang' => 'enum(\'ru\', \'eng\') NULL DEFAULT \'ru\'',
             'category_id' => $this->bigInteger()->notNull(),
             'active' => $this->boolean()->notNull(),
             'created_at' => $this->date()->null()->defaultValue(null),

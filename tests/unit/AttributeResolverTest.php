@@ -10,12 +10,12 @@ use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\JunctionSchemas;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\openapi\ComponentSchema;
-use tests\TestCase;
+use tests\DbTestCase;
 use Yii;
 use yii\helpers\VarDumper;
 use const PHP_EOL;
 
-class AttributeResolverTest extends TestCase
+class AttributeResolverTest extends DbTestCase
 {
     public function testManyToManyResolve()
     {

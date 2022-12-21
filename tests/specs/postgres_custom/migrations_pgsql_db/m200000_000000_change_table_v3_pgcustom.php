@@ -15,7 +15,7 @@ class m200000_000000_change_table_v3_pgcustom extends \yii\db\Migration
         $this->alterColumn('{{%v3_pgcustom}}', 'json3', "SET DEFAULT '[{\"foo\":\"foobar\"},{\"xxx\":\"yyy\"}]'");
         $this->alterColumn('{{%v3_pgcustom}}', 'json4', "SET NOT NULL");
         $this->alterColumn('{{%v3_pgcustom}}', 'json4', "SET DEFAULT '{\"foo\":\"bar\",\"bar\":\"baz\"}'");
-        $this->createIndex('v3_pgcustom_search_gin_index', '{{%v3_pgcustom}}', 'search', 'gin(to_tsvector(\'english\', status))');
+        $this->createIndex('v3_pgcustom_search_gin_index', '{{%v3_pgcustom}}', 'search', 'gin(to_tsvector(\'english\'))');
     }
 
     public function safeDown()

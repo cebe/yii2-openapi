@@ -19,10 +19,6 @@ return [
                 ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
             'password' => (new Attribute('password', ['phpType' => 'string', 'dbType' => 'string']))
                 ->setRequired()->setFakerStub('$faker->password'),
-            'role' => (new Attribute('role', ['phpType' => 'string', 'dbType' => 'string']))
-                ->setSize(20)
-                ->setDefault('reader')
-                ->setFakerStub('$faker->randomElement([\'admin\', \'editor\', \'reader\'])'),
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 1000000)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
@@ -32,7 +28,7 @@ return [
         'indexes' => [
             'users_email_key' => DbIndex::make('users', ['email'], null, true),
             'users_username_key' => DbIndex::make('users', ['username'], null, true),
-            'users_role_flags_index' => DbIndex::make('users', ['role', 'flags'])
+            'users_flags_index' => DbIndex::make('users', ['flags'])
         ]
     ]),
     'category' => new DbModel([
@@ -60,7 +56,7 @@ return [
         'tableName' => 'blog_posts',
         'description' => 'A blog post (uid used as pk for test purposes)',
         'attributes' => [
-            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'string']))
+            'uid' => (new Attribute('uid', ['phpType' => 'string', 'dbType' => 'varchar', 'xDbType' => 'varchar']))
                 ->setReadOnly()->setRequired()->setIsPrimary()->setSize(128)
                 ->setFakerStub('substr($uniqueFaker->sha256, 0, 128)'),
             'title' => (new Attribute('title', ['phpType' => 'string', 'dbType' => 'string']))
@@ -116,9 +112,9 @@ return [
                 ->asReference('User')
                 ->setDescription('The User')
                 ->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
-            'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json']))
+            'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setRequired()->setDefault([])->setFakerStub('[]'),
-            'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json']))
+            'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setDefault([])->setFakerStub('[]'),
             'created_at' => (new Attribute('created_at',['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()->setFakerStub('$faker->unixTime'),

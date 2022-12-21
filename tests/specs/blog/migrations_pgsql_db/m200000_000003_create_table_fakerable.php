@@ -18,7 +18,6 @@ class m200000_000003_create_table_fakerable extends \yii\db\Migration
             'int_minmax' => $this->integer()->null()->defaultValue(null),
             'int_created_at' => $this->integer()->null()->defaultValue(null),
             'int_simple' => $this->integer()->null()->defaultValue(null),
-            'uuid' => 'uuid NULL DEFAULT NULL',
             'str_text' => $this->text()->null()->defaultValue(null),
             'str_varchar' => $this->string(100)->null()->defaultValue(null),
             'str_date' => $this->date()->null()->defaultValue(null),

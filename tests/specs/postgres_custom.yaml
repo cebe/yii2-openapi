@@ -35,7 +35,7 @@ components:
         Custom:
             x-table: v3_pgcustom
             x-indexes:
-               - "gin(to_tsvector('english', status)):search"
+               - "gin(to_tsvector('english')):search"
             required:
                 - id
             properties:
@@ -64,13 +64,12 @@ components:
                     type: array
                     x-db-type: json
                     default: '{"foo": "bar", "bar": "baz"}'
-                status:
-                    type: string
-                    x-db-type: enum
-                    default: draft
-                    enum:
-                        - active
-                        - draft
+                # status:
+                #     type: string
+                #     default: draft
+                #     enum:
+                #         - active
+                #         - draft
                 search:
                   type: string
                   x-db-type: tsvector

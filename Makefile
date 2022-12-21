@@ -7,6 +7,9 @@ all:
 check-style:
 	vendor/bin/php-cs-fixer fix --diff --dry-run
 
+check-style-from-host:
+	docker-compose run --rm php sh -c 'vendor/bin/php-cs-fixer fix --diff --dry-run'
+
 fix-style:
 	vendor/bin/indent --tabs composer.json
 	vendor/bin/indent --spaces .php_cs.dist
@@ -28,20 +31,40 @@ clean:
 
 up:
 	docker-compose up -d
+	echo "Waiting for mariadb to start up..."
+	docker-compose exec -T mysql timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
 
 cli:
 	docker-compose exec php bash
 
 migrate:
-	mkdir -p "tests/tmp/app"
-	mkdir -p "tests/tmp/docker_app"
+	docker-compose run --rm php sh -c 'mkdir -p "tests/tmp/app"'
+	docker-compose run --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
 	docker-compose run --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
 
 installdocker:
 	docker-compose run --rm php composer install && chmod +x tests/yii
 
 testdocker:
-	docker-compose run --rm php sh -c 'vendor/bin/phpunit tests/unit'
+	docker-compose run --rm php sh -c 'vendor/bin/phpunit'
 
 .PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker
 
+
+# Docs:
+
+# outside docker
+#     clean_all
+#     clean (in both)
+#     up
+#     cli
+#     migrate
+#     installdocker
+#     testdocker
+
+# inside docker
+#     check-style
+#     fix-style
+#     install
+#     test
+#     clean (in both)

@@ -51,7 +51,7 @@ components:
       x-indexes:
         - unique:username
         - unique:email
-        - role,flags
+        - flags
       properties:
         id:
           type: integer
@@ -66,12 +66,6 @@ components:
         password:
           type: string
           format: password
-          x-db-type: string
-        role:
-          type: string
-          maxLength: 20
-          x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
-          default: reader
         flags:
           type: integer
           default: 0
@@ -225,10 +219,10 @@ components:
           type: integer
         int_simple:
           type: integer
-        uuid:
-          type: string
-          x-db-type: UUID
-          x-faker: '$faker->uuid'
+        # uuid:
+        #   type: string
+        #   x-db-type: UUID # uuid is supported in only PgSQL
+        #   x-faker: '$faker->uuid'
         str_text:
           type: string
         str_varchar:

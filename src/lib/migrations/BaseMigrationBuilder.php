@@ -7,11 +7,13 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
+use yii\helpers\VarDumper;
 use yii\db\Connection;
 
 abstract class BaseMigrationBuilder
@@ -205,6 +207,10 @@ abstract class BaseMigrationBuilder
                 $current->type = 'enum';
                 $current->dbType = 'enum';
             }
+            if (!empty($desired->enumValues)) {
+                $desired->type = 'enum';
+                $desired->dbType = 'enum';
+            }
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
                 continue;
@@ -260,6 +266,8 @@ abstract class BaseMigrationBuilder
     abstract protected function createEnumMigrations():void;
 
     abstract protected function isDbDefaultSize(ColumnSchema $current):bool;
+
+    abstract public static function getColumnSchemaBuilderClass(): string;
 
     /**
      * @return array|\cebe\yii2openapi\lib\items\DbIndex[]
@@ -410,5 +418,32 @@ abstract class BaseMigrationBuilder
         }
         $dates = ['date', 'timestamp'];
         return !(in_array($fromType, $dates) && in_array($toType, $dates));
+    }
+
+    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
+    {
+        $tableName = 'tmp_table_';
+
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+
+        if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
+            $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
+        } else {
+            $column = [$columnSchema->name => $this->newColStr($columnSchema)];
+        }
+
+        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
+
+        $table = Yii::$app->db->getTableSchema($tableName);
+
+        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+
+        return $table->columns[$columnSchema->name];
+    }
+
+    public function newColStr(\cebe\yii2openapi\db\ColumnSchema $columnSchema): string
+    {
+        $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
+        return ColumnToCode::undoEscapeQuotes($ctc->getCode());
     }
 }

@@ -6,10 +6,10 @@ use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\openapi\PropertySchema;
 use cebe\yii2openapi\lib\openapi\ComponentSchema;
-use tests\TestCase;
+use tests\DbTestCase;
 use Yii;
 
-class PropertySchemaTest extends TestCase
+class PropertySchemaTest extends DbTestCase
 {
     public function testPkProperty()
     {
@@ -21,7 +21,7 @@ class PropertySchemaTest extends TestCase
         self::assertEquals('uid', $prop->getName());
         self::assertEquals(null, $prop->guessDefault());
         self::assertEquals('string', $prop->guessPhpType());
-        self::assertEquals('string', $prop->guessDbType());
+        self::assertEquals('varchar', $prop->guessDbType());
         self::assertEquals([null, null], $prop->guessMinMax());
         self::assertEquals(128, $prop->getMaxLength());
         self::assertEquals(null, $prop->getMinLength());
@@ -43,7 +43,6 @@ class PropertySchemaTest extends TestCase
         self::assertEquals(null, $prop->getMaxLength());
         self::assertEquals(null, $prop->getMinLength());
         self::assertEquals(false, $prop->isReadonly());
-        self::assertFalse($prop->hasEnum());
     }
 
     public function testRefProperty()

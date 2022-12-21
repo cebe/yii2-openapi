@@ -70,6 +70,8 @@ On console you can run the generator with `./yii gii/api --openApiPath=@app/open
 
 Run `./yii gii/api --help` for all options.
 
+See [Petstore example](https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/petstore.yaml) for example OpenAPI spec.
+
 
 ## OpenAPI extensions
 
@@ -114,9 +116,27 @@ Explicitly specify primary key name for table, if it is different from "id"
 
 ### `x-db-type`
 
-Explicitly specify the database type for a column. (MUST contains only db type! (json, jsonb, uuid, varchar etc))
-If x-db-type sets as false, property will be processed as virtual;
-It will be added in model as public property, but skipped for migrations generation
+Explicitly specify the database type for a column. (MUST contains only real DB type! (`json`, `jsonb`, `uuid`, `varchar` etc.)).
+If x-db-type sets as `false`, property will be processed as virtual;
+It will be added in model as public property, but skipped for migrations generation.
+
+Example values of `x-db-type` are:
+
+ - `false` (boolean false)
+ - as string and its value can be like:
+     - text
+     - text[]
+     - INTEGER PRIMARY KEY AUTO_INCREMENT
+     - decimal(12,4)
+     - json
+     - varchar
+     - VARCHAR
+     - SMALLINT UNSIGNED ZEROFILL
+     - MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT "comment" (note the double quotes here)
+
+Such values are not allowed:
+   - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
+   - MEDIUMINT(10) UNSIGNED ZEROFILL NULL DEFAULT '7' COMMENT 'comment' AFTER `seti`, ADD INDEX `t` (`w`)
 
 ### `x-indexes`
 Specify table indexes
@@ -248,6 +268,97 @@ $this->update('{{%company}}', ['name' => 'No name']);
 $this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
 ```
 
+### Handling of `NOT NULL` constraints
+
+`NOT NULL` in DB migrations is determined by `nullable` and `required` properties of the OpenAPI schema.
+e.g. attribute = 'my_property'.
+
+- If you define attribute neither "required" nor via "nullable", then it is by default `NULL`:
+
+```yaml
+  ExampleSchema:
+    properties:
+      my_property:
+        type: string
+```
+
+- If you define attribute in "required", then it is `NOT NULL`
+
+```yaml
+  ExampleSchema:
+    required:
+     - my_property
+    properties:
+      my_property:
+        type: string
+```
+
+- If you define attribute via "nullable", then it overrides "required", e.g. allow `NULL` in this case:
+
+```yaml
+  ExampleSchema:
+    required:
+      - my_property
+    properties:
+      my_property:
+        type: string
+        nullable: true
+```
+
+- If you define attribute via "nullable", then it overrides "required", e.g. `NOT NULL` in this case:
+
+```yaml
+  test_table:
+    required:
+    properties:
+      my_property:
+        type: string
+        nullable: false
+```
+
+### Handling of `enum` (#enum, #MariaDb)
+It work on MariaDb.
+
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        enum:
+          - one
+          - two
+          - three
+```
+
+### Handling of `numeric` (#numeric, #MariaDb)
+precision-default = 10
+scale-default = 2
+
+- You can define attribute like "numeric(precision,scale)":
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal(12,4)
+```
+DB-Result = decimal(12,4)
+
+- You can define attribute like "numeric(precision)" with default scale-default = 2:
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal(12)
+```
+DB-Result = decimal(12,2)
+
+- You can define attribute like "numeric" with precision-default = 10 and scale-default = 2:
+ ```yaml
+  test_table:
+    properties:
+      my_property:
+        x-db-type: decimal
+```
+DB-Result = decimal(10,2)
 
 ## Screenshots
 
@@ -258,6 +369,32 @@ Gii Generator Form:
 Generated files:
 
 ![Gii Generated Files](doc/screenshot-files.png)
+
+# Development
+
+There commands are available to develop and check the tests. It can be used inside the Docker container. To enter into bash of container run `make cli` .
+
+```bash
+./yii migrate-mysql/up
+./yii migrate-mysql/down 4
+
+./yii migrate-maria/up
+./yii migrate-maria/down 4
+
+./yii migrate-pgsql/up
+./yii migrate-pgsql/down 4
+```
+
+To apply multiple migration with one command:
+
+```bash
+./yii migrate-mysql/up --interactive=0 && \
+./yii migrate-mysql/down --interactive=0 4 && \
+./yii migrate-maria/up --interactive=0 && \
+./yii migrate-maria/down --interactive=0 4 && \
+./yii migrate-pgsql/up --interactive=0 && \
+./yii migrate-pgsql/down --interactive=0 4
+```
 
 # Support
 

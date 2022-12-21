@@ -10,7 +10,7 @@ class m200000_000000_create_table_pets extends \yii\db\Migration
         $this->createTable('{{%pets}}', [
             'id' => $this->bigPrimaryKey(),
             'name' => $this->text()->notNull(),
-            'tag' => $this->text()->null()->defaultValue(null),
+            'tag' => $this->text()->null(),
         ]);
     }
 

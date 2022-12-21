@@ -7,6 +7,9 @@
 
 namespace cebe\yii2openapi\generator;
 
+use yii\db\mysql\Schema as MySqlSchema;
+use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
+use yii\db\pgsql\Schema as PgSqlSchema;
 use cebe\openapi\Reader;
 use cebe\openapi\spec\OpenApi;
 use cebe\yii2openapi\lib\Config;
@@ -501,5 +504,20 @@ class ApiGenerator extends Generator
             }
         }
         return $this->_openApiWithoutRef;
+    }
+
+    public static function isPostgres():bool
+    {
+        return Yii::$app->db->schema instanceof PgSqlSchema;
+    }
+
+    public static function isMysql():bool
+    {
+        return (Yii::$app->db->schema instanceof MySqlSchema && !static::isMariaDb());
+    }
+
+    public static function isMariaDb():bool
+    {
+        return strpos(Yii::$app->db->schema->getServerVersion(), 'MariaDB') !== false;
     }
 }

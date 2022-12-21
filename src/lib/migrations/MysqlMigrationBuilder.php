@@ -7,12 +7,16 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
+use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbIndex;
 use yii\base\NotSupportedException;
 use yii\db\ColumnSchema;
 use yii\db\IndexConstraint;
 use yii\db\Schema;
+use \Yii;
 use yii\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 
 final class MysqlMigrationBuilder extends BaseMigrationBuilder
 {
@@ -35,29 +39,21 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
         $changedAttributes = [];
-        if ($current->dbType === 'tinyint(1)' && $desired->type === 'boolean') {
-            if (is_bool($desired->defaultValue) || is_string($desired->defaultValue)) {
-                $desired->defaultValue = (int)$desired->defaultValue;
-            }
-            if ($current->defaultValue !== $desired->defaultValue) {
-                $changedAttributes[] = 'defaultValue';
-            }
-            if ($current->allowNull !== $desired->allowNull) {
-                $changedAttributes[] = 'allowNull';
-            }
-            return $changedAttributes;
-        }
-        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
-            $current->defaultValue = (int)$current->defaultValue;
-        }
-        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
-            $desired->defaultValue = (int)$desired->defaultValue;
-        }
-        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
-            $desired->size = $current->size;
-        }
-        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
-            if ($current->$attr !== $desired->$attr) {
+
+        $this->modifyCurrent($current);
+        $this->modifyDesired($desired);
+        $this->modifyDesiredInContextOfCurrent($current, $desired);
+
+        // Why this is needed? Often manually created ColumnSchem instance have dbType 'varchar' with size 255 and ColumnSchema fetched from db have 'varchar(255)'. So varchar !== varchar(255). such normal mistake was leading to errors. So desired column is saved in temporary table and it is fetched from that temp. table and then compared with current ColumnSchema
+        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        $this->modifyDesired($desiredFromDb);
+        $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
+
+        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
+                    , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
+        ] as $attr) {
+            if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
         }
@@ -66,7 +62,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
 
     protected function createEnumMigrations():void
     {
-        // Postgres only case
+        // execute via default
     }
 
     protected function isDbDefaultSize(ColumnSchema $current):bool
@@ -105,6 +101,51 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             return ArrayHelper::index($dbIndexes, 'name');
         } catch (NotSupportedException $e) {
             return [];
+        }
+    }
+
+    public static function getColumnSchemaBuilderClass(): string
+    {
+        if (ApiGenerator::isMysql()) {
+            return \yii\db\mysql\ColumnSchemaBuilder::class;
+        } elseif (ApiGenerator::isMariaDb()) {
+            return \SamIT\Yii2\MariaDb\ColumnSchemaBuilder::class;
+        }
+    }
+
+    public function modifyCurrent(ColumnSchema $current): void
+    {
+        /** @var $current \yii\db\mysql\ColumnSchema */
+        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
+            $current->defaultValue = (int)$current->defaultValue;
+        }
+    }
+
+    public function modifyDesired(ColumnSchema $desired): void
+    {
+        /** @var $desired cebe\yii2openapi\db\ColumnSchema|\yii\db\mysql\ColumnSchema */
+        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
+            $desired->defaultValue = (int)$desired->defaultValue;
+        }
+
+        if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
+            $desired->precision = $decimalAttributes['precision'];
+            $desired->scale = $decimalAttributes['scale'];
+        }
+    }
+
+    public function modifyDesiredInContextOfCurrent(ColumnSchema $current, ColumnSchema $desired): void
+    {
+        /** @var $current \yii\db\mysql\ColumnSchema */
+        /** @var $desired cebe\yii2openapi\db\ColumnSchema|\yii\db\mysql\ColumnSchema */
+        if ($current->dbType === 'tinyint(1)' && $desired->type === 'boolean') {
+            if (is_bool($desired->defaultValue) || is_string($desired->defaultValue)) {
+                $desired->defaultValue = (int)$desired->defaultValue;
+            }
+        }
+
+        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
+            $desired->size = $current->size;
         }
     }
 }
