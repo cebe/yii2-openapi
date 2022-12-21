@@ -1,0 +1,524 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Column edit by x-db-type test for PgSQL
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Pristine:
+      type: object
+      description: New Fresh table with new columns for migration code generation
+      required:
+        - custom_id_col
+        - name
+      properties:
+        custom_id_col:
+          type: integer
+          format: int64
+          x-db-type: SERIAL PRIMARY KEY
+        name:
+          type: integer
+          x-db-type: text
+        tag:
+          type: string
+          default: 4 leg
+        new_col:
+          type: string
+          x-db-type: varchar
+        col_5:
+          type: string
+          x-db-type: decimal(12,4)
+        col_6:
+          type: string
+          x-db-type: decimal(11)
+        col_7:
+          type: string
+          x-db-type: decimal
+        col_8:
+          type: string
+          x-db-type: json
+        col_9:
+          type: string
+          x-db-type: varchar
+        col_10:
+          type: string
+          x-db-type: VARCHAR
+        col_11:
+          type: string
+          x-db-type: TEXT
+
+
+    Alldbdatatype: # All DB data type
+      type: object
+      description: All DB data type
+      required:
+        - id
+        - char_6_col
+      properties:
+        id:
+          type: integer
+          format: int64
+        string_col:
+          type: string
+          x-db-type: varchar
+        varchar_col:
+          type: string
+          x-db-type: varchar
+        text_col:
+          type: string
+          x-db-type: text
+        text_col_array:
+          type: string
+          x-db-type: text[]
+        varchar_4_col:
+          type: string
+          x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
+        varchar_5_col:
+          type: string
+          x-db-type: VARCHAR
+          maxLength: 5
+        char_4_col:
+          type: string
+          x-db-type: CHAR(4) # (4) has no effect, use maxLength instead
+        char_5_col:
+          type: string
+          x-db-type: CHAR
+        char_6_col:
+          type: string
+          x-db-type: char
+        char_7_col:
+          type: string
+          x-db-type: char
+          maxLength: 6
+          nullable: false
+        char_8_col:
+          type: string
+          x-db-type: char
+          default: d
+        decimal_col:
+          type: float
+          x-db-type: decimal(12,3)
+
+        # binary_col:
+        #   type: string
+        #   x-db-type: binary # binary is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
+
+        # bytea_col:
+        #   type: string
+        #   x-db-type: bytea
+        #   # nullable: false
+        #   maxLength: 5 # length is required in bytea and binary
+        bytea_col_2:
+          type: string
+          x-db-type: bytea
+        # set:
+        #   type: string
+        #   x-db-type: SET('a', 'b', 'c', 'd') # set is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
+        bit_col:
+          type: string
+          x-db-type: bit
+        bit_2:
+          type: string
+          x-db-type: bit(1)
+        bit_3:
+          type: string
+          x-db-type: bit(64)
+
+        ti:
+          type: string
+          x-db-type: smallint
+        int2_col:
+          type: string
+          x-db-type: int2
+
+        smallserial_col:
+          type: string
+          x-db-type: smallserial
+          nullable: false
+        serial2_col:
+          type: string
+          x-db-type: serial2
+          nullable: false
+
+        si_col:
+          type: string
+          x-db-type: smallint
+        si_col_2:
+          type: string
+          x-db-type: SMALLINT # UNSIGNED ZEROFILL
+
+        bi:
+          type: string
+          x-db-type: bigint
+        bi2:
+          type: string
+          x-db-type: int8
+        int4_col:
+          type: string
+          x-db-type: int4
+        bigserial_col:
+          type: string
+          x-db-type: bigserial
+          nullable: false
+        bigserial_col_2:
+          type: string
+          x-db-type: serial8
+          nullable: false
+        int_col:
+          type: string
+          x-db-type: int
+        int_col_2:
+          type: string
+          x-db-type: integer
+
+        # dec:
+        #   type: string
+        #   x-db-type: dec # not supported
+
+        # fixed:
+        #   type: string
+        #   x-db-type: fixed # not supported
+
+        numeric_col:
+          type: string
+          x-db-type: numeric
+        numeric_col_2:
+          type: string
+          x-db-type: numeric(10)
+        numeric_col_3:
+          type: string
+          x-db-type: numeric(10,2)
+
+        double_p_2:
+          type: string
+          x-db-type: DOUBLE PRECISION
+        double_p_3:
+          type: string
+          x-db-type: double precision
+
+        real_col:
+          type: string
+          x-db-type: real
+        float4_col:
+          type: string
+          x-db-type: float4
+
+        date_col:
+          type: string
+          x-db-type: date
+        time_col:
+          type: string
+          x-db-type: time
+        time_col_2:
+          type: string
+          x-db-type: time with time zone
+        time_col_3:
+          type: string
+          x-db-type: time without time zone
+        time_col_4:
+          type: string
+          x-db-type: time(3) without time zone
+        timetz_col:
+          type: string
+          x-db-type: timetz
+        timetz_col_2:
+          type: string
+          x-db-type: timetz(3)
+
+
+        timestamp_col:
+          type: string
+          x-db-type: timestamp
+        timestamp_col_2:
+          type: string
+          x-db-type: timestamp with time zone
+        timestamp_col_3:
+          type: string
+          x-db-type: timestamp without time zone
+        timestamp_col_4:
+          type: string
+          x-db-type: timestamp(3) without time zone
+        timestamptz_col:
+          type: string
+          x-db-type: timestamptz
+        timestamptz_col_2:
+          type: string
+          x-db-type: timestamptz(3)
+
+
+        date2:
+          type: string
+          x-db-type: date
+        timestamp_col_z:
+          type: string
+          x-db-type: timestamp
+
+        bit_varying:
+          type: string
+          x-db-type: bit varying
+        bit_varying_n:
+          type: string
+          x-db-type: bit varying(8)
+        bit_varying_n_2:
+          type: string
+          x-db-type: varbit
+        bit_varying_n_3:
+          type: string
+          x-db-type: varbit(3)
+
+        bool_col:
+          type: string
+          x-db-type: boolean
+        bool_col_2:
+          type: string
+          x-db-type: bool
+
+        box_col:
+          type: string
+          x-db-type: box
+
+        character_col:
+          type: string
+          x-db-type: character
+        character_n:
+          type: string
+          x-db-type: character(12)
+        character_varying:
+          type: string
+          x-db-type: character varying
+        character_varying_n:
+          type: string
+          x-db-type: character varying(12)
+
+
+        # geometry:
+        #   type: string
+        #   x-db-type: geometry
+        # below are not implemented in Yii
+        # GEOMETRY
+        # point
+        # LINESTRING
+        # POLYGON
+        # MULTIPOINT
+        # MULTILINESTRING
+        # MULTIPOLYGON
+        # GEOMETRYCOLLECTION
+
+        json_col:
+          type: string
+          x-db-type: json
+        jsonb_col:
+          type: string
+          x-db-type: jsonb
+
+        json_col_def:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_2:
+          type: string
+          x-db-type: json
+          default: '[]'
+
+        bytea_def:
+          type: string
+          x-db-type: bytea
+          default: the bytea blob default
+        text_def:
+          type: string
+          x-db-type: text
+          default: the text
+        json_def:
+          type: string
+          x-db-type: json
+          default: '{"a":"b"}'
+        jsonb_def:
+          type: string
+          x-db-type: jsonb
+          default: '{"ba":"bb"}'
+        cidr_col:
+          type: string
+          x-db-type: cidr
+        circle_col:
+          type: string
+          x-db-type: circle
+        date_col_z:
+          type: string
+          x-db-type: date
+        float8_col:
+          type: string
+          x-db-type: float8
+        inet_col:
+          type: string
+          x-db-type: inet
+        interval_col:
+          type: string
+          x-db-type: interval
+        interval_col_2:
+          type: string
+          x-db-type: interval year
+        interval_col_3:
+          type: string
+          x-db-type: interval day to second(3)
+        line_col:
+          type: string
+          x-db-type: line
+        lseg_col:
+          type: string
+          x-db-type: lseg
+        macaddr_col:
+          type: string
+          x-db-type: macaddr
+        # macaddr8_col:
+        #   type: string
+        #   x-db-type: macaddr8 # not in Yii Pgsql schema
+        money_col:
+          type: string
+          x-db-type: money
+        path_col:
+          type: string
+          x-db-type: path
+        pg_lsn_col:
+          type: string
+          x-db-type: pg_lsn
+        # pg_snapshot_col:
+        #   type: string
+        #   x-db-type: pg_snapshot # not in Yii Pgsql schema
+        point_col:
+          type: string
+          x-db-type: point
+        polygon_col:
+          type: string
+          x-db-type: polygon
+
+        serial_col:
+          type: string
+          x-db-type: serial
+          nullable: false
+        serial4_col:
+          type: string
+          x-db-type: serial4
+          nullable: false
+        tsquery_col:
+          type: string
+          x-db-type: tsquery
+        tsvector_col:
+          type: string
+          x-db-type: tsvector
+        txid_snapshot_col:
+          type: string
+          x-db-type: txid_snapshot
+        uuid_col:
+          type: string
+          x-db-type: uuid
+        xml_col:
+          type: string
+          x-db-type: xml
+
+
+
+    Newcolumn:
+      type: object
+      description: New Fresh table with new columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar
+          nullable: false
+        first_name:
+          type: string
+          x-db-type: varchar
+        last_name:
+          type: string
+        dec_col:
+          type: string
+          x-db-type: decimal(12,4)
+        json_col:
+          type: string
+          x-db-type: json
+        varchar_col:
+          type: string
+          x-db-type: varchar
+        numeric_col:
+          type: string
+          x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_n_2:
+          type: string
+          x-db-type: json
+          default: '[]'
+        text_col_array:
+          type: string
+          x-db-type: text[]
+
+    Editcolumn:
+      type: object
+      description: Table with edit columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar
+          maxLength: 254
+          nullable: false
+          default: Horse-2
+        tag:
+          type: string
+        first_name:
+          type: string
+          x-db-type: varchar
+        string_col:
+          type: string # text in DB
+          nullable: true
+        dec_col:
+          type: string
+          x-db-type: decimal(12,2)
+          default: 3.14
+        str_col_def:
+          type: string
+          x-db-type: varchar
+          nullable: false
+        json_col:
+          type: string
+          x-db-type: text
+          nullable: false
+          default: fox jumps over dog
+        json_col_2:
+          type: string
+          x-db-type: json
+          nullable: false
+          default: []
+        numeric_col:
+          type: string
+          x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_n_2:
+          type: string
+          x-db-type: json
+          default: '[]'
+        text_col_array:
+          type: string
+          x-db-type: text[]

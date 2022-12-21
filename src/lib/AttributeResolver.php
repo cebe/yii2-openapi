@@ -203,6 +203,8 @@ class AttributeResolver
                   ->setDescription($property->getAttr('description', ''))
                   ->setReadOnly($property->isReadonly())
                   ->setDefault($property->guessDefault())
+                  ->setXDbType($property->getAttr('x-db-type'))
+                  ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
                   ->setIsPrimary($property->isPrimaryKey());
         if ($property->isReference()) {
             if ($property->isVirtual()) {

@@ -10,7 +10,7 @@ class m200000_000006_create_table_posts_gallery extends \yii\db\Migration
         $this->createTable('{{%posts_gallery}}', [
             'image_id' => $this->bigInteger()->null()->defaultValue(null),
             'article_id' => $this->bigInteger()->null()->defaultValue(null),
-            'is_cover' => $this->text()->null()->defaultValue(null),
+            'is_cover' => $this->text()->null(),
         ]);
         $this->addPrimaryKey('pk_image_id_article_id', '{{%posts_gallery}}', 'image_id,article_id');
         $this->addForeignKey('fk_posts_gallery_image_id_photo_id', '{{%posts_gallery}}', 'image_id', '{{%photo}}', 'id');

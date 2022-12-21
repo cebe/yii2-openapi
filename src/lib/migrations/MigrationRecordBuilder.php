@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
 use Yii;
 use yii\db\ColumnSchema;
@@ -32,7 +33,13 @@ final class MigrationRecordBuilder
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
+
+    public const ADD_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ADD COLUMN %s %s')->execute();";
+
     public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
+
+    public const ALTER_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s MODIFY %s %s')->execute();";
+    public const ALTER_COLUMN_RAW_PGSQL = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ALTER COLUMN %s SET DATA TYPE %s')->execute();";
 
     /**
      * @var \yii\db\Schema
@@ -52,9 +59,15 @@ final class MigrationRecordBuilder
      */
     public function createTable(string $tableAlias, array $columns):string
     {
-        $codeColumns = array_map(function (ColumnSchema $column) {
-            return $this->columnToCode($column, false)->getCode();
-        }, $columns);
+        $codeColumns = [];
+        foreach ($columns as $columnName => $cebeDbColumnSchema) {
+            if (is_string($cebeDbColumnSchema->xDbType) && !empty($cebeDbColumnSchema->xDbType)) {
+                $codeColumns[] = $columnName.' '.$this->columnToCode($cebeDbColumnSchema, false)->getCode();
+            } else {
+                $codeColumns[$columnName] = $this->columnToCode($cebeDbColumnSchema, false)->getCode();
+            }
+        }
+
         $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT, "'"], VarDumper::export($codeColumns));
         return sprintf(self::ADD_TABLE, $tableAlias, $codeColumns);
     }
@@ -64,6 +77,11 @@ final class MigrationRecordBuilder
      */
     public function addColumn(string $tableAlias, ColumnSchema $column):string
     {
+        if (is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, false);
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+        }
+
         $converter = $this->columnToCode($column, false);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
@@ -73,6 +91,10 @@ final class MigrationRecordBuilder
      */
     public function addDbColumn(string $tableAlias, ColumnSchema $column):string
     {
+        if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, true);
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+        }
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
@@ -82,6 +104,15 @@ final class MigrationRecordBuilder
      */
     public function alterColumn(string $tableAlias, ColumnSchema $column):string
     {
+        if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, true, false, true, true);
+            return sprintf(
+                ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
+                $tableAlias,
+                $column->name,
+                $converter->getCode()
+            );
+        }
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
@@ -91,6 +122,15 @@ final class MigrationRecordBuilder
      */
     public function alterColumnType(string $tableAlias, ColumnSchema $column, bool $addUsing = false):string
     {
+        if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, false, false, true, true);
+            return sprintf(
+                ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
+                $tableAlias,
+                $column->name,
+                rtrim(ltrim($converter->getAlterExpression($addUsing), "'"), "'")
+            );
+        }
         $converter = $this->columnToCode($column, false);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
@@ -100,6 +140,15 @@ final class MigrationRecordBuilder
      */
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column, bool $addUsing = false) :string
     {
+        if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
+            $converter = $this->columnToCode($column, true, false, true, true);
+            return sprintf(
+                ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
+                $tableAlias,
+                $column->name,
+                rtrim(ltrim($converter->getAlterExpression($addUsing), "'"), "'")
+            );
+        }
         $converter = $this->columnToCode($column, true);
         return sprintf(self::ALTER_COLUMN, $tableAlias, $column->name, $converter->getAlterExpression($addUsing));
     }
@@ -204,8 +253,20 @@ final class MigrationRecordBuilder
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    private function columnToCode(ColumnSchema $column, bool $fromDb = false, bool $alter = false): ColumnToCode
-    {
-        return Yii::createObject(ColumnToCode::class, [$this->dbSchema, $column, $fromDb, $alter]);
+    private function columnToCode(
+        ColumnSchema $column,
+        bool $fromDb = false,
+        bool $alter = false,
+        bool $raw = false,
+        bool $alterByXDbType = false
+    ): ColumnToCode {
+        return Yii::createObject(ColumnToCode::class, [
+            $this->dbSchema,
+            $column,
+            $fromDb,
+            $alter,
+            $raw,
+            $alterByXDbType
+        ]);
     }
 }

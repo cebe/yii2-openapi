@@ -139,8 +139,7 @@ class DbModel extends BaseObject
         return array_filter(
             $this->attributes,
             static function (Attribute $attribute) {
-                return !$attribute->isVirtual && StringHelper::startsWith($attribute->dbType, 'enum')
-                    && !empty($attribute->enumValues);
+                return !$attribute->isVirtual && !empty($attribute->enumValues);
             }
         );
     }

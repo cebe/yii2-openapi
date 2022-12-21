@@ -9,11 +9,11 @@ namespace cebe\yii2openapi\lib\migrations;
 
 use cebe\yii2openapi\lib\items\DbIndex;
 use yii\db\ColumnSchema;
+use yii\helpers\VarDumper;
 use yii\helpers\ArrayHelper;
 
 final class PostgresMigrationBuilder extends BaseMigrationBuilder
 {
-
     /**
      * @param array|ColumnSchema[] $columns
      * @throws \yii\base\InvalidConfigException
@@ -105,18 +105,21 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
         $changedAttributes = [];
-        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
-            $current->defaultValue = (int)$current->defaultValue;
-        }
-        if ($desired->phpType === 'int' && $desired->defaultValue !== null) {
-            $desired->defaultValue = (int)$desired->defaultValue;
-        }
-        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
-            $desired->size = $current->size;
-        }
 
-        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'] as $attr) {
-            if ($current->$attr !== $desired->$attr) {
+        $this->modifyCurrent($current);
+        $this->modifyDesired($desired);
+        $this->modifyDesiredInContextOfCurrent($current, $desired);
+
+        // for docs, please see MysqlMigrationBuilder file
+        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        $this->modifyDesired($desiredFromDb);
+        $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
+
+        foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
+                    , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
+        ] as $attr) {
+            if ($current->$attr !== $desiredFromDb->$attr) {
                 $changedAttributes[] = $attr;
             }
         }
@@ -189,5 +192,39 @@ SQL;
             $dbIndexes[$dbIndex->name] = $dbIndex;
         }
         return $dbIndexes;
+    }
+
+    public static function getColumnSchemaBuilderClass(): string
+    {
+        return \yii\db\ColumnSchemaBuilder::class;
+    }
+
+    public function modifyCurrent(ColumnSchema $current): void
+    {
+        /** @var $current \yii\db\pgsql\ColumnSchema */
+        if ($current->phpType === 'integer' && $current->defaultValue !== null) {
+            $current->defaultValue = (int)$current->defaultValue;
+        }
+    }
+
+    public function modifyDesired(ColumnSchema $desired): void
+    {
+        /** @var $desired cebe\yii2openapi\db\ColumnSchema|\yii\db\pgsql\ColumnSchema */
+        if (in_array($desired->phpType, ['int', 'integer']) && $desired->defaultValue !== null) {
+            $desired->defaultValue = (int)$desired->defaultValue;
+        }
+        if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($desired->dbType)) {
+            $desired->precision = $decimalAttributes['precision'];
+            $desired->scale = $decimalAttributes['scale'];
+        }
+    }
+
+    public function modifyDesiredInContextOfCurrent(ColumnSchema $current, ColumnSchema $desired): void
+    {
+        /** @var $current \yii\db\pgsql\ColumnSchema */
+        /** @var $desired cebe\yii2openapi\db\ColumnSchema|\yii\db\pgsql\ColumnSchema */
+        if ($current->type === $desired->type && !$desired->size && $this->isDbDefaultSize($current)) {
+            $desired->size = $current->size;
+        }
     }
 }

@@ -4,12 +4,14 @@ namespace tests\unit;
 
 use cebe\yii2openapi\generator\ApiGenerator;
 use tests\TestCase;
+use tests\DbTestCase;
 use Yii;
 use yii\helpers\FileHelper;
 use yii\helpers\StringHelper;
 use function strpos;
 
-class GeneratorTest extends TestCase
+// class GeneratorTest extends TestCase
+class GeneratorTest extends DbTestCase
 {
     public function provideTestcases()
     {
@@ -33,7 +35,15 @@ class GeneratorTest extends TestCase
 
         $this->prepareTempDir();
 
-        $this->mockApplication($this->mockDbSchemaAsEmpty());
+        $this->mockApplication();
+        // $this->mockApplication($this->mockDbSchemaAsEmpty());
+
+        if ($testFile === '/app/tests/specs/postgres_custom.php' ||
+            $testFile === '/app/tests/specs/menu.php'
+        ) { // TODO docs + add separate tests for this + refactor tests
+            $dbo = Yii::$app->db;
+            Yii::$app->set('db', Yii::$app->pgsql);
+        }
 
         $generator = $this->createGenerator($testFile);
         $this->assertTrue($generator->validate(), print_r($generator->getErrors(), true));
@@ -41,6 +51,20 @@ class GeneratorTest extends TestCase
         $codeFiles = $generator->generate();
         foreach ($codeFiles as $file) {
             $file->save();
+        }
+
+        // TODO docs + add separate tests for this + refactor tests
+        if ($testFile === '/app/tests/specs/blog_v2.php') {
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations_mysql_db');
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::createDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::copyDirectory('/app/tests/specs/blog_v2/migrations', '/app/tests/tmp/docker_app/migrations');
+        }
+        if ($testFile === '/app/tests/specs/postgres_custom.php') {
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations_pgsql_db');
+            FileHelper::removeDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::createDirectory('/app/tests/tmp/docker_app/migrations');
+            FileHelper::copyDirectory('/app/tests/specs/postgres_custom/migrations', '/app/tests/tmp/docker_app/migrations');
         }
 
         $expectedFiles = array_map(function($file) use ($testFile) {
@@ -52,7 +76,7 @@ class GeneratorTest extends TestCase
         },
             FileHelper::findFiles(Yii::getAlias('@app'), ['recursive' => true]));
 
-        //Skip database-specific migrations and json-api controllers
+        // Skip database-specific migrations and json-api controllers
         $expectedFiles = array_filter($expectedFiles,
             function($file) {
                 return strpos($file, 'migrations_') === false && strpos($file, 'jsonapi') === false;
@@ -72,6 +96,12 @@ class GeneratorTest extends TestCase
             $this->assertFileExists($expectedFile);
             $this->assertFileExists($actualFile);
             $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
+        }
+
+        if ($testFile === '/app/tests/specs/postgres_custom.php' ||
+            $testFile === '/app/tests/specs/menu.php'
+        ) {
+            Yii::$app->set('db', $dbo); // Mysql is default so set it back
         }
     }
 

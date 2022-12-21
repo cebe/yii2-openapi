@@ -8,7 +8,6 @@ namespace app\models\base;
  * @property int $id
  * @property string $title
  * @property string $slug
- * @property string $lang
  * @property int $category_id Category of posts
  * @property bool $active
  * @property string $created_at
@@ -29,7 +28,7 @@ abstract class Post extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['title', 'slug', 'lang', 'created_at'], 'trim'],
+            'trim' => [['title', 'slug', 'created_at'], 'trim'],
             'required' => [['title', 'category_id', 'active'], 'required'],
             'category_id_integer' => [['category_id'], 'integer'],
             'category_id_exist' => [['category_id'], 'exist', 'targetRelation' => 'Category'],
@@ -38,8 +37,6 @@ abstract class Post extends \yii\db\ActiveRecord
             'title_unique' => [['title'], 'unique'],
             'title_string' => [['title'], 'string', 'max' => 255],
             'slug_string' => [['slug'], 'string', 'min' => 1, 'max' => 200],
-            'lang_string' => [['lang'], 'string'],
-            'lang_in' => [['lang'], 'in', 'range' => ['ru', 'eng']],
             'active_boolean' => [['active'], 'boolean'],
             'created_at_date' => [['created_at'], 'date'],
         ];

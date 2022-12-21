@@ -28,7 +28,6 @@ class ValidatorRulesBuilderTest extends TestCase
                 (new Attribute('active'))->setPhpType('bool')->setDbType('boolean'),
                 (new Attribute('category'))->asReference('Category')
                                            ->setRequired(true)->setPhpType('int')->setDbType('integer'),
-                (new Attribute('state'))->setPhpType('string')->setDbType('string')->setEnumValues(['active', 'draft']),
                 (new Attribute('created_at'))->setPhpType('string')->setDbType('datetime'),
                 (new Attribute('contact_email'))->setPhpType('string')->setDbType('string'),
                 (new Attribute('required_with_def'))->setPhpType('string')
@@ -42,7 +41,6 @@ class ValidatorRulesBuilderTest extends TestCase
             'trim' => new ValidationRule([
                 'title',
                 'article',
-                'state',
                 'created_at',
                 'contact_email',
                 'required_with_def',
@@ -57,8 +55,6 @@ class ValidatorRulesBuilderTest extends TestCase
             'title_string' => new ValidationRule(['title'], 'string', ['max' => 60]),
             'article_string' => new ValidationRule(['article'], 'string'),
             'active_boolean' => new ValidationRule(['active'], 'boolean'),
-            'state_string' => new ValidationRule(['state'], 'string'),
-            'state_in' => new ValidationRule(['state'], 'in', ['range' => ['active', 'draft']]),
             'created_at_datetime' => new ValidationRule(['created_at'], 'datetime'),
             'contact_email_string' => new ValidationRule(['contact_email'], 'string'),
             'contact_email_email' => new ValidationRule(['contact_email'], 'email'),

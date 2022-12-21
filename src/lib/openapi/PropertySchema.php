@@ -7,6 +7,13 @@
 
 namespace cebe\yii2openapi\lib\openapi;
 
+use yii\db\ColumnSchema;
+use cebe\yii2openapi\generator\ApiGenerator;
+use yii\db\mysql\Schema as MySqlSchema;
+use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
+use yii\db\pgsql\Schema as PgSqlSchema;
+use cebe\yii2openapi\lib\items\Attribute;
+use yii\base\NotSupportedException;
 use BadMethodCallException;
 use cebe\openapi\ReferenceContext;
 use cebe\openapi\spec\Reference;
@@ -19,6 +26,7 @@ use yii\db\Schema as YiiDbSchema;
 use yii\helpers\Inflector;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function is_int;
 use function strpos;
 
@@ -315,6 +323,11 @@ class PropertySchema
             return 'array';
         }
 
+        if ($customDbType) {
+            list(, , $phpType) = static::findMoreDetailOf($customDbType);
+            return $phpType;
+        }
+
         switch ($this->getAttr('type')) {
             case 'integer':
                 return 'int';
@@ -343,9 +356,9 @@ class PropertySchema
         }
         if ($this->hasAttr(CustomSpecAttr::DB_TYPE) && $this->getAttr(CustomSpecAttr::DB_TYPE) !== false) {
             $customDbType = strtolower($this->getAttr(CustomSpecAttr::DB_TYPE));
-            if ($customDbType === 'varchar') {
-                return YiiDbSchema::TYPE_STRING;
-            }
+            // if ($customDbType === 'varchar') {
+            //     return YiiDbSchema::TYPE_STRING;
+            // }
             if ($customDbType !== null) {
                 return $customDbType;
             }
@@ -424,5 +437,128 @@ class PropertySchema
         }
 
         return $default;
+    }
+
+    public static function findMoreDetailOf(string $xDbType): array
+    {
+        // We can have various values in `x-db-type`. Few examples are:
+        // double precision(10,2)
+        // double
+        // text
+        // text[]
+        // decimal(12,2)
+        // decimal
+        // pg_lsn
+        // pg_snapshot
+        // integer primary key
+        // time with time zone
+        // time(3) with time zone
+        // smallint unsigned zerofill
+        // mediumint(10) unsigned zerofill comment "comment"
+
+        // We only consider first word of DB type that has more than one word e.g. :
+        // SQL Standard
+        // 'double precision',
+
+        // // PgSQL
+        // 'bit varying',
+        // 'character varying',
+        // 'time with time zone',
+        // 'time(3) with time zone',
+        // 'time without time zone',
+        // 'timestamp with time zone',
+        // 'timestamp(6) with time zone',
+        // 'timestamp without time zone',
+
+        // Because abstract data type (e.g. yii\db\pgsql\Schema::$typeMap) is same for:
+        // `double` and `double precision`
+        // `time` and `time with time zone`
+        // `time` and `time without time zone`
+        // `timestamp` and `timestamp without time zone` etc
+
+
+        preg_match('/\w+/', $xDbType, $matches);
+        if (!isset($matches[0])) {
+            throw new \yii\base\InvalidConfigException('Abnormal x-db-type: "'.$xDbType.'" detected');
+        }
+        $firstWordOfRealJustDbType = strtolower($matches[0]);
+
+        if (ApiGenerator::isMysql()) {
+            $mysqlSchema = new MySqlSchema;
+
+            if (!array_key_exists($firstWordOfRealJustDbType, $mysqlSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in MySQL or not implemented in Yii MySQL. See allowed data types list in `\yii\db\mysql\Schema::$typeMap`');
+            }
+
+            $yiiAbstractDataType = $mysqlSchema->typeMap[$firstWordOfRealJustDbType];
+        } elseif (ApiGenerator::isMariaDb()) {
+            $mariadbSchema = new MariaDbSchema;
+
+            if (!array_key_exists($firstWordOfRealJustDbType, $mariadbSchema->typeMap)) {
+                throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in MariaDb or not implemented in Yii MariaDB. See allowed data types list in `\SamIT\Yii2\MariaDb\Schema::$typeMap`');
+            }
+            $yiiAbstractDataType = $mariadbSchema->typeMap[$firstWordOfRealJustDbType];
+        } elseif (ApiGenerator::isPostgres()) {
+            $pgsqlSchema = new PgSqlSchema;
+            if (!array_key_exists($firstWordOfRealJustDbType, $pgsqlSchema->typeMap)) {
+                preg_match('/\w+\ \w+/', $xDbType, $doublePrecisionDataType);
+                if (!isset($doublePrecisionDataType[0])) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$firstWordOfRealJustDbType.'" is incorrect. "'.$firstWordOfRealJustDbType.'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
+                }
+                $doublePrecisionDataType[0] = strtolower($doublePrecisionDataType[0]);
+                if (!array_key_exists($doublePrecisionDataType[0], $pgsqlSchema->typeMap)) {
+                    throw new InvalidDefinitionException('"x-db-type: '.$doublePrecisionDataType[0].'" is incorrect. "'.$doublePrecisionDataType[0].'" is not a real data type in PostgreSQL or not implemented in Yii PostgreSQL. See allowed data types list in `\yii\db\pgsql\Schema::$typeMap`');
+                }
+                $yiiAbstractDataType = $pgsqlSchema->typeMap[$doublePrecisionDataType[0]];
+            } else {
+                $yiiAbstractDataType = $pgsqlSchema->typeMap[$firstWordOfRealJustDbType];
+            }
+        } else {
+            throw new NotSupportedException('"x-db-type" for database '.get_class(Yii::$app->db->schema).' is not implemented. It is only implemented for PostgreSQL, MySQL and MariaDB.');
+        }
+
+        $phpType = static::getColumnPhpType(new ColumnSchema(['type' => $yiiAbstractDataType]));
+        if (StringHelper::endsWith($xDbType, '[]')) {
+            $phpType = 'array';
+        }
+
+        return [
+            $firstWordOfRealJustDbType,
+            $yiiAbstractDataType,
+            $phpType,
+        ];
+    }
+
+    /**
+     * This method is copied from protected method `getColumnPhpType()` of \yii\db\Schema class
+     * Extracts the PHP type from abstract DB type.
+     * @param \yii\db\ColumnSchema $column the column schema information
+     * @return string PHP type name
+     */
+    public static function getColumnPhpType(ColumnSchema $column): string
+    {
+        static $typeMap = [
+            // abstract type => php type
+            YiiDbSchema::TYPE_TINYINT => 'integer',
+            YiiDbSchema::TYPE_SMALLINT => 'integer',
+            YiiDbSchema::TYPE_INTEGER => 'integer',
+            YiiDbSchema::TYPE_BIGINT => 'integer',
+            YiiDbSchema::TYPE_BOOLEAN => 'boolean',
+            YiiDbSchema::TYPE_FLOAT => 'double',
+            YiiDbSchema::TYPE_DOUBLE => 'double',
+            YiiDbSchema::TYPE_BINARY => 'resource',
+            YiiDbSchema::TYPE_JSON => 'array',
+        ];
+        if (isset($typeMap[$column->type])) {
+            if ($column->type === 'bigint') {
+                return PHP_INT_SIZE === 8 && !$column->unsigned ? 'integer' : 'string';
+            } elseif ($column->type === 'integer') {
+                return PHP_INT_SIZE === 4 && $column->unsigned ? 'string' : 'integer';
+            }
+
+            return $typeMap[$column->type];
+        }
+
+        return 'string';
     }
 }

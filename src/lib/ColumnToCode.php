@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib;
 
 use yii\db\ArrayExpression;
+use cebe\yii2openapi\generator\ApiGenerator;
 use yii\db\ColumnSchema;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Expression;
@@ -17,6 +18,7 @@ use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\db\Schema;
 use yii\helpers\Json;
 use yii\helpers\StringHelper;
+use yii\helpers\VarDumper;
 use function in_array;
 use function is_string;
 use function preg_replace;
@@ -58,8 +60,17 @@ class ColumnToCode
 
     /**
      * @var bool
+     * Built In Type means the \cebe\yii2openapi\lib\items\Attribute::$type or \cebe\yii2openapi\lib\items\Attribute::$dbType is in list of Yii abstract data type list or not. And if is found we can use \yii\db\SchemaBuilderTrait methods to build migration instead of putting raw SQL
      */
     private $isBuiltinType = false;
+
+    /**
+     * @var bool
+     * if set to `true`, `getCode()` method will return SQL migration in raw form instead of SchemaBuilderTrait methods
+     * Example: `string null default null`
+     * It won't return `$this->string()->null()->defaultValue(null)`
+     */
+    private $raw = false;
 
     /**
      * @var bool
@@ -76,18 +87,44 @@ class ColumnToCode
     private $alter;
 
     /**
+     * @var bool
+     * Q. How does it differ from `$alter` and why it is needed?
+     * A. Pgsql alter column data type does not support NULL, DEFAULT etc value. We just have to provide new data type.
+     * NULL will be handled SET NULL/SET NOT NULL
+     * DEFAULT will be handled by SET DEFAULT ...
+     * This property is only used in Pgsql DB and for alter column data type cases
+     */
+    private $alterByXDbType;
+
+    /**
      * ColumnToCode constructor.
      * @param \yii\db\Schema       $dbSchema
      * @param \yii\db\ColumnSchema $column
      * @param bool                 $fromDb (if from database we prefer column type for usage, from schema - dbType)
      * @param bool                 $alter (flag for resolve quotes that is different for create and alter)
+     * @param bool                 $raw see @property $raw above for docs
+     * @param bool                 $alterByXDbType see @alterByXDbType $raw above for docs
      */
-    public function __construct(Schema $dbSchema, ColumnSchema $column, bool $fromDb = false, bool $alter = false)
-    {
+    public function __construct(
+        Schema $dbSchema,
+        ColumnSchema $column,
+        bool $fromDb = false,
+        bool $alter = false,
+        bool $raw = false,
+        bool $alterByXDbType = false
+    ) {
         $this->dbSchema = $dbSchema;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
+        $this->raw = $raw;
+        $this->alterByXDbType = $alterByXDbType;
+
+        // We use `property_exists()` because sometimes we can have instance of \yii\db\mysql\ColumnSchema (or of Maria/Pgsql) or \cebe\yii2openapi\db\ColumnSchema
+        if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
+            $this->raw = true;
+        }
+
         $this->resolve();
     }
 
@@ -101,33 +138,40 @@ class ColumnToCode
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
-        if (!$this->rawParts['default']) {
+        if ($this->rawParts['default'] === null) {
             $default = '';
-        } elseif ($this->isPostgres() && $this->isEnum()) {
+        } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
-                $this->rawParts['default'] ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
+                $this->rawParts['default'] !== null ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
         } else {
-            $default = $this->rawParts['default'] ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
+            $default = $this->rawParts['default'] !== null ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
-        if ($this->isMysql() && $this->isEnum()) {
+        if (ApiGenerator::isMysql() && $this->isEnum()) {
             return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
+        }
+        if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
+            return $quoted ? "'" . $this->rawParts['type'] . "'" : $this->rawParts['type'];
         }
         return $quoted ? "'" . $code . "'" : $code;
     }
 
     public function getAlterExpression(bool $addUsingExpression = false):string
     {
-        if ($this->isEnum() && $this->isPostgres()) {
+        if ($this->isEnum() && ApiGenerator::isPostgres()) {
             return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
         }
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
         }
-        if ($addUsingExpression && $this->isPostgres()) {
+        if ($addUsingExpression && ApiGenerator::isPostgres()) {
             return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
+        }
+
+        if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
+            return "'" . $this->rawParts['type'] . "'";
         }
 
         return $this->isBuiltinType
@@ -147,12 +191,67 @@ class ColumnToCode
 
     public function isEnum():bool
     {
-        return StringHelper::startsWith($this->column->dbType, 'enum');
+        return !empty($this->column->enumValues);
+    }
+
+    public function isDecimal()
+    {
+        return self::isDecimalByDbType($this->column->dbType);
+    }
+
+    /**
+     * @param $dbType
+     * @return array|false
+     */
+    public static function isDecimalByDbType($dbType)
+    {
+        $precision = null;
+        $scale = null;
+
+        // https://runebook.dev/de/docs/mariadb/decimal/index
+        $precisionDefault = 10;
+        $scaleDefault = 2;
+
+        preg_match_all('/(decimal\()+([0-9]+)+(,)+([0-9]+)+(\))/', $dbType, $matches);
+        if (!empty($matches[4][0])) {
+            $precision = $matches[2][0];
+            $scale = $matches[4][0];
+        }
+
+        if (empty($precision)) {
+            preg_match_all('/(decimal\()+([0-9]+)+(\))/', $dbType, $matches);
+            if (!empty($matches[2][0])) {
+                $precision = $matches[2][0];
+                $scale = $scaleDefault;
+            }
+        }
+
+        if (empty($precision)) {
+            if (strtolower($dbType) === 'decimal') {
+                $precision = $precisionDefault;
+                $scale = $scaleDefault;
+            }
+        }
+
+        if (empty($precision)) {
+            return false;
+        }
+
+        return [
+            'precision' => (int)$precision,
+            'scale' => (int)$scale,
+            'dbType' => "decimal($precision,$scale)",
+        ];
     }
 
     public static function escapeQuotes(string $str):string
     {
         return str_replace(["'", '"', '$'], ["\\'", "\\'", '\$'], $str);
+    }
+
+    public static function undoEscapeQuotes(string $str):string
+    {
+        return str_replace(["\\'", "\\'", '\$'], ["'", '"', '$'], $str);
     }
 
     public static function wrapQuotes(string $str, string $quotes = "'", bool $escape = true):string
@@ -208,11 +307,6 @@ class ColumnToCode
         if ($dbType === 'varchar') {
             $type = $dbType = 'string';
         }
-        if ($this->fromDb === true) {
-            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$type]);
-        } else {
-            $this->isBuiltinType = isset((new ColumnSchemaBuilder(''))->categoryMap[$dbType]);
-        }
         $fluentSize = $this->column->size ? '(' . $this->column->size . ')' : '()';
         $rawSize = $this->column->size ? '(' . $this->column->size . ')' : '';
         $this->rawParts['nullable'] = $this->column->allowNull ? 'NULL' : 'NOT NULL';
@@ -227,17 +321,48 @@ class ColumnToCode
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         } elseif ($this->isEnum()) {
             $this->resolveEnumType();
+        } elseif ($this->isDecimal()) {
+            $this->fluentParts['type'] = $this->column->dbType;
+            $this->rawParts['type'] = $this->column->dbType;
         } else {
             $this->fluentParts['type'] = $type . $fluentSize;
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
+        
+        $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
+
         $this->resolveDefaultValue();
+    }
+
+    /**
+     * @param $type
+     * @param $dbType
+     * @return bool
+     */
+    private function getIsBuiltinType($type, $dbType)
+    {
+        if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
+            return false;
+        }
+
+        if ($this->isEnum() && ApiGenerator::isMariaDb()) {
+            return false;
+        }
+        if ($this->fromDb === true) {
+            return isset(
+                (new ColumnSchemaBuilder(''))->categoryMap[$type]
+            );
+        } else {
+            return isset(
+                (new ColumnSchemaBuilder(''))->categoryMap[$dbType]
+            );
+        }
     }
 
     private function resolveEnumType():void
     {
-        if ($this->isPostgres()) {
+        if (ApiGenerator::isPostgres()) {
             $this->rawParts['type'] = 'enum_' . $this->column->name;
             return;
         }
@@ -251,8 +376,8 @@ class ColumnToCode
         }
         $value = $this->column->defaultValue;
         if ($value === null || (is_string($value) && (stripos($value, 'null::') !== false))) {
-            $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : '';
-            $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : '';
+            $this->fluentParts['default'] = ($this->column->allowNull === true) ? 'defaultValue(null)' : $this->fluentParts['default'];
+            $this->rawParts['default'] = ($this->column->allowNull === true) ? 'NULL' : $this->rawParts['default'];
             return;
         }
         $expectInteger = is_numeric($value) && stripos($this->column->dbType, 'int') !== false;
@@ -270,7 +395,7 @@ class ColumnToCode
                 break;
             case 'boolean':
                 $this->fluentParts['default'] = (bool)$value === true ? 'defaultValue(true)' : 'defaultValue(false)';
-                if ($this->isPostgres()) {
+                if (ApiGenerator::isPostgres()) {
                     $this->rawParts['default'] = ((bool)$value === true ? "'t'" : "'f'");
                 } else {
                     $this->rawParts['default'] = ((bool)$value === true ? '1' : '0');
@@ -305,7 +430,7 @@ class ColumnToCode
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                 }
                 $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-                if ($this->isMysql() && $this->isEnum()) {
+                if (ApiGenerator::isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
         }
@@ -314,29 +439,27 @@ class ColumnToCode
     private function isDefaultAllowed():bool
     {
         $type = strtolower($this->column->dbType);
-        if ($type === 'tsvector') {
-            return false;
+        switch ($type) {
+            case 'tsvector':
+                return false;
+            case 'blob':
+            case 'geometry':
+            case 'text':
+            case 'json':
+                if (ApiGenerator::isMysql()) {
+                    // The BLOB, TEXT, GEOMETRY, and JSON data types cannot be assigned a literal default value.
+                    // https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+                    return false;
+                }
+                return true;
+            case 'enum':
+            default:
+                return true;
         }
-        return !($this->isMysql() && !$this->isMariaDb() && in_array($type, ['blob', 'geometry', 'text', 'json']));
     }
 
     private function typeWithoutSize(string $type):string
     {
         return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
-    }
-
-    private function isPostgres():bool
-    {
-        return $this->dbSchema instanceof PgSqlSchema;
-    }
-
-    private function isMysql():bool
-    {
-        return $this->dbSchema instanceof MySqlSchema;
-    }
-
-    private function isMariaDb():bool
-    {
-        return strpos($this->dbSchema->getServerVersion(), 'MariaDB') !== false;
     }
 }
