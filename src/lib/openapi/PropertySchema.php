@@ -530,7 +530,7 @@ class PropertySchema
     }
 
     /**
-     * This method is copied from protected method `getColumnPhpType()` of \yii\db\Schema class
+     * This method is copied + enhanced from protected method `getColumnPhpType()` of \yii\db\Schema class
      * Extracts the PHP type from abstract DB type.
      * @param \yii\db\ColumnSchema $column the column schema information
      * @return string PHP type name
@@ -546,6 +546,7 @@ class PropertySchema
             YiiDbSchema::TYPE_BOOLEAN => 'boolean',
             YiiDbSchema::TYPE_FLOAT => 'double',
             YiiDbSchema::TYPE_DOUBLE => 'double',
+            YiiDbSchema::TYPE_DECIMAL => 'double', # (enhanced)
             YiiDbSchema::TYPE_BINARY => 'resource',
             YiiDbSchema::TYPE_JSON => 'array',
         ];
