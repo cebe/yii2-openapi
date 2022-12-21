@@ -421,15 +421,17 @@ class ColumnToCode
                 break;
             default:
                 $isExpression = StringHelper::startsWith($value, 'CURRENT')
+                    || StringHelper::startsWith($value, 'current')
                     || StringHelper::startsWith($value, 'LOCAL')
                     || substr($value, -1, 1) === ')';
                 if ($isExpression) {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                    $this->rawParts['default'] = $value;
                 } else {
                     $this->fluentParts['default'] = $expectInteger
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
+                    $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
                 }
-                $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
                 if (ApiGenerator::isMysql() && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
