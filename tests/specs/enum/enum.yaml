@@ -1,0 +1,33 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Enum test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Pristine:
+      type: object
+      description: Enum for migration code generation
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        device:
+          type: string
+          maxLength: 8
+          enum:
+            - MOBILE
+            - TV
+            - COMPUTER
+          default:
+            TV
+          nullable: false

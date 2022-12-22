@@ -270,7 +270,9 @@ class ColumnToCode
 
     public static function mysqlEnumToString(array $enum):string
     {
-        return implode(', ', array_map('self::wrapQuotes', $enum));
+        return implode(', ', array_map(function($aEnumValue) {
+            return self::wrapQuotes($aEnumValue, '"');
+        }, $enum));
     }
 
     private function defaultValueJson(array $value):string
@@ -329,7 +331,7 @@ class ColumnToCode
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
-        
+
         $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
 
         $this->resolveDefaultValue();
@@ -346,7 +348,7 @@ class ColumnToCode
             return false;
         }
 
-        if ($this->isEnum() && ApiGenerator::isMariaDb()) {
+        if ($this->isEnum()) {
             return false;
         }
         if ($this->fromDb === true) {
