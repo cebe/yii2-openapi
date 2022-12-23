@@ -8,7 +8,8 @@
 namespace cebe\yii2openapi\lib\items;
 
 use yii\base\BaseObject;
-use yii\helpers\Inflector;
+use yii\helpers\{Inflector, VarDumper};
+use cebe\yii2openapi\generator\ApiGenerator;
 use function array_push;
 use function array_unshift;
 use function implode;
@@ -72,14 +73,50 @@ class MigrationModel extends BaseObject
         }
     }
 
+    /**
+     * @param ?array $codes
+     * @param string $direction ENUM allowed value can be one of "UP", "DOWN"
+     */
+    public static function moveEnumStatementForPgsql(?array $codes, string $direction)
+    {
+        // for up migration move enum statemenet to botton
+        // for down migration move enum statemenet to top
+
+        if (!ApiGenerator::isPostgres() || empty($codes)) {
+            return $codes;
+        }
+
+        // $enumKey = null;
+        // foreach ($codes as $key => $code) {
+        //     if (strpos($code, ' TYPE enum_') !== false) {
+        //         $enumKey = $key;
+        //         break;
+        //     }
+        // }
+
+        // if ($enumKey !== null) {
+        //     if ($direction === 'UP') {
+        //         array_push($codes, $codes[$enumKey]);
+        //         unset($codes[$enumKey]);
+        //     } elseif ($direction === 'DOWN') {
+        //         $code = $codes[$enumKey];
+        //         unset($codes[$enumKey]);
+        //         array_unshift($codes, $code);
+        //     } else {
+        //         throw new \Exception('Unknown direction found.');
+        //     }
+        // }
+        return $codes;
+    }
+
     public function getUpCodeString():string
     {
-        return !empty($this->upCodes) ? implode(PHP_EOL, $this->upCodes) : '';
+        return !empty($this->upCodes) ? implode(PHP_EOL, static::moveEnumStatementForPgsql($this->upCodes, 'UP')) : '';
     }
 
     public function getDownCodeString():string
     {
-        return !empty($this->downCodes) ? implode(PHP_EOL, $this->downCodes) : '';
+        return !empty($this->downCodes) ? implode(PHP_EOL, static::moveEnumStatementForPgsql($this->downCodes, 'DOWN')) : '';
     }
 
     public function notEmpty():bool
