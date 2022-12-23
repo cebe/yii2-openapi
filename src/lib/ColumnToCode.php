@@ -148,8 +148,8 @@ class ColumnToCode
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
-        if (ApiGenerator::isMysql() && $this->isEnum()) {
-            return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
+        if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
+            return $quoted ? "'" . $code . "'" : $code;
         }
         if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
             return $quoted ? "'" . $this->rawParts['type'] . "'" : $this->rawParts['type'];
@@ -434,7 +434,7 @@ class ColumnToCode
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                     $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
                 }
-                if (ApiGenerator::isMysql() && $this->isEnum()) {
+                if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
         }

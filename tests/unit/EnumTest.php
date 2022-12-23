@@ -43,6 +43,19 @@ class EnumTest extends DbTestCase
 
     public function testEnumToString()
     {
+        $this->deleteTables();
+        $this->createTableForEditEnumToString();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'mysql');
+
+
+        $this->changeDbToMariadb();
+        $this->deleteTables();
+        $this->createTableForEditEnumToString();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'maria');
+
+
         $this->changeDbToPgsql();
         $this->deleteTables();
         $this->createTableForEditEnumToString();
@@ -50,9 +63,23 @@ class EnumTest extends DbTestCase
         $this->runGenerator($testFile, 'pgsql');
     }
 
+    // public function testStringToEnum()
+    // { // TODO
+    // }
+
+    // public function testChangeEnumValues()
+    // {
+    //     // TODO
+    //     // add a value to list
+    //     // fix a typo in a enum value present in existing list
+    //     // remove a value from list
+    // }
+
     private function deleteTables()
     {
-        Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_device CASCADE')->execute();
+        if (ApiGenerator::isPostgres()) {
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_device CASCADE')->execute();
+        }
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
@@ -61,10 +88,17 @@ class EnumTest extends DbTestCase
 
     private function createTableForEditEnumToString()
     {
-        Yii::$app->db->createCommand('CREATE TYPE enum_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')')->execute();
+        if (ApiGenerator::isPostgres()) {
+            Yii::$app->db->createCommand('CREATE TYPE enum_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')')->execute();
+            Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
+                'id' => 'pk',
+                'device' => 'enum_device NOT NULL DEFAULT \'TV\'',
+            ])->execute();
+            return;
+        }
         Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
             'id' => 'pk',
-            'device' => 'enum_device NOT NULL DEFAULT \'TV\'',
+            'device' => 'enum("MOBILE", "TV", "COMPUTER") NOT NULL DEFAULT \'TV\'',
         ])->execute();
     }
 }
