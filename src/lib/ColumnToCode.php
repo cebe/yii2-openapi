@@ -270,7 +270,7 @@ class ColumnToCode
 
     public static function mysqlEnumToString(array $enum):string
     {
-        return implode(', ', array_map(function($aEnumValue) {
+        return implode(', ', array_map(function ($aEnumValue) {
             return self::wrapQuotes($aEnumValue, '"');
         }, $enum));
     }
