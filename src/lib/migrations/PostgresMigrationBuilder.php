@@ -24,7 +24,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $tableName = $this->model->getTableAlias();
             if ($column->dbType === 'enum') {
                 $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addDownCode($this->recordBuilder->dropEnum($column->name));
+                                ->addDownCode($this->recordBuilder->dropEnum($column->name), true);
             }
             $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
@@ -42,8 +42,8 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
             if ($column->dbType === 'enum') {
-                $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addUpCode($this->recordBuilder->dropEnum($column->name), true);
+                $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues), true)
+                                ->addUpCode($this->recordBuilder->dropEnum($column->name));
             }
         }
     }
@@ -62,12 +62,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             // This action require several steps and can't be applied during single transaction
             return;
         }
-        if ($isChangeToEnum) {
-            $this->migration->addUpCode($this->recordBuilder->createEnum($desired->name, $desired->enumValues), true);
-        }
-        if ($isChangeFromEnum) {
-            $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
-        }
+
         if (!empty(array_intersect(['type', 'size'], $changed))) {
             $addUsing = $this->isNeedUsingExpression($desired->type, $current->type);
             $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired));
@@ -93,9 +88,16 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
                 $this->migration->addUpCode($upCode)->addDownCode($downCode, true);
             }
         }
+        if ($isChangeToEnum) {
+            $this->migration->addUpCode($this->recordBuilder->createEnum($desired->name, $desired->enumValues), true);
+        }
+        if ($isChangeFromEnum) {
+            $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
+        }
+
         if ($isChangeFromEnum) {
             $this->migration
-                ->addDownCode($this->recordBuilder->createEnum($current->name, $current->enumValues), true);
+                ->addDownCode($this->recordBuilder->createEnum($current->name, $current->enumValues));
         }
         if ($isChangeToEnum) {
             $this->migration->addDownCode($this->recordBuilder->dropEnum($current->name), true);
@@ -132,7 +134,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         foreach ($enums as $attr) {
             $this->migration
                 ->addUpCode($this->recordBuilder->createEnum($attr->columnName, $attr->enumValues), true)
-                ->addDownCode($this->recordBuilder->dropEnum($attr->columnName));
+                ->addDownCode($this->recordBuilder->dropEnum($attr->columnName), true);
         }
     }
 

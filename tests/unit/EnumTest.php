@@ -15,7 +15,7 @@ use function strpos;
 
 class EnumTest extends DbTestCase
 {
-    public function testXDbTypeFresh()
+    public function testEnumFresh()
     {
         // default DB is Mysql ------------------------------------------------
         // $this->deleteTables();
@@ -39,5 +39,32 @@ class EnumTest extends DbTestCase
         //     'recursive' => true,
         // ]);
         // $this->compareFiles($actualFiles, $expectedFiles);
+    }
+
+    public function testEnumToString()
+    {
+        $this->changeDbToPgsql();
+        $this->deleteTables();
+        $this->createTableForEditEnumToString();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'pgsql');
+    }
+
+    private function deleteTables()
+    {
+        Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_device CASCADE')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+    }
+
+    private function createTableForEditEnumToString()
+    {
+        Yii::$app->db->createCommand('CREATE TYPE enum_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')')->execute();
+        Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
+            'id' => 'pk',
+            'device' => 'enum_device NOT NULL DEFAULT \'TV\'',
+        ])->execute();
     }
 }

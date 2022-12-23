@@ -31,3 +31,22 @@ components:
           default:
             TV
           nullable: false
+
+    Editcolumn:
+      type: object
+      description: Table with edit enum columns for migration code generation
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        device:
+          type: string
+          # maxLength: 8
+          # enum:
+          #   - MOBILE
+          #   - TV
+          #   - COMPUTER
+          # default:
+          #   TV
+          # nullable: false
