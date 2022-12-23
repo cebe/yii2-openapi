@@ -42,11 +42,11 @@ components:
           type: integer
         device:
           type: string
-          # maxLength: 8
-          # enum:
-          #   - MOBILE
-          #   - TV
-          #   - COMPUTER
-          # default:
-          #   TV
-          # nullable: false
+        connection:
+          type: string
+          enum:
+            - WIRED
+            - WIRELESS
+          default:
+            WIRED
+          nullable: false

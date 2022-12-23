@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
@@ -203,6 +204,11 @@ abstract class BaseMigrationBuilder
                 // do not adjust existing primary keys
                 continue;
             }
+            // TODO this section is not concretely correct
+            // type can be one of: char, string, text, boolean, smallint, integer, bigint, float, decimal, datetime,
+            // timestamp, time, date, binary, and money.
+            // `enum` is not a part of it
+            // also real DB type required enum values in MySQL and new `TYPE` in PgSQL
             if (!empty($current->enumValues)) {
                 $current->type = 'enum';
                 $current->dbType = 'enum';
@@ -211,6 +217,7 @@ abstract class BaseMigrationBuilder
                 $desired->type = 'enum';
                 $desired->dbType = 'enum';
             }
+            // section end
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
                 continue;
@@ -432,11 +439,24 @@ abstract class BaseMigrationBuilder
             $column = [$columnSchema->name => $this->newColStr($columnSchema)];
         }
 
+        // create enum if relevant
+        if (ApiGenerator::isPostgres() && !empty($columnSchema->enumValues)) {
+            $allEnumValues = $columnSchema->enumValues;
+            $allEnumValues = array_map(function ($aValue) {return "'$aValue'";}, $allEnumValues);
+            Yii::$app->db->createCommand(
+                'CREATE TYPE enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
+            )->execute();
+        }
+
         Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
 
         $table = Yii::$app->db->getTableSchema($tableName);
 
         Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+
+        if (ApiGenerator::isPostgres() && !empty($columnSchema->enumValues)) {// drop enum
+            Yii::$app->db->createCommand('DROP TYPE enum_'.$columnSchema->name)->execute();
+        }
 
         return $table->columns[$columnSchema->name];
     }

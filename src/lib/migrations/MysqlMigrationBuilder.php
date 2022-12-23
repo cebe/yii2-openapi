@@ -119,6 +119,12 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
         }
+
+        // TODO this is not concretely correct
+        if (!empty($current->enumValues)) {
+            $current->type = 'enum';
+            $current->dbType = 'enum';
+        }
     }
 
     public function modifyDesired(ColumnSchema $desired): void
@@ -131,6 +137,12 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
+        }
+
+        // TODO this is not concretely correct
+        if (!empty($desired->enumValues)) {
+            $desired->type = 'enum';
+            $desired->dbType = 'enum';
         }
     }
 

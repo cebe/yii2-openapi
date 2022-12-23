@@ -64,7 +64,11 @@ class EnumTest extends DbTestCase
     }
 
     // public function testStringToEnum()
-    // { // TODO
+    // {
+    //     $this->deleteTables();
+    //     $this->createTableForEditEnumToString();
+    //     $testFile = Yii::getAlias("@specs/enum/enum.php");
+    //     $this->runGenerator($testFile, 'mysql');
     // }
 
     // public function testChangeEnumValues()
@@ -93,12 +97,14 @@ class EnumTest extends DbTestCase
             Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
                 'id' => 'pk',
                 'device' => 'enum_device NOT NULL DEFAULT \'TV\'',
+                'connection' => 'string'
             ])->execute();
             return;
         }
         Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
             'id' => 'pk',
             'device' => 'enum("MOBILE", "TV", "COMPUTER") NOT NULL DEFAULT \'TV\'',
+            'connection' => 'string'
         ])->execute();
     }
 }
