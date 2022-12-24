@@ -22,7 +22,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     {
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
-            if ($column->dbType === 'enum') {
+            if (static::isEnum($column)) {
                 $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
                                 ->addDownCode($this->recordBuilder->dropEnum($column->name), true);
             }
@@ -41,8 +41,8 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $tableName = $this->model->getTableAlias();
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
-            if ($column->dbType === 'enum') {
-                $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues), true)
+            if (static::isEnum($column)) {
+                $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
                                 ->addUpCode($this->recordBuilder->dropEnum($column->name));
             }
         }
@@ -54,9 +54,9 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     protected function buildColumnChanges(ColumnSchema $current, ColumnSchema $desired, array $changed):void
     {
         $tableName = $this->model->getTableAlias();
-        $isChangeToEnum = $current->type !== $desired->type && !empty($desired->enumValues);
-        $isChangeFromEnum = $current->type !== $desired->type && !empty($current->enumValues);
-        $isChangedEnum = $current->type === $desired->type && !empty($current->enumValues);
+        $isChangeToEnum = !static::isEnum($current) && static::isEnum($desired);
+        $isChangeFromEnum = static::isEnum($current) && !static::isEnum($desired);
+        $isChangedEnum = static::isEnumValuesChanged($current, $desired);
         if ($isChangedEnum) {
             // Generation for change enum values not supported. Do it manually
             // This action require several steps and can't be applied during single transaction
@@ -210,11 +210,6 @@ SQL;
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
         }
-        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
-        if (!empty($current->enumValues)) {
-            $current->type = 'enum';
-            $current->dbType = 'enum';
-        }
     }
 
     public function modifyDesired(ColumnSchema $desired): void
@@ -226,11 +221,6 @@ SQL;
         if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($desired->dbType)) {
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
-        }
-        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
-        if (!empty($desired->enumValues)) {
-            $desired->type = 'enum';
-            $desired->dbType = 'enum';
         }
     }
 

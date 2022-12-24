@@ -41,6 +41,26 @@ class EnumTest extends DbTestCase
         // $this->compareFiles($actualFiles, $expectedFiles);
     }
 
+    public function testAddNewEnumColumn()
+    {
+        $this->deleteTables();
+        $this->createTableForNewEnumColumn();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'mysql');
+
+        $this->changeDbToMariadb();
+        $this->deleteTables();
+        $this->createTableForNewEnumColumn();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'maria');
+
+        $this->changeDbToPgsql();
+        $this->deleteTables();
+        $this->createTableForNewEnumColumn();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'pgsql');
+    }
+
     public function testEnumToString()
     {
         $this->deleteTables();
@@ -83,6 +103,9 @@ class EnumTest extends DbTestCase
     {
         if (ApiGenerator::isPostgres()) {
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_device CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_connection CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_new_column CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_delete_col CASCADE')->execute();
         }
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
@@ -105,6 +128,23 @@ class EnumTest extends DbTestCase
             'id' => 'pk',
             'device' => 'enum("MOBILE", "TV", "COMPUTER") NOT NULL DEFAULT \'TV\'',
             'connection' => 'string'
+        ])->execute();
+    }
+
+    private function createTableForNewEnumColumn()
+    {
+        if (ApiGenerator::isPostgres()) {
+            Yii::$app->db->createCommand('CREATE TYPE enum_delete_col AS ENUM(\'FOUR\', \'FIVE\', \'SIX\')')->execute();
+            Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
+                'id' => 'pk',
+                'delete_col' => 'enum_delete_col'
+            ])->execute();
+            return;
+        }
+
+        Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
+            'id' => 'pk',
+            'delete_col' => 'enum("FOUR", "FIVE", "SIX")'
         ])->execute();
     }
 }

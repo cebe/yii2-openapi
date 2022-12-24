@@ -29,8 +29,8 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         foreach ($changed as $attr) {
             $newColumn->$attr = $desired->$attr;
         }
-        if (!empty($newColumn->enumValues)) {
-            $newColumn->dbType = 'enum';
+        if (static::isEnum($newColumn)) {
+            $newColumn->dbType = 'enum'; // TODO this is concretely not correct
         }
         $this->migration->addUpCode($this->recordBuilder->alterColumn($this->model->getTableAlias(), $newColumn))
                         ->addDownCode($this->recordBuilder->alterColumn($this->model->getTableAlias(), $current));
@@ -119,12 +119,6 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
         }
-
-        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
-        if (!empty($current->enumValues)) {
-            $current->type = 'enum';
-            $current->dbType = 'enum';
-        }
     }
 
     public function modifyDesired(ColumnSchema $desired): void
@@ -137,12 +131,6 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         if ($decimalAttributes = ColumnToCode::isDecimalByDbType($desired->dbType)) {
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
-        }
-
-        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
-        if (!empty($desired->enumValues)) {
-            $desired->type = 'enum';
-            $desired->dbType = 'enum';
         }
     }
 

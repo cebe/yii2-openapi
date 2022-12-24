@@ -204,20 +204,6 @@ abstract class BaseMigrationBuilder
                 // do not adjust existing primary keys
                 continue;
             }
-            // TODO this section is not concretely correct
-            // type can be one of: char, string, text, boolean, smallint, integer, bigint, float, decimal, datetime,
-            // timestamp, time, date, binary, and money.
-            // `enum` is not a part of it
-            // also real DB type required enum values in MySQL and new `TYPE` in PgSQL
-            if (!empty($current->enumValues)) {
-                $current->type = 'enum';
-                $current->dbType = 'enum';
-            }
-            if (!empty($desired->enumValues)) {
-                $desired->type = 'enum';
-                $desired->dbType = 'enum';
-            }
-            // section end
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
                 continue;
@@ -440,9 +426,11 @@ abstract class BaseMigrationBuilder
         }
 
         // create enum if relevant
-        if (ApiGenerator::isPostgres() && !empty($columnSchema->enumValues)) {
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
             $allEnumValues = $columnSchema->enumValues;
-            $allEnumValues = array_map(function ($aValue) {return "'$aValue'";}, $allEnumValues);
+            $allEnumValues = array_map(function ($aValue) {
+                return "'$aValue'";
+            }, $allEnumValues);
             Yii::$app->db->createCommand(
                 'CREATE TYPE enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
             )->execute();
@@ -465,5 +453,25 @@ abstract class BaseMigrationBuilder
     {
         $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
         return ColumnToCode::undoEscapeQuotes($ctc->getCode());
+    }
+
+    public static function isEnum(\yii\db\ColumnSchema $columnSchema): bool
+    {
+        if (!empty($columnSchema->enumValues) && is_array($columnSchema->enumValues)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isEnumValuesChanged(
+        \yii\db\ColumnSchema $current,
+        \yii\db\ColumnSchema $desired
+    ): bool
+    {
+        if (static::isEnum($current) && static::isEnum($desired) &&
+            $current->enumValues !== $desired->enumValues) {
+            return true;
+        }
+        return false;
     }
 }
