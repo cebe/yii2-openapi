@@ -61,7 +61,7 @@ class EnumTest extends DbTestCase
         $this->runGenerator($testFile, 'pgsql');
     }
 
-    public function testEnumToString()
+    public function testEnumToString() // edit
     {
         $this->deleteTables();
         $this->createTableForEditEnumToString();
@@ -81,6 +81,28 @@ class EnumTest extends DbTestCase
         $this->createTableForEditEnumToString();
         $testFile = Yii::getAlias("@specs/enum/enum.php");
         $this->runGenerator($testFile, 'pgsql');
+    }
+
+    public function testEnumValuesChange()
+    {
+        $this->deleteTables();
+        $this->createTableForEnumValueChange();
+        $testFile = Yii::getAlias("@specs/enum/enum.php");
+        $this->runGenerator($testFile, 'mysql');
+
+
+        // $this->changeDbToMariadb();
+        // $this->deleteTables();
+        // $this->createTableForEditEnumToString();
+        // $testFile = Yii::getAlias("@specs/enum/enum.php");
+        // $this->runGenerator($testFile, 'maria');
+
+
+        // $this->changeDbToPgsql();
+        // $this->deleteTables();
+        // $this->createTableForEditEnumToString();
+        // $testFile = Yii::getAlias("@specs/enum/enum.php");
+        // $this->runGenerator($testFile, 'pgsql');
     }
 
     // public function testStringToEnum()
@@ -106,11 +128,13 @@ class EnumTest extends DbTestCase
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_connection CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_new_column CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_delete_col CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_add_one_mood_at_last CASCADE')->execute();
         }
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%editcolumns}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%alldbdatatypes}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%enumvaluechanges}}')->execute();
     }
 
     private function createTableForEditEnumToString()
@@ -145,6 +169,25 @@ class EnumTest extends DbTestCase
         Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
             'id' => 'pk',
             'delete_col' => 'enum("FOUR", "FIVE", "SIX")'
+        ])->execute();
+    }
+
+    private function createTableForEnumValueChange()
+    {
+        // removing a enum value is directly not supported in PgSQL
+        if (ApiGenerator::isPostgres()) {
+            Yii::$app->db->createCommand('CREATE TYPE enum_add_one_mood_at_last AS ENUM(\'INTEREST\', \'JOY\', \'NOSTALGIA\')')->execute();
+            Yii::$app->db->createCommand()->createTable('{{%enumvaluechanges}}', [
+                'id' => 'pk',
+                'add_one_mood_at_last' => 'enum_add_one_mood_at_last'
+            ])->execute();
+            return;
+        }
+
+        Yii::$app->db->createCommand()->createTable('{{%enumvaluechanges}}', [
+            'id' => 'pk',
+            'add_one_mood_at_last' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
+            'remove_last_mood' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
         ])->execute();
     }
 }

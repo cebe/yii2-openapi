@@ -78,3 +78,26 @@ components:
           default:
             WIRED
           nullable: false
+
+    Enumvaluechange:
+      type: object
+      description: Table with enum value change for migration code generation
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        add_one_mood_at_last:
+          type: string
+          enum:
+            # admiration, adoration, appreciation of beauty, amusement, anger, anxiety, awe, awkwardness, boredom, calmness, confusion, craving, disgust, empathic pain, entrancement, excitement, fear, horror, interest, joy, nostalgia, relief
+            - INTEREST
+            - JOY
+            - NOSTALGIA
+            - RELIEF # this is it
+        remove_last_mood:
+          type: string
+          enum:
+            - INTEREST
+            - JOY
+
