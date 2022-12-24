@@ -100,4 +100,17 @@ components:
           enum:
             - INTEREST
             - JOY
+        add_mood_in_between:
+          type: string
+          enum:
+            - INTEREST
+            - RELIEF # this is it
+            - JOY
+            - NOSTALGIA
+        rename_last_mood:
+          type: string
+          enum:
+            - INTEREST
+            - JOY
+            - NOSTALGIA_2
 

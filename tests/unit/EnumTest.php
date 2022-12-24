@@ -188,6 +188,8 @@ class EnumTest extends DbTestCase
             'id' => 'pk',
             'add_one_mood_at_last' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
             'remove_last_mood' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
+            'add_mood_in_between' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
+            'rename_last_mood' => 'enum("INTEREST", "JOY", "NOSTALGIA")',
         ])->execute();
     }
 }
