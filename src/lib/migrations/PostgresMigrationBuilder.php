@@ -63,7 +63,10 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             return;
         }
 
-        if (!empty(array_intersect(['type', 'size'/*, 'dbType'*/], $changed))) {
+        if (!empty(array_intersect(['type', 'size'
+                    , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
+        ], $changed))) {
             $addUsing = $this->isNeedUsingExpression($desired->type, $current->type);
             $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired));
             $this->migration->addDownCode($this->recordBuilder->alterColumnTypeFromDb($tableName, $current, $addUsing));
@@ -207,7 +210,7 @@ SQL;
         if ($current->phpType === 'integer' && $current->defaultValue !== null) {
             $current->defaultValue = (int)$current->defaultValue;
         }
-        // TODO this is not concretely correct
+        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
         if (!empty($current->enumValues)) {
             $current->type = 'enum';
             $current->dbType = 'enum';
@@ -224,7 +227,7 @@ SQL;
             $desired->precision = $decimalAttributes['precision'];
             $desired->scale = $decimalAttributes['scale'];
         }
-        // TODO this is not concretely correct
+        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
         if (!empty($desired->enumValues)) {
             $desired->type = 'enum';
             $desired->dbType = 'enum';

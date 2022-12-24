@@ -48,21 +48,21 @@ components:
                     default: 0
                 json1:
                     type: array
-                    x-db-type: json
+                    x-db-type: jsonb
                     default: []
                 json2:
                     type: array
-                    x-db-type: json
+                    x-db-type: jsonb
                     default: '{}'
                 json3:
                     type: array
-                    x-db-type: json
+                    x-db-type: jsonb
                     default:
                         - foo: foobar
                         - xxx: yyy
                 json4:
                     type: array
-                    x-db-type: json
+                    x-db-type: jsonb
                     default: '{"foo": "bar", "bar": "baz"}'
                 # status:
                 #     type: string

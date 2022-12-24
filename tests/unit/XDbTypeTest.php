@@ -197,7 +197,7 @@ class XDbTypeTest extends DbTestCase
             'string_col' => 'string not null',
             'dec_col' => 'decimal(12, 4)',
             'str_col_def' => 'string default \'hi there\'',
-            'json_col' => 'json',
+            'json_col' => 'json', // json is jsonb in Pgsql via Yii Pgsql Schema
             'json_col_2' => 'json',
             'numeric_col' => 'integer',
         ])->execute();

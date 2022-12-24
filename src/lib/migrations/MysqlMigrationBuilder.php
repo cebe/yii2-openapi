@@ -120,7 +120,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             $current->defaultValue = (int)$current->defaultValue;
         }
 
-        // TODO this is not concretely correct
+        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
         if (!empty($current->enumValues)) {
             $current->type = 'enum';
             $current->dbType = 'enum';
@@ -139,7 +139,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             $desired->scale = $decimalAttributes['scale'];
         }
 
-        // TODO this is not concretely correct
+        // TODO this is not concretely correct, reason is in BaseMigrationBuilder
         if (!empty($desired->enumValues)) {
             $desired->type = 'enum';
             $desired->dbType = 'enum';
