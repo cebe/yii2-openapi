@@ -329,7 +329,7 @@ It works on all 3 DB: MySQL, MariaDb and PgSQL.
           - three
 ```
 
-Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handles manually.
+Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handled manually.
 
 ### Handling of `numeric` (#numeric, #MariaDb)
 precision-default = 10
