@@ -316,8 +316,8 @@ e.g. attribute = 'my_property'.
         nullable: false
 ```
 
-### Handling of `enum` (#enum, #MariaDb)
-It work on MariaDb.
+### Handling of `enum` (#enum)
+It works on all 3 DB: MySQL, MariaDb and PgSQL.
 
  ```yaml
   test_table:
@@ -328,6 +328,8 @@ It work on MariaDb.
           - two
           - three
 ```
+
+Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handles manually.
 
 ### Handling of `numeric` (#numeric, #MariaDb)
 precision-default = 10
