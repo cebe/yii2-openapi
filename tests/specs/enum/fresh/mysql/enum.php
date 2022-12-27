@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'openApiPath' => '@specs/enum/enum.yaml',
+    'openApiPath' => '@specs/enum/fresh/mysql/enum.yaml',
     'generateUrls' => false,
     'generateModels' => false,
     'excludeModels' => [

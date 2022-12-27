@@ -466,8 +466,7 @@ abstract class BaseMigrationBuilder
     public static function isEnumValuesChanged(
         \yii\db\ColumnSchema $current,
         \yii\db\ColumnSchema $desired
-    ): bool
-    {
+    ): bool {
         if (static::isEnum($current) && static::isEnum($desired) &&
             $current->enumValues !== $desired->enumValues) {
             return true;

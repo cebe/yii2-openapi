@@ -372,9 +372,10 @@ Generated files:
 
 # Development
 
-There commands are available to develop and check the tests. It can be used inside the Docker container. To enter into bash of container run `make cli` .
+There commands are available to develop and check the tests. It is available inside the Docker container. To enter into bash shell of container, run `make cli` .
 
 ```bash
+cd tests
 ./yii migrate-mysql/up
 ./yii migrate-mysql/down 4
 
