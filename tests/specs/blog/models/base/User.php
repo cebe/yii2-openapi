@@ -9,6 +9,7 @@ namespace app\models\base;
  * @property string $username
  * @property string $email
  * @property string $password
+ * @property string $role
  * @property int $flags
  * @property string $created_at
  *
@@ -23,7 +24,7 @@ abstract class User extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['username', 'email', 'password', 'created_at'], 'trim'],
+            'trim' => [['username', 'email', 'password', 'role', 'created_at'], 'trim'],
             'required' => [['username', 'email', 'password'], 'required'],
             'username_unique' => [['username'], 'unique'],
             'email_unique' => [['email'], 'unique'],
@@ -31,6 +32,7 @@ abstract class User extends \yii\db\ActiveRecord
             'email_string' => [['email'], 'string', 'max' => 200],
             'email_email' => [['email'], 'email'],
             'password_string' => [['password'], 'string'],
+            'role_string' => [['role'], 'string', 'max' => 20],
             'flags_integer' => [['flags'], 'integer'],
             'created_at_datetime' => [['created_at'], 'datetime'],
         ];

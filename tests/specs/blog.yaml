@@ -51,7 +51,7 @@ components:
       x-indexes:
         - unique:username
         - unique:email
-        - flags
+        - role,flags
       properties:
         id:
           type: integer
@@ -66,6 +66,11 @@ components:
         password:
           type: string
           format: password
+        role:
+          type: string
+          maxLength: 20
+          x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
+          default: reader
         flags:
           type: integer
           default: 0

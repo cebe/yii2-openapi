@@ -26,6 +26,7 @@ class PropertySchemaTest extends DbTestCase
         self::assertEquals(128, $prop->getMaxLength());
         self::assertEquals(null, $prop->getMinLength());
         self::assertEquals(true, $prop->isReadonly());
+        self::assertFalse($prop->hasEnum());
     }
 
     public function testSimpleProperty()

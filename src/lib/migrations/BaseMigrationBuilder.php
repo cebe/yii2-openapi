@@ -416,8 +416,12 @@ abstract class BaseMigrationBuilder
     public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
         $tableName = 'tmp_table_';
+        $db = 'db';
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+            $db = 'pg_test_db_2';
+        }
 
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+        Yii::$app->{$db}->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
             $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
@@ -431,19 +435,19 @@ abstract class BaseMigrationBuilder
             $allEnumValues = array_map(function ($aValue) {
                 return "'$aValue'";
             }, $allEnumValues);
-            Yii::$app->db->createCommand(
+            Yii::$app->{$db}->createCommand(
                 'CREATE TYPE enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
             )->execute();
         }
 
-        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
+        Yii::$app->{$db}->createCommand()->createTable($tableName, $column)->execute();
 
-        $table = Yii::$app->db->getTableSchema($tableName);
+        $table = Yii::$app->{$db}->getTableSchema($tableName);
 
-        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+        Yii::$app->{$db}->createCommand()->dropTable($tableName)->execute();
 
-        if (ApiGenerator::isPostgres() && !empty($columnSchema->enumValues)) {// drop enum
-            Yii::$app->db->createCommand('DROP TYPE enum_'.$columnSchema->name)->execute();
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
+            Yii::$app->{$db}->createCommand('DROP TYPE enum_'.$columnSchema->name)->execute();
         }
 
         return $table->columns[$columnSchema->name];
