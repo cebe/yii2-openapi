@@ -53,8 +53,14 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
                     , 'dbType', 'phpType'
                     , 'precision', 'scale', 'unsigned'
         ] as $attr) {
-            if ($current->$attr !== $desiredFromDb->$attr) {
-                $changedAttributes[] = $attr;
+            if ($attr === 'defaultValue') {
+                if ($this->isDefaultValueChanged($current, $desiredFromDb)) {
+                    $changedAttributes[] = $attr;
+                }
+            } else {
+                if ($current->$attr !== $desiredFromDb->$attr) {
+                    $changedAttributes[] = $attr;
+                }
             }
         }
         return $changedAttributes;

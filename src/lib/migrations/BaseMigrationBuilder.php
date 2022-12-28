@@ -15,7 +15,7 @@ use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
 use yii\helpers\VarDumper;
-use yii\db\Connection;
+use yii\db\{Connection, Expression};
 
 abstract class BaseMigrationBuilder
 {
@@ -473,6 +473,25 @@ abstract class BaseMigrationBuilder
     ): bool {
         if (static::isEnum($current) && static::isEnum($desired) &&
             $current->enumValues !== $desired->enumValues) {
+            return true;
+        }
+        return false;
+    }
+
+    public function isDefaultValueChanged(ColumnSchema $current,
+        ColumnSchema $desired): bool
+    {
+        // if the default value is object of \yii\db\Expression then default value is expression instead of constant. See https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+        // in such case instead of comparing two objects, we should compare expression
+
+        if ($current->defaultValue instanceof Expression &&
+            $desired->defaultValue instanceof Expression
+            && $current->defaultValue->expression === $desired->defaultValue->expression
+        ) {
+            return false;
+        }
+
+        if ($current->defaultValue !== $desired->defaultValue) {
             return true;
         }
         return false;
