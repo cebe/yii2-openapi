@@ -11,6 +11,7 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
         $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN json_col_def_n json NOT NULL DEFAULT \'[]\'')->execute();
         $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN json_col_def_n_2 json NOT NULL DEFAULT \'[]\'')->execute();
         $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN text_col_array text[] NULL DEFAULT NULL')->execute();
+        $this->db->createCommand('ALTER TABLE {{%editcolumns}} ALTER COLUMN dec_col SET DATA TYPE decimal(12,2)')->execute();
         $this->alterColumn('{{%editcolumns}}', 'dec_col', "SET DEFAULT 3.14");
         $this->db->createCommand('ALTER TABLE {{%editcolumns}} ALTER COLUMN json_col SET DATA TYPE text')->execute();
         $this->alterColumn('{{%editcolumns}}', 'json_col', "SET NOT NULL");
@@ -32,6 +33,7 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
         $this->alterColumn('{{%editcolumns}}', 'numeric_col', 'int4 NULL USING "numeric_col"::int4');
         $this->alterColumn('{{%editcolumns}}', 'name', $this->string(255)->notNull());
         $this->alterColumn('{{%editcolumns}}', 'json_col', 'jsonb NULL USING "json_col"::jsonb');
+        $this->alterColumn('{{%editcolumns}}', 'dec_col', $this->decimal()->null());
         $this->dropColumn('{{%editcolumns}}', 'text_col_array');
         $this->dropColumn('{{%editcolumns}}', 'json_col_def_n_2');
         $this->dropColumn('{{%editcolumns}}', 'json_col_def_n');

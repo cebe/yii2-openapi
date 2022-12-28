@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
@@ -202,14 +203,6 @@ abstract class BaseMigrationBuilder
             if ($current->isPrimaryKey || in_array($desired->dbType, ['pk', 'upk', 'bigpk', 'ubigpk'])) {
                 // do not adjust existing primary keys
                 continue;
-            }
-            if (!empty($current->enumValues)) {
-                $current->type = 'enum';
-                $current->dbType = 'enum';
-            }
-            if (!empty($desired->enumValues)) {
-                $desired->type = 'enum';
-                $desired->dbType = 'enum';
             }
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
@@ -423,8 +416,12 @@ abstract class BaseMigrationBuilder
     public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
         $tableName = 'tmp_table_';
+        $db = 'db';
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+            $db = 'pg_test_db_2';
+        }
 
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+        Yii::$app->{$db}->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
             $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
@@ -432,11 +429,26 @@ abstract class BaseMigrationBuilder
             $column = [$columnSchema->name => $this->newColStr($columnSchema)];
         }
 
-        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
+        // create enum if relevant
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+            $allEnumValues = $columnSchema->enumValues;
+            $allEnumValues = array_map(function ($aValue) {
+                return "'$aValue'";
+            }, $allEnumValues);
+            Yii::$app->{$db}->createCommand(
+                'CREATE TYPE enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
+            )->execute();
+        }
 
-        $table = Yii::$app->db->getTableSchema($tableName);
+        Yii::$app->{$db}->createCommand()->createTable($tableName, $column)->execute();
 
-        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+        $table = Yii::$app->{$db}->getTableSchema($tableName);
+
+        Yii::$app->{$db}->createCommand()->dropTable($tableName)->execute();
+
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
+            Yii::$app->{$db}->createCommand('DROP TYPE enum_'.$columnSchema->name)->execute();
+        }
 
         return $table->columns[$columnSchema->name];
     }
@@ -445,5 +457,24 @@ abstract class BaseMigrationBuilder
     {
         $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
         return ColumnToCode::undoEscapeQuotes($ctc->getCode());
+    }
+
+    public static function isEnum(\yii\db\ColumnSchema $columnSchema): bool
+    {
+        if (!empty($columnSchema->enumValues) && is_array($columnSchema->enumValues)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isEnumValuesChanged(
+        \yii\db\ColumnSchema $current,
+        \yii\db\ColumnSchema $desired
+    ): bool {
+        if (static::isEnum($current) && static::isEnum($desired) &&
+            $current->enumValues !== $desired->enumValues) {
+            return true;
+        }
+        return false;
     }
 }

@@ -22,9 +22,9 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     {
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
-            if ($column->dbType === 'enum') {
+            if (static::isEnum($column)) {
                 $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addDownCode($this->recordBuilder->dropEnum($column->name));
+                                ->addDownCode($this->recordBuilder->dropEnum($column->name), true);
             }
             $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
@@ -41,9 +41,9 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $tableName = $this->model->getTableAlias();
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
-            if ($column->dbType === 'enum') {
+            if (static::isEnum($column)) {
                 $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addUpCode($this->recordBuilder->dropEnum($column->name), true);
+                                ->addUpCode($this->recordBuilder->dropEnum($column->name));
             }
         }
     }
@@ -54,22 +54,20 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
     protected function buildColumnChanges(ColumnSchema $current, ColumnSchema $desired, array $changed):void
     {
         $tableName = $this->model->getTableAlias();
-        $isChangeToEnum = $current->type !== $desired->type && !empty($desired->enumValues);
-        $isChangeFromEnum = $current->type !== $desired->type && !empty($current->enumValues);
-        $isChangedEnum = $current->type === $desired->type && !empty($current->enumValues);
+        $isChangeToEnum = !static::isEnum($current) && static::isEnum($desired);
+        $isChangeFromEnum = static::isEnum($current) && !static::isEnum($desired);
+        $isChangedEnum = static::isEnumValuesChanged($current, $desired);
         if ($isChangedEnum) {
             // Generation for change enum values not supported. Do it manually
             // This action require several steps and can't be applied during single transaction
             return;
         }
-        if ($isChangeToEnum) {
-            $this->migration->addUpCode($this->recordBuilder->createEnum($desired->name, $desired->enumValues), true);
-        }
-        if ($isChangeFromEnum) {
-            $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
-        }
-        if (!empty(array_intersect(['type', 'size'], $changed))) {
-            $addUsing = $this->isNeedUsingExpression($desired->type, $current->type);
+
+        if (!empty(array_intersect(['type', 'size'
+                    , 'dbType', 'phpType'
+                    , 'precision', 'scale', 'unsigned'
+        ], $changed))) {
+            $addUsing = $this->isNeedUsingExpression($current->type, $desired->type);
             $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired));
             $this->migration->addDownCode($this->recordBuilder->alterColumnTypeFromDb($tableName, $current, $addUsing));
         }
@@ -93,9 +91,16 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
                 $this->migration->addUpCode($upCode)->addDownCode($downCode, true);
             }
         }
+        if ($isChangeToEnum) {
+            $this->migration->addUpCode($this->recordBuilder->createEnum($desired->name, $desired->enumValues), true);
+        }
+        if ($isChangeFromEnum) {
+            $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
+        }
+
         if ($isChangeFromEnum) {
             $this->migration
-                ->addDownCode($this->recordBuilder->createEnum($current->name, $current->enumValues), true);
+                ->addDownCode($this->recordBuilder->createEnum($current->name, $current->enumValues));
         }
         if ($isChangeToEnum) {
             $this->migration->addDownCode($this->recordBuilder->dropEnum($current->name), true);
@@ -132,7 +137,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         foreach ($enums as $attr) {
             $this->migration
                 ->addUpCode($this->recordBuilder->createEnum($attr->columnName, $attr->enumValues), true)
-                ->addDownCode($this->recordBuilder->dropEnum($attr->columnName));
+                ->addDownCode($this->recordBuilder->dropEnum($attr->columnName), true);
         }
     }
 

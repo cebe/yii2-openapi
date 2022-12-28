@@ -89,4 +89,19 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         self::assertNotInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
         self::assertInstanceOf(PgSqlSchema::class, Yii::$app->db->schema);
     }
+
+    protected function checkFiles(array $actual, array $expected)
+    {
+        self::assertEquals(
+            count($actual),
+            count($expected)
+        );
+        foreach ($actual as $index => $file) {
+            $expectedFilePath = $expected[$index];
+            self::assertFileExists($file);
+            self::assertFileExists($expectedFilePath);
+
+            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
+        }
+    }
 }

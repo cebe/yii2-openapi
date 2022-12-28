@@ -53,6 +53,13 @@ $config = [
             'charset' => 'utf8',
             'tablePrefix'=>'itt_',
         ],
+        'pg_test_db_2' => [
+            'class' => \yii\db\Connection::class,
+            'dsn' => 'pgsql:host=postgres;dbname=pg_test_db_2',
+            'username' => 'dbuser',
+            'password' => 'dbpass',
+            'charset' => 'utf8',
+        ],
         'mysql' => [
             'class' => \yii\db\Connection::class,
             'dsn' => 'mysql:host=mysql;dbname=testdb',

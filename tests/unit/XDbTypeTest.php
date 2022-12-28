@@ -28,7 +28,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/mysql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -42,7 +42,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/maria/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -56,7 +56,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/pgsql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
@@ -73,7 +73,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/new_column/mysql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -89,7 +89,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/new_column/maria/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -105,7 +105,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/new_column/pgsql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 
     public function testXDbTypeSecondaryWithEditColumn() // v3
@@ -122,7 +122,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/edit_column/mysql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -138,7 +138,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/edit_column/maria/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
+        $this->checkFiles($actualFiles, $expectedFiles);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -154,22 +154,7 @@ class XDbTypeTest extends DbTestCase
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/edit_column/pgsql/app"), [
             'recursive' => true,
         ]);
-        $this->compareFiles($actualFiles, $expectedFiles);
-    }
-
-    protected function compareFiles(array $actual, array $expected)
-    {
-        self::assertEquals(
-            count($actual),
-            count($expected)
-        );
-        foreach ($actual as $index => $file) {
-            $expectedFilePath = $expected[$index];
-            self::assertFileExists($file);
-            self::assertFileExists($expectedFilePath);
-
-            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
-        }
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 
     private function deleteTables()
@@ -197,7 +182,7 @@ class XDbTypeTest extends DbTestCase
             'string_col' => 'string not null',
             'dec_col' => 'decimal(12, 4)',
             'str_col_def' => 'string default \'hi there\'',
-            'json_col' => 'json',
+            'json_col' => 'json', // json is jsonb in Pgsql via Yii Pgsql Schema
             'json_col_2' => 'json',
             'numeric_col' => 'integer',
         ])->execute();

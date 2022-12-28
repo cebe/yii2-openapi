@@ -505,7 +505,7 @@ components:
           default: fox jumps over dog
         json_col_2:
           type: string
-          x-db-type: json
+          x-db-type: jsonb
           nullable: false
           default: []
         numeric_col:
