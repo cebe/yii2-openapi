@@ -497,3 +497,4 @@ abstract class BaseMigrationBuilder
         return false;
     }
 }
+
