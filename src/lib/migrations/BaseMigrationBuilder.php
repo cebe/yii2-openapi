@@ -482,8 +482,7 @@ abstract class BaseMigrationBuilder
     public function isDefaultValueChanged(
         ColumnSchema $current,
         ColumnSchema $desired
-    ): bool
-    {
+    ): bool {
         // if the default value is object of \yii\db\Expression then default value is expression instead of constant. See https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
         // in such case instead of comparing two objects, we should compare expression
 
@@ -500,4 +499,3 @@ abstract class BaseMigrationBuilder
         return false;
     }
 }
-
