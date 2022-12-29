@@ -1,7 +1,7 @@
 name: yii2-openapi
 on:
   push:
-    branches: [ master, wip]
+    branches: [ master, wip, 104-remove-id-from-rules-method-from-base-model-during-code-generation]
   pull_request:
     branches: [ master, wip ]
     paths-ignore:
