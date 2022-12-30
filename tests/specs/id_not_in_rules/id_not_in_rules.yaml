@@ -1,0 +1,26 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: ID not in rules test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: Test model for model code generation that should not contain id column in rules
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string

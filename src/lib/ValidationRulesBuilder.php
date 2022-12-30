@@ -63,6 +63,10 @@ class ValidationRulesBuilder
             }
         }
         foreach ($this->model->attributes as $attribute) {
+            // column/field/property with name `id` is considered as Primary Key by this library and it is automatically handled by DB/Yii; so remove it from validation `rules()`
+            if ($attribute->columnName === 'id' || $attribute->propertyName === 'id') {
+                continue;
+            }
             $this->resolveAttributeRules($attribute);
         }
 
@@ -179,6 +183,10 @@ class ValidationRulesBuilder
     {
         foreach ($this->model->attributes as $attribute) {
             if ($attribute->isReadOnly()) {
+                continue;
+            }
+            // column/field/property with name `id` is considered as Primary Key by this library and it is automatically handled by DB/Yii; so remove it from validation `rules()`
+            if ($attribute->columnName === 'id' || $attribute->propertyName === 'id') {
                 continue;
             }
             if ($attribute->defaultValue === null && $attribute->isRequired()) {
