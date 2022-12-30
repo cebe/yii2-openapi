@@ -1,0 +1,41 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Fix https://github.com/cebe/yii2-openapi/issues/107 Migrations are generated with syntax error and wrong data type in MySQL
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: A table to fix \#107
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          # type: array
+          # x-db-type: JSON
+          # nullable: false
+          # default: '{}'
+
+          type: array
+          x-db-type: text[]
+          nullable: false
+          # default: '{}'
+
+
+        test_emails:
+          type: array
+          x-db-type: JSON
+          nullable: false
+          default: '[]'

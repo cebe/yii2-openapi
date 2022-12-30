@@ -24,7 +24,7 @@ class m200000_000004_change_table_v2_users extends \yii\db\Migration
         $this->dropIndex('v2_users_role_flags_hash_index', '{{%v2_users}}');
         $this->dropIndex('v2_users_login_key', '{{%v2_users}}');
         $this->createIndex('v2_users_username_key', '{{%v2_users}}', 'username', true);
-        $this->alterColumn('{{%v2_users}}', 'role', $this->string(20)->null());
+        $this->alterColumn('{{%v2_users}}', 'role', 'varchar(20) NULL USING "role"::varchar');
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(200)->notNull());
         $this->addColumn('{{%v2_users}}', 'username', $this->string(200)->notNull());
         $this->dropColumn('{{%v2_users}}', 'login');

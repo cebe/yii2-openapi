@@ -29,11 +29,11 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
 
     public function safeDown()
     {
-        $this->alterColumn('{{%editcolumns}}', 'string_col', $this->string(255)->notNull());
+        $this->alterColumn('{{%editcolumns}}', 'string_col', 'varchar(255) NOT NULL USING "string_col"::varchar');
         $this->alterColumn('{{%editcolumns}}', 'numeric_col', 'int4 NULL USING "numeric_col"::int4');
         $this->alterColumn('{{%editcolumns}}', 'name', $this->string(255)->notNull());
         $this->alterColumn('{{%editcolumns}}', 'json_col', 'jsonb NULL USING "json_col"::jsonb');
-        $this->alterColumn('{{%editcolumns}}', 'dec_col', $this->decimal()->null());
+        $this->alterColumn('{{%editcolumns}}', 'dec_col', 'numeric NULL USING "dec_col"::numeric');
         $this->dropColumn('{{%editcolumns}}', 'text_col_array');
         $this->dropColumn('{{%editcolumns}}', 'json_col_def_n_2');
         $this->dropColumn('{{%editcolumns}}', 'json_col_def_n');

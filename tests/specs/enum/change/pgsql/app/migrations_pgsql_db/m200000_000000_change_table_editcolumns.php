@@ -21,7 +21,7 @@ class m200000_000000_change_table_editcolumns extends \yii\db\Migration
     {
         $this->execute('CREATE TYPE enum_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')');
         $this->alterColumn('{{%editcolumns}}', 'device', 'enum_device USING "device"::enum_device');
-        $this->alterColumn('{{%editcolumns}}', 'connection', $this->string(255)->null());
+        $this->alterColumn('{{%editcolumns}}', 'connection', 'varchar(255) NULL USING "connection"::varchar');
         $this->alterColumn('{{%editcolumns}}', 'connection', "DROP NOT NULL");
         $this->alterColumn('{{%editcolumns}}', 'connection', "DROP DEFAULT");
         $this->execute('DROP TYPE enum_connection');
