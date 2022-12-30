@@ -24,7 +24,8 @@
 		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0 | ~2.2.0| ~2.3.0",
 		"laminas/laminas-code": "^3.4",
 		"insolita/yii2-fractal": "^1.0.0",
-		"fakerphp/faker": "^1.9"
+		"fakerphp/faker": "^1.9",
+		"sam-it/yii2-mariadb": "^2.0"
 	},
 	"require-dev": {
 		"cebe/indent": "*",

@@ -21,38 +21,32 @@ jobs:
       fail-fast: true
       matrix:
         php-versions: ['7.1', '7.2', '7.3', '7.4']
+
+    # TODO use cache
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup PHP, with composer and extensions
-        uses: shivammathur/setup-php@v2 #https://github.com/shivammathur/setup-php
+      # Run every tests inside Docker container
+      - name: Docker Compose Setup
+        uses: ndeloof/install-compose-action@v0.0.1
         with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, intl, gd, zip, dom, pgsql
-          tools: php-cs-fixer
+          # version: v3.5 # defaults to 'latest'
+          legacy: true    # will also install in PATH as `docker-compose`
 
-      - name: Get composer cache directory
-        id: composercache
-        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Clean
+        run: make clean_all
 
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ steps.composercache.outputs.dir }}
-          key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.json') }}
-          restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-versions }}
+      - name: docker-compose up
+        run: make up
 
-      - name: Install deps
-        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader
+      - name: Install Docker and composer dependencies
+        run: make installdocker
 
-      - name: Prepare permissions
-        run: mkdir -p tests/tmp && chmod -R 0777 tests/tmp
-
-      - name: Unit tests
-        run: php vendor/bin/phpunit
+      - name: Migrate
+        run: make migrate
 
       - name: Check style
-        run: make check-style
+        run: make check-style-from-host
 
+      - name: Run tests
+        run: make testdocker

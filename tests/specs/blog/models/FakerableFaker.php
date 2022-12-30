@@ -39,7 +39,6 @@ class FakerableFaker extends BaseModelFaker
         $model->int_minmax = $faker->numberBetween(5, 25);
         $model->int_created_at = $faker->unixTime;
         $model->int_simple = $faker->numberBetween(0, 1000000);
-        $model->uuid = $faker->uuid;
         $model->str_text = $faker->sentence;
         $model->str_varchar = substr($faker->text(100), 0, 100);
         $model->str_date = $faker->dateTimeThisCentury->format('Y-m-d');

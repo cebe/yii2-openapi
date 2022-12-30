@@ -33,19 +33,21 @@ services:
             MYSQL_USER: dbuser
             MYSQL_PASSWORD: dbpass
             MYSQL_DATABASE: testdb
+
     maria:
-        image: mariadb
+        image: mariadb:10.8
         ports:
             - '23306:3306'
         volumes:
             - ./tests/tmp/maria:/var/lib/mysql:rw
         environment:
-            TZ: UTC
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
-            MYSQL_USER: dbuser
-            MYSQL_PASSWORD: dbpass
-            MYSQL_DATABASE: testdb
-            MYSQL_INITDB_SKIP_TZINFO: 1
+            # TZ: UTC
+            # MARIADB_ALLOW_EMPTY_PASSWORD: 1
+            MARIADB_ROOT_PASSWORD: verysecret
+            MARIADB_USER: dbuser
+            MARIADB_PASSWORD: dbpass
+            MARIADB_DATABASE: testdb
+            # MYSQL_INITDB_SKIP_TZINFO: 1
     postgres:
         image: postgres:12
         ports:

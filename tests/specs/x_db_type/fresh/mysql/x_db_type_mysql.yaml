@@ -1,0 +1,336 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Column edit by x-db-type test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Pristine:
+      type: object
+      description: New Fresh table with new columns for migration code generation
+      required:
+        - custom_id_col
+        - name
+      properties:
+        custom_id_col:
+          type: integer
+          format: int64
+          x-db-type: INTEGER PRIMARY KEY AUTO_INCREMENT
+        name:
+          type: integer
+          x-db-type: text
+        tag:
+          type: string
+          default: 4 leg
+        new_col:
+          type: string
+          x-db-type: varchar(17)
+        col_5:
+          type: string
+          x-db-type: decimal(12,4)
+        col_6:
+          type: string
+          x-db-type: decimal(11)
+        col_7:
+          type: string
+          x-db-type: decimal
+        col_8:
+          type: string
+          x-db-type: json
+        col_9:
+          type: string
+          x-db-type: varchar(9)
+        col_10:
+          type: string
+          x-db-type: VARCHAR(10)
+        col_11:
+          type: string
+          x-db-type: TEXT
+
+
+    Alldbdatatype: # All DB data type
+      type: object
+      description: All DB data type
+      required:
+        - id
+        - char_6_col
+      properties:
+        id:
+          type: integer
+          format: int64
+        string_col:
+          type: string
+          x-db-type: varchar(255)
+        varchar_col:
+          type: string
+          x-db-type: varchar(132)
+        text_col:
+          type: string
+          x-db-type: text
+        varchar_4_col:
+          type: string
+          x-db-type: VARCHAR(4) # (4) has no effect, use maxLength instead
+        char_4_col:
+          type: string
+          x-db-type: CHAR(4) # (4) has no effect, use maxLength instead
+        char_5_col:
+          type: string
+          x-db-type: CHAR
+        char_6_col:
+          type: string
+          x-db-type: char
+        char_7_col:
+          type: string
+          x-db-type: char
+          maxLength: 6
+          nullable: false
+        char_8_col:
+          type: string
+          x-db-type: char
+          default: d
+        decimal_col:
+          type: float
+          x-db-type: decimal(12,3)
+
+        # binary_col:
+        #   type: string
+        #   x-db-type: binary # binary is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
+
+        varbinary_col:
+          type: string
+          x-db-type: varbinary
+          # nullable: false
+          maxLength: 5 # length is required in varbinary and binary
+        blob_col:
+          type: string
+          x-db-type: blob
+        # set:
+        #   type: string
+        #   x-db-type: SET('a', 'b', 'c', 'd') # set is not in $typeMap list in \yii\db\mysql\Schema::class https://github.com/yiisoft/yii2/issues/19705
+        bit_col:
+          type: string
+          x-db-type: bit
+        bit_2:
+          type: string
+          x-db-type: bit(1)
+        bit_3:
+          type: string
+          x-db-type: bit(64)
+
+        ti:
+          type: string
+          x-db-type: tinyint
+        ti_2:
+          type: string
+          x-db-type: tinyint(1)
+        ti_3:
+          type: string
+          x-db-type: tinyint(2)
+
+        si_col:
+          type: string
+          x-db-type: smallint
+        si_col_2:
+          type: string
+          x-db-type: SMALLINT UNSIGNED ZEROFILL
+
+        mi:
+          type: string
+          x-db-type: MEDIUMINT(10) UNSIGNED ZEROFILL COMMENT "comment" # note the double quotes here
+          default: 7
+        bi:
+          type: string
+          x-db-type: bigint
+        int_col:
+          type: string
+          x-db-type: int
+        int_col_2:
+          type: string
+          x-db-type: integer
+
+        # dec:
+        #   type: string
+        #   x-db-type: dec # not supported
+
+        # fixed:
+        #   type: string
+        #   x-db-type: fixed # not supported
+
+        numeric_col:
+          type: string
+          x-db-type: numeric
+        float_col:
+          type: string
+          x-db-type: float
+        float_2:
+          type: string
+          x-db-type: float(10, 2)
+        float_3:
+          type: string
+          x-db-type: float(8)
+
+        double_col:
+          type: string
+          x-db-type: double
+        double_p:
+          type: string
+          x-db-type: double precision(10,2)
+        double_p_2:
+          type: string
+          x-db-type: double precision
+        real_col:
+          type: string
+          x-db-type: real
+
+        date_col:
+          type: string
+          x-db-type: date
+        time_col:
+          type: string
+          x-db-type: time
+        datetime_col:
+          type: string
+          x-db-type: datetime
+        timestamp_col:
+          type: string
+          x-db-type: timestamp
+        year_col:
+          type: string
+          x-db-type: year
+
+        # geometry:
+        #   type: string
+        #   x-db-type: geometry
+        # below are not implemented in Yii
+        # GEOMETRY
+        # point
+        # LINESTRING
+        # POLYGON
+        # MULTIPOINT
+        # MULTILINESTRING
+        # MULTIPOLYGON
+        # GEOMETRYCOLLECTION
+
+        json_col:
+          type: string
+          x-db-type: json
+        json_col_def:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_2:
+          type: string
+          x-db-type: json
+          default: '[]'
+
+        # literal default not supportted for blob, text, json and geometry
+        # below default will have no effect
+        blob_def:
+          type: string
+          x-db-type: blob
+          default: the blob
+        text_def:
+          type: string
+          x-db-type: text
+          default: the text
+        json_def:
+          type: string
+          x-db-type: json
+          default: '{"a":"b"}'
+
+
+    Newcolumn:
+      type: object
+      description: New Fresh table with new columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar(255)
+          nullable: false
+        # first_name:
+        #   type: string
+        #   x-db-type: string # This should lead to error as string is not real DB type in MySQL but (bug in Yii?) it is present in \yii\db\mysql\Schema
+        last_name:
+          type: string
+        dec_col:
+          type: string
+          x-db-type: decimal(12,4)
+        json_col:
+          type: string
+          x-db-type: json
+        varchar_col:
+          type: string
+          x-db-type: varchar(5)
+        numeric_col:
+          type: string
+          x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+
+    Editcolumn:
+      type: object
+      description: Table with edit columns for migration code generation
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar(255)
+          maxLength: 254
+          nullable: false
+          default: Horse-2
+        tag:
+          type: string
+        first_name:
+          type: string
+          x-db-type: varchar(255)
+        string_col:
+          type: string # text in DB
+          nullable: true
+        dec_col:
+          type: string
+          x-db-type: decimal(12,2)
+          default: 3.14
+        str_col_def:
+          type: string
+          x-db-type: varchar(3)
+          nullable: false
+        json_col:
+          type: string
+          x-db-type: text
+          nullable: false
+          default: fox jumps over dog
+        json_col_2:
+          type: string
+          x-db-type: json
+          nullable: false
+          default: []
+        numeric_col:
+          type: string
+          x-db-type: double precision
+        json_col_def_n:
+          type: string
+          x-db-type: json
+          default: []
+        json_col_def_n_2:
+          type: string
+          x-db-type: json
+          default: '[]'

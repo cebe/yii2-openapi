@@ -7,9 +7,19 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use yii\helpers\VarDumper;
+use \Yii;
+use cebe\yii2openapi\lib\openapi\PropertySchema;
+use cebe\yii2openapi\generator\ApiGenerator;
+use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use yii\base\BaseObject;
-use yii\db\ColumnSchema;
+use cebe\yii2openapi\db\ColumnSchema;
 use yii\helpers\Inflector;
+use yii\helpers\StringHelper;
+use yii\db\mysql\Schema as MySqlSchema;
+use SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
+use yii\db\pgsql\Schema as PgSqlSchema;
+use yii\base\NotSupportedException;
 use function is_array;
 use function strtolower;
 
@@ -45,6 +55,19 @@ class Attribute extends BaseObject
      * @var string
      */
     public $dbType = 'string';
+
+    /**
+     * Custom db type
+     * string | null | false
+     * if `false` then this attribute is virtual
+     */
+    public $xDbType;
+
+    /**
+     * nullable
+     * bool | null
+     */
+    public $nullable;
 
     /**
      * @var string
@@ -114,6 +137,18 @@ class Attribute extends BaseObject
     public function setDbType(string $dbType):Attribute
     {
         $this->dbType = $dbType;
+        return $this;
+    }
+
+    public function setXDbType($xDbType):Attribute
+    {
+        $this->xDbType = $xDbType;
+        return $this;
+    }
+
+    public function setNullable($nullable):Attribute
+    {
+        $this->nullable = $nullable;
         return $this;
     }
 
@@ -244,11 +279,12 @@ class Attribute extends BaseObject
     {
         $column = new ColumnSchema([
             'name' => $this->columnName,
-            'phpType'=>$this->phpType,
+            'phpType'=> $this->phpType,
             'dbType' => strtolower($this->dbType),
-            'type' => $this->dbTypeAbstract($this->dbType),
-            'allowNull' => !$this->isRequired(),
+            'type' => $this->yiiAbstractTypeForDbSpecificType($this->dbType),
+            'allowNull' => $this->allowNull(),
             'size' => $this->size > 0 ? $this->size : null,
+            'xDbType' => $this->xDbType,
         ]);
         $column->isPrimaryKey = $this->primary;
         $column->autoIncrement = $this->primary && $this->phpType === 'int';
@@ -264,30 +300,58 @@ class Attribute extends BaseObject
         if (is_array($this->enumValues)) {
             $column->enumValues = $this->enumValues;
         }
+        $this->handleDecimal($column);
 
         return $column;
     }
 
-    private function dbTypeAbstract(string $type):string
+    /**
+     * @throws \yii\base\InvalidConfigException
+     */
+    private function yiiAbstractTypeForDbSpecificType(string $dbType): string
     {
-        if (stripos($type, 'int') === 0) {
-            return 'integer';
+        if (is_string($this->xDbType) && !empty($this->xDbType) && trim($this->xDbType)) {
+            list(, $yiiAbstractDataType, ) = PropertySchema::findMoreDetailOf($this->xDbType);
+            return $yiiAbstractDataType;
+        } else {
+            if (stripos($dbType, 'int') === 0) {
+                return 'integer';
+            }
+            if (stripos($dbType, 'string') === 0) {
+                return 'string';
+            }
+            if (stripos($dbType, 'varchar') === 0) {
+                return 'string';
+            }
+            if (stripos($dbType, 'tsvector') === 0) {
+                return 'string';
+            }
+            if (stripos($dbType, 'json') === 0) {
+                return 'json';
+            }
+            // TODO? behaviour in Pgsql should remain same but timestamp/datetime bug which is only reproduced in Mysql and Mariadb should be fixed
+            if (stripos($dbType, 'datetime') === 0) {
+                return 'timestamp';
+            }
         }
-        if (stripos($type, 'string') === 0) {
-            return 'string';
+
+        return $dbType;
+    }
+
+    private function allowNull()
+    {
+        if (is_bool($this->nullable)) {
+            return $this->nullable;
         }
-        if (stripos($type, 'varchar') === 0) {
-            return 'string';
+        return !$this->isRequired();
+    }
+
+    public function handleDecimal(ColumnSchema $columnSchema): void
+    {
+        if ($decimalAttributes = \cebe\yii2openapi\lib\ColumnToCode::isDecimalByDbType($columnSchema->dbType)) {
+            $columnSchema->precision = $decimalAttributes['precision'];
+            $columnSchema->scale = $decimalAttributes['scale'];
+            $columnSchema->dbType = $decimalAttributes['dbType'];
         }
-        if (stripos($type, 'tsvector') === 0) {
-            return 'string';
-        }
-        if (stripos($type, 'json') === 0) {
-            return 'json';
-        }
-        if (stripos($type, 'datetime') === 0) {
-            return 'timestamp';
-        }
-        return $type;
     }
 }

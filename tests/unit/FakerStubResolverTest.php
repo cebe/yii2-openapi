@@ -97,11 +97,11 @@ class FakerStubResolverTest extends TestCase
                 $schema->getProperty('int_minmax'),
                 '$faker->numberBetween(5, 25)',
             ],
-            [
-                (new Attribute('uuid'))->setPhpType('string')->setDbType('uuid'),
-                $schema->getProperty('uuid'),
-                '$faker->uuid',
-            ],
+            // [
+            //     (new Attribute('uuid'))->setPhpType('string')->setDbType('uuid'),
+            //     $schema->getProperty('uuid'),
+            //     '$faker->uuid',
+            // ],
             [
                 (new Attribute('str_text'))->setPhpType('string')->setDbType(YiiDbSchema::TYPE_TEXT),
                 $schema->getProperty('str_text'),

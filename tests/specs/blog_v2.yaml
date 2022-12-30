@@ -241,7 +241,7 @@ components:
       x-indexes:
         - unique:login
         - unique:email
-        - hash:role,flags
+        - hash:flags
       required:
         - id
         - login
@@ -256,20 +256,14 @@ components:
           type: string
         email:
           type: string
+          x-db-type: varchar
+          maxLength: 255
         password:
           type: string
           format: password
-        role:
-          type: string
-          x-db-type: enum
-          enum:
-            - admin
-            - editor
-            - reader
-          x-faker: "$faker->randomElement(['admin', 'editor', 'reader'])"
         flags:
           type: integer
-          default: "0"
+          default: 0
         created_at:
           type: string
           format: date-time
@@ -331,13 +325,12 @@ components:
           type: string
           minLength: 1
           maxLength: 200
-        lang:
-          type: string
-          x-db-type: enum
-          enum:
-            - ru
-            - eng
-          default: ru
+        # lang:
+        #   type: string
+        #   enum:
+        #     - ru
+        #     - eng
+        #   default: ru
         category:
           $ref: "#/components/schemas/Category"
         active:
@@ -379,7 +372,7 @@ components:
           type: string
         meta_data:
           type: string
-          example: "type=='ticket' && status=='closed'"
+          example: "type=='ticket'"
           minLength: 1
           maxLength: 300
           default: ''
@@ -397,7 +390,7 @@ components:
       required:
         - id
         - name
-        - lang
+        # - lang
       properties:
         id:
           type: integer
@@ -407,12 +400,11 @@ components:
           type: string
           x-db-type: VARCHAR
           maxLength: 100
-        lang:
-          type: string
-          x-db-type: enum
-          enum:
-            - ru
-            - eng
+        # lang:
+        #   type: string
+        #   enum:
+        #     - ru
+        #     - eng
         posts:
           type: array
           items:
