@@ -85,7 +85,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         }
     }
 
-    protected function runGenerator($configFile, string $dbName)
+    protected function runGenerator($configFile, string $dbName = 'mysql')
     {
         $config = require $configFile;
         $config['migrationPath'] = "@app/migrations_{$dbName}_db/";
