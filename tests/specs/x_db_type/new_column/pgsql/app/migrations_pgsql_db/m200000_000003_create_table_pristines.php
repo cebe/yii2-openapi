@@ -19,6 +19,7 @@ class m200000_000003_create_table_pristines extends \yii\db\Migration
             7 => 'col_9 varchar NULL DEFAULT NULL',
             8 => 'col_10 varchar NULL DEFAULT NULL',
             9 => 'col_11 text NULL DEFAULT NULL',
+            10 => 'price decimal(10,2) NULL DEFAULT 0',
         ]);
     }
 
