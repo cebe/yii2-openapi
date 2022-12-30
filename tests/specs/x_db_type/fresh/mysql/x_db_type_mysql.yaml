@@ -54,6 +54,11 @@ components:
         col_11:
           type: string
           x-db-type: TEXT
+        price:
+          description: price in EUR
+          type: number
+          x-db-type: decimal(10,2)
+          default: 0
 
 
     Alldbdatatype: # All DB data type
