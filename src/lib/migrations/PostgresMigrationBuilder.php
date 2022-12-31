@@ -68,7 +68,7 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
                     , 'precision', 'scale', 'unsigned'
         ], $changed))) {
             $addUsing = $this->isNeedUsingExpression($current->dbType, $desired->dbType);
-            $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired));
+            $this->migration->addUpCode($this->recordBuilder->alterColumnType($tableName, $desired, $addUsing));
             $this->migration->addDownCode($this->recordBuilder->alterColumnTypeFromDb($tableName, $current, $addUsing));
         }
         if (in_array('allowNull', $changed, true)) {

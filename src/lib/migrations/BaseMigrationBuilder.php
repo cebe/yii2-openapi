@@ -408,6 +408,7 @@ abstract class BaseMigrationBuilder
         return true;
     }
 
+    // temporary save new/changed/desired column to temporary table. If saved we can fetch it from DB and then it can be used to compare with current column
     public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
         $tableName = 'tmp_table_';

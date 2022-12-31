@@ -11,7 +11,7 @@ class m200000_000000_change_table_editcolumns extends \yii\db\Migration
         $this->alterColumn('{{%editcolumns}}', 'connection', 'enum_connection USING "connection"::enum_connection');
         $this->alterColumn('{{%editcolumns}}', 'connection', "SET NOT NULL");
         $this->alterColumn('{{%editcolumns}}', 'connection', "SET DEFAULT 'WIRED'");
-        $this->alterColumn('{{%editcolumns}}', 'device', $this->text()->null());
+        $this->alterColumn('{{%editcolumns}}', 'device', 'text NULL USING "device"::text');
         $this->alterColumn('{{%editcolumns}}', 'device', "DROP NOT NULL");
         $this->alterColumn('{{%editcolumns}}', 'device', "DROP DEFAULT");
         $this->execute('DROP TYPE enum_device');

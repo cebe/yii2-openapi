@@ -166,7 +166,10 @@ class ColumnToCode
             return "'" . $this->rawParts['type'] . "'";
         }
         if ($addUsingExpression && ApiGenerator::isPostgres()) {
-            return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
+            return "'" . $this->rawParts['type'] .
+                ($this->alterByXDbType ?
+                    '' :
+                    " ".$this->rawParts['nullable'])
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
         }
 

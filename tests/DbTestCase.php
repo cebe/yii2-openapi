@@ -104,4 +104,25 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
             $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
         }
     }
+
+    protected function runActualMigrations(string $db = 'mysql', int $number = 2): void
+    {
+        // up
+        exec('cd tests; ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
+        $last = count($upOutput) - 1;
+        $lastThird = count($upOutput) - 3;
+        $this->assertSame($upExitCode, 0);
+        $this->assertSame($upOutput[$last], 'Migrated up successfully.');
+        $this->assertSame($upOutput[$lastThird], $number.' migrations were applied.');
+        // 1 migration was applied.
+
+        // down
+        exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
+        $last = count($downOutput) - 1;
+        $lastThird = count($downOutput) - 3;
+        $this->assertSame($downExitCode, 0);
+        $this->assertSame($downOutput[$last], 'Migrated down successfully.');
+        $this->assertSame($downOutput[$lastThird], $number.' migrations were reverted.');
+
+    }
 }
