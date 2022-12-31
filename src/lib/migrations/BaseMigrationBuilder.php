@@ -418,16 +418,22 @@ abstract class BaseMigrationBuilder
     {
         $tableName = 'tmp_table_';
         $db = 'db';
-        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
-            $db = 'pg_test_db_2';
-        }
+        // if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+        //     $db = 'pg_test_db_2';
+        // }
 
         Yii::$app->{$db}->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
             $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
+            if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+                $column = strtr($column, ['enum_'.$columnSchema->name => '_tmp_enum_'.$columnSchema->name]);
+            }
         } else {
             $column = [$columnSchema->name => $this->newColStr($columnSchema)];
+            if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+                $column[$columnSchema->name] = strtr($columnSchema->name, ['enum_'.$columnSchema->name => '_tmp_enum_'.$columnSchema->name]);
+            }
         }
 
         // create enum if relevant
@@ -437,7 +443,7 @@ abstract class BaseMigrationBuilder
                 return "'$aValue'";
             }, $allEnumValues);
             Yii::$app->{$db}->createCommand(
-                'CREATE TYPE enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
+                'CREATE TYPE _tmp_enum_'.$columnSchema->name.' AS ENUM('.implode(', ', $allEnumValues).')'
             )->execute();
         }
 
@@ -448,7 +454,7 @@ abstract class BaseMigrationBuilder
         Yii::$app->{$db}->createCommand()->dropTable($tableName)->execute();
 
         if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
-            Yii::$app->{$db}->createCommand('DROP TYPE enum_'.$columnSchema->name)->execute();
+            Yii::$app->{$db}->createCommand('DROP TYPE _tmp_enum_'.$columnSchema->name)->execute();
         }
 
         return $table->columns[$columnSchema->name];
