@@ -421,7 +421,8 @@ abstract class BaseMigrationBuilder
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
-            $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
+            $name = MigrationRecordBuilder::quote($columnSchema->name);
+            $column = [$name.' '.$this->newColStr($columnSchema)];
             if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
                 $column = strtr($column, ['enum_'.$columnSchema->name => 'tmp_enum_'.$columnSchema->name.'_']);
             }
