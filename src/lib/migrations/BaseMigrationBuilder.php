@@ -418,7 +418,7 @@ abstract class BaseMigrationBuilder
     {
         $tableName = 'tmp_table_';
         $tmpEnumName = function (string $columnName): string {
-            return 'tmp_enum_'.$columnName.'_';
+            return '"tmp_enum_'.$columnName.'_"';
         };
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
@@ -455,7 +455,7 @@ abstract class BaseMigrationBuilder
 
         if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
             Yii::$app->db->createCommand('DROP TYPE '.$tmpEnumName($columnSchema->name))->execute();
-            if ($table->columns[$columnSchema->name]->dbType !== $tmpEnumName($columnSchema->name)) {
+            if ('"'.$table->columns[$columnSchema->name]->dbType.'"' !== $tmpEnumName($columnSchema->name)) {
                 throw new \Exception('Unknown error related to PgSQL enum '.$table->columns[$columnSchema->name]->dbType);
             }
             // reset back column enum name to original as we are comparing with current
