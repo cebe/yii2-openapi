@@ -34,8 +34,6 @@ up:
 	echo "Waiting for mariadb to start up..."
 	docker-compose exec -T mysql timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
 	echo "Create another test DB for PgSQL ..." # created because of enum in PgSQL are different than MySQL
-	docker-compose exec -T postgres bash -c "psql --username dbuser --dbname testdb -c 'create database pg_test_db_2;'; psql --username dbuser --dbname testdb -c 'grant all privileges on database pg_test_db_2 to dbuser;'" || (docker-compose ps; docker-compose logs; exit 1)
-
 
 cli:
 	docker-compose exec php bash
