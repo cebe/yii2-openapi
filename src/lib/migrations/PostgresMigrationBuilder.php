@@ -23,8 +23,8 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         foreach ($columns as $column) {
             $tableName = $this->model->getTableAlias();
             if (static::isEnum($column)) {
-                $this->migration->addUpCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addDownCode($this->recordBuilder->dropEnum($column->name), true);
+                $this->migration->addUpCode($this->recordBuilder->createEnum($tableName, $column->name, $column->enumValues))
+                                ->addDownCode($this->recordBuilder->dropEnum($tableName, $column->name), true);
             }
             $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
@@ -42,8 +42,8 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
             if (static::isEnum($column)) {
-                $this->migration->addDownCode($this->recordBuilder->createEnum($column->name, $column->enumValues))
-                                ->addUpCode($this->recordBuilder->dropEnum($column->name));
+                $this->migration->addDownCode($this->recordBuilder->createEnum($tableName, $column->name, $column->enumValues))
+                                ->addUpCode($this->recordBuilder->dropEnum($tableName, $column->name));
             }
         }
     }
@@ -92,31 +92,32 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
             }
         }
         if ($isChangeToEnum) {
-            $this->migration->addUpCode($this->recordBuilder->createEnum($desired->name, $desired->enumValues), true);
+            $this->migration->addUpCode($this->recordBuilder->createEnum($tableName, $desired->name, $desired->enumValues), true);
         }
         if ($isChangeFromEnum) {
-            $this->migration->addUpCode($this->recordBuilder->dropEnum($current->name));
+            $this->migration->addUpCode($this->recordBuilder->dropEnum($tableName, $current->name));
         }
 
         if ($isChangeFromEnum) {
             $this->migration
-                ->addDownCode($this->recordBuilder->createEnum($current->name, $current->enumValues));
+                ->addDownCode($this->recordBuilder->createEnum($tableName, $current->name, $current->enumValues));
         }
         if ($isChangeToEnum) {
-            $this->migration->addDownCode($this->recordBuilder->dropEnum($current->name), true);
+            $this->migration->addDownCode($this->recordBuilder->dropEnum($tableName, $current->name), true);
         }
     }
 
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
         $changedAttributes = [];
+        $tableAlias = $this->model->getTableAlias();
 
         $this->modifyCurrent($current);
         $this->modifyDesired($desired);
         $this->modifyDesiredInContextOfCurrent($current, $desired);
 
         // for docs, please see MysqlMigrationBuilder file
-        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        $desiredFromDb = $this->tmpSaveNewCol($tableAlias, $desired);
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
 
@@ -139,11 +140,12 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
     protected function createEnumMigrations():void
     {
+        $tableAlias = $this->model->getTableAlias();
         $enums = $this->model->getEnumAttributes();
         foreach ($enums as $attr) {
             $this->migration
-                ->addUpCode($this->recordBuilder->createEnum($attr->columnName, $attr->enumValues), true)
-                ->addDownCode($this->recordBuilder->dropEnum($attr->columnName), true);
+                ->addUpCode($this->recordBuilder->createEnum($tableAlias, $attr->columnName, $attr->enumValues), true)
+                ->addDownCode($this->recordBuilder->dropEnum($tableAlias, $attr->columnName), true);
         }
     }
 

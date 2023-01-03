@@ -409,25 +409,27 @@ abstract class BaseMigrationBuilder
     }
 
     // temporary save new/changed/desired column to temporary table. If saved we can fetch it from DB and then it can be used to compare with current column
-    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
+    public function tmpSaveNewCol(string $tableAlias, \cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
-        $tableName = 'tmp_table_';
+        $tmpTableName = 'tmp_table_';
         $tmpEnumName = function (string $columnName): string {
             return '"tmp_enum_'.$columnName.'_"';
         };
+        $rawTableName = $this->db->schema->getRawTableName($tableAlias);
+        $innerEnumTypeName = "enum_{$tmpTableName}_$columnSchema->name";
 
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tmpTableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
             $name = MigrationRecordBuilder::quote($columnSchema->name);
-            $column = [$name.' '.$this->newColStr($columnSchema)];
+            $column = [$name.' '.$this->newColStr($tmpTableName, $columnSchema)];
             if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
-                $column = strtr($column, ['enum_'.$columnSchema->name => $tmpEnumName($columnSchema->name)]);
+                $column = strtr($column, [$innerEnumTypeName => $tmpEnumName($columnSchema->name)]);
             }
         } else {
-            $column = [$columnSchema->name => $this->newColStr($columnSchema)];
+            $column = [$columnSchema->name => $this->newColStr($tmpTableName, $columnSchema)];
             if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
-                $column[$columnSchema->name] = strtr($column[$columnSchema->name], ['enum_'.$columnSchema->name => $tmpEnumName($columnSchema->name)]);
+                $column[$columnSchema->name] = strtr($column[$columnSchema->name], [$innerEnumTypeName => $tmpEnumName($columnSchema->name)]);
             }
         }
 
@@ -442,11 +444,11 @@ abstract class BaseMigrationBuilder
             )->execute();
         }
 
-        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
+        Yii::$app->db->createCommand()->createTable($tmpTableName, $column)->execute();
 
-        $table = Yii::$app->db->getTableSchema($tableName);
+        $table = Yii::$app->db->getTableSchema($tmpTableName);
 
-        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+        Yii::$app->db->createCommand()->dropTable($tmpTableName)->execute();
 
         if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
             Yii::$app->db->createCommand('DROP TYPE '.$tmpEnumName($columnSchema->name))->execute();
@@ -455,15 +457,15 @@ abstract class BaseMigrationBuilder
             }
             // reset back column enum name to original as we are comparing with current
             // e.g. we get different enum type name such as `enum_status` and `tmp_enum_status_` even there is no change, so below statement fix this issue
-            $table->columns[$columnSchema->name]->dbType = 'enum_'.$columnSchema->name;
+            $table->columns[$columnSchema->name]->dbType = 'enum_'.$rawTableName.'_'.$columnSchema->name;
         }
 
         return $table->columns[$columnSchema->name];
     }
 
-    public function newColStr(\cebe\yii2openapi\db\ColumnSchema $columnSchema): string
+    public function newColStr(string $tableAlias, \cebe\yii2openapi\db\ColumnSchema $columnSchema): string
     {
-        $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
+        $ctc = new ColumnToCode(\Yii::$app->db->schema, $tableAlias, $columnSchema, false, false, true);
         return ColumnToCode::undoEscapeQuotes($ctc->getCode());
     }
 

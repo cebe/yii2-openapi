@@ -54,6 +54,12 @@ class ColumnToCode
     private $dbSchema;
 
     /**
+     * @var string
+     * @example {{%table}}
+     */
+    private $tableAlias;
+
+    /**
      * @var bool
      */
     private $fromDb;
@@ -107,6 +113,7 @@ class ColumnToCode
      */
     public function __construct(
         Schema $dbSchema,
+        string $tableAlias,
         ColumnSchema $column,
         bool $fromDb = false,
         bool $alter = false,
@@ -114,6 +121,7 @@ class ColumnToCode
         bool $alterByXDbType = false
     ) {
         $this->dbSchema = $dbSchema;
+        $this->tableAlias = $tableAlias;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
@@ -160,7 +168,9 @@ class ColumnToCode
     public function getAlterExpression(bool $addUsingExpression = false):string
     {
         if ($this->isEnum() && ApiGenerator::isPostgres()) {
-            return "'" . sprintf('enum_%1$s USING "%1$s"::"enum_%1$s"', $this->column->name) . "'";
+            $rawTableName = $this->dbSchema->getRawTableName($this->tableAlias);
+            $enumTypeName = 'enum_'.$rawTableName.'_'.$this->column->name;
+            return "'" . sprintf($enumTypeName.' USING "%1$s"::"'.$enumTypeName.'"', $this->column->name) . "'";
         }
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
@@ -368,7 +378,8 @@ class ColumnToCode
     private function resolveEnumType():void
     {
         if (ApiGenerator::isPostgres()) {
-            $this->rawParts['type'] = 'enum_' . $this->column->name;
+            $rawTableName = $this->dbSchema->getRawTableName($this->tableAlias);
+            $this->rawParts['type'] = 'enum_'.$rawTableName.'_' . $this->column->name;
             return;
         }
         $this->rawParts['type'] = 'enum(' . self::mysqlEnumToString($this->column->enumValues) . ')';
