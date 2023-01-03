@@ -27,8 +27,8 @@ final class MigrationRecordBuilder
     public const ADD_UNIQUE = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', true);";
     public const ADD_INDEX = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', %s);";
     public const DROP_COLUMN = MigrationRecordBuilder::INDENT . "\$this->dropColumn('%s', '%s');";
-    public const ADD_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('CREATE TYPE enum_%s AS ENUM(%s)');";
-    public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE enum_%s');";
+    public const ADD_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('CREATE TYPE \"enum_%s\" AS ENUM(%s)');";
+    public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE \"enum_%s\"');";
     public const DROP_TABLE = MigrationRecordBuilder::INDENT . "\$this->dropTable('%s');";
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";

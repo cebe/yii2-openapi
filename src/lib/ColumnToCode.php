@@ -160,7 +160,7 @@ class ColumnToCode
     public function getAlterExpression(bool $addUsingExpression = false):string
     {
         if ($this->isEnum() && ApiGenerator::isPostgres()) {
-            return "'" . sprintf('enum_%1$s USING "%1$s"::enum_%1$s', $this->column->name) . "'";
+            return "'" . sprintf('enum_%1$s USING "%1$s"::"enum_%1$s"', $this->column->name) . "'";
         }
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
