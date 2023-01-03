@@ -400,20 +400,15 @@ abstract class BaseMigrationBuilder
         return str_replace($this->db->tablePrefix, '', $tableName);
     }
 
-    protected function isNeedUsingExpression(string $fromType, string $toType):bool
+    protected function isNeedUsingExpression(string $fromDbType, string $toDbType):bool
     {
-        $strings = ['string', 'text', 'char'];
-        if (in_array($fromType, $strings) && in_array($toType, $strings)) {
+        if ($fromDbType === $toDbType) {
             return false;
         }
-        $ints = ['smallint', 'integer', 'bigint', 'float', 'decimal'];
-        if (in_array($fromType, $ints) && in_array($toType, $ints)) {
-            return false;
-        }
-        $dates = ['date', 'timestamp'];
-        return !(in_array($fromType, $dates) && in_array($toType, $dates));
+        return true;
     }
 
+    // temporary save new/changed/desired column to temporary table. If saved we can fetch it from DB and then it can be used to compare with current column
     public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
         $tableName = 'tmp_table_';

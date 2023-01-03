@@ -29,6 +29,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 4);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -43,6 +44,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 4);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -57,6 +59,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 4);
     }
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
@@ -74,6 +77,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 4);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -90,6 +94,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 4);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -106,6 +111,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 4);
     }
 
     public function testXDbTypeSecondaryWithEditColumn() // v3
@@ -123,6 +129,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 4);
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -139,6 +146,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 4);
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -155,6 +163,7 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 4);
     }
 
     private function deleteTables()
