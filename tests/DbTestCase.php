@@ -113,8 +113,9 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         $lastThird = count($upOutput) - 3;
         $this->assertSame($upExitCode, 0);
         $this->assertSame($upOutput[$last], 'Migrated up successfully.');
-        $this->assertSame($upOutput[$lastThird], $number.' migrations were applied.');
+        $this->assertSame($upOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' applied.');
         // 1 migration was applied.
+        // 2 migrations were applied.
 
         // down
         exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
@@ -122,7 +123,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         $lastThird = count($downOutput) - 3;
         $this->assertSame($downExitCode, 0);
         $this->assertSame($downOutput[$last], 'Migrated down successfully.');
-        $this->assertSame($downOutput[$lastThird], $number.' migrations were reverted.');
+        $this->assertSame($downOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' reverted.');
 
     }
 }

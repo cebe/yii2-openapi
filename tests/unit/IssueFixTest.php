@@ -9,32 +9,22 @@ use yii\helpers\FileHelper;
 // This class contains tests for various issues present at GitHub
 class IssueFixTest extends DbTestCase
 {
-    // TODO WIP resume from here
     // fix https://github.com/cebe/yii2-openapi/issues/107
     // 107_no_syntax_error
     public function testMigrationsAreNotGeneratedWithSyntaxError()
     {
-        // $testFile = Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/no_syntax_error_107.php");
-        // $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/id_not_in_rules/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-
-        // $this->changeDbToMariadb();
-        // $this->deleteTablesForNoSyntaxError107();
-        // $this->createTableForNoSyntaxError107();
-        // $testFile = Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/no_syntax_error_107.php");
-        // $this->runGenerator($testFile, 'maria');
-
-        $this->changeDbToPgsql();
+        $testFile = Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/no_syntax_error_107.php");
         $this->deleteTablesForNoSyntaxError107();
         $this->createTableForNoSyntaxError107();
-        $testFile = Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/no_syntax_error_107.php");
-        $this->runGenerator($testFile, 'pgsql');
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 1);
     }
 
     private function deleteTablesForNoSyntaxError107()

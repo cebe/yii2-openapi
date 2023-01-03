@@ -29,7 +29,7 @@ components:
           # default: '{}'
 
           type: array
-          x-db-type: text[]
+          x-db-type: text
           nullable: false
           # default: '{}'
 
