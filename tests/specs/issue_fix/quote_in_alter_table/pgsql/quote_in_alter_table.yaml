@@ -1,0 +1,26 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Quote in alter column in Pgsql
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: Quote in alter column in Pgsql test
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        colourName:
+          type: string
+          # x-db-type: pg_lsn

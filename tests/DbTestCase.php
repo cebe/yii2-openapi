@@ -8,7 +8,7 @@ use yii\di\Container;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use \SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
-use yii\helpers\ArrayHelper;
+use yii\helpers\{ArrayHelper, VarDumper};
 use yii\helpers\FileHelper;
 
 class DbTestCase extends \PHPUnit\Framework\TestCase

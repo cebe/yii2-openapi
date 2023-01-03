@@ -68,4 +68,63 @@ class IssueFixTest extends DbTestCase
             'vat_percent' => 'float default 0',
         ])->execute();
     }
+
+    public function testCamelCaseColumnNameIssue127()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/camel_case_127/camel_case_127.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/camel_case_127/mysql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 1);
+
+        $this->changeDbToPgsql();
+        $testFile = Yii::getAlias("@specs/issue_fix/camel_case_127/camel_case_127.php");
+        $this->runGenerator($testFile, 'pgsql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/camel_case_127/pgsql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
+    }
+
+    public function testQuoteInAlterColumn()
+    {
+        $this->changeDbToPgsql();
+        $this->deleteTableForQuoteInAlterColumn();
+        $this->createTableForQuoteInAlterColumn();
+        $testFile = Yii::getAlias("@specs/issue_fix/quote_in_alter_table/pgsql/quote_in_alter_table.php");
+        $this->runGenerator($testFile, 'pgsql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/quote_in_alter_table/pgsql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
+    }
+
+    private function deleteTableForQuoteInAlterColumn()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
+    }
+
+    private function createTableForQuoteInAlterColumn()
+    {
+        Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
+            'id' => 'pk',
+            // 'colourName' => 'circle',
+            'colourName' => 'varchar(255)',
+        ])->execute();
+    }
 }
