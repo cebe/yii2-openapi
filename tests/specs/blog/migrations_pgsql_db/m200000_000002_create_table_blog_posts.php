@@ -8,7 +8,7 @@ class m200000_000002_create_table_blog_posts extends \yii\db\Migration
     public function safeUp()
     {
         $this->createTable('{{%blog_posts}}', [
-            0 => 'uid varchar(128) NOT NULL',
+            0 => '"uid" varchar(128) NOT NULL',
             'title' => $this->string(255)->notNull(),
             'slug' => $this->string(200)->null()->defaultValue(null),
             'category_id' => $this->integer()->notNull(),

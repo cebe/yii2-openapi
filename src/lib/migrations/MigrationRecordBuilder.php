@@ -33,13 +33,14 @@ final class MigrationRecordBuilder
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
+    public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
+
 
     public const ADD_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ADD COLUMN %s %s')->execute();";
 
-    public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
-
     public const ALTER_COLUMN_RAW = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s MODIFY %s %s')->execute();";
-    public const ALTER_COLUMN_RAW_PGSQL = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ALTER COLUMN %s SET DATA TYPE %s')->execute();";
+
+    public const ALTER_COLUMN_RAW_PGSQL = MigrationRecordBuilder::INDENT . "\$this->db->createCommand('ALTER TABLE %s ALTER COLUMN \"%s\" SET DATA TYPE %s')->execute();";
 
     /**
      * @var \yii\db\Schema
@@ -62,7 +63,8 @@ final class MigrationRecordBuilder
         $codeColumns = [];
         foreach ($columns as $columnName => $cebeDbColumnSchema) {
             if (is_string($cebeDbColumnSchema->xDbType) && !empty($cebeDbColumnSchema->xDbType)) {
-                $codeColumns[] = $columnName.' '.$this->columnToCode($cebeDbColumnSchema, false)->getCode();
+                $name = static::quote($columnName);
+                $codeColumns[] = $name.' '.$this->columnToCode($cebeDbColumnSchema, false)->getCode();
             } else {
                 $codeColumns[$columnName] = $this->columnToCode($cebeDbColumnSchema, false)->getCode();
             }
@@ -79,7 +81,8 @@ final class MigrationRecordBuilder
     {
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($column, false);
-            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+            $name = static::quote($column->name);
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, $converter->getCode());
         }
 
         $converter = $this->columnToCode($column, false);
@@ -93,6 +96,7 @@ final class MigrationRecordBuilder
     {
         if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($column, true);
+            $name = static::quote($column->name);
             return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
         }
         $converter = $this->columnToCode($column, true);
@@ -268,5 +272,14 @@ final class MigrationRecordBuilder
             $raw,
             $alterByXDbType
         ]);
+    }
+
+    // https://github.com/cebe/yii2-openapi/issues/127
+    public static function quote(string $columnName): string
+    {
+        if (ApiGenerator::isPostgres()) {
+            return '"'.$columnName.'"';
+        }
+        return $columnName;
     }
 }
