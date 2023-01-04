@@ -202,11 +202,11 @@ class EnumTest extends DbTestCase
     private function deleteTables()
     {
         if (ApiGenerator::isPostgres()) {
-            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_device CASCADE')->execute();
-            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_connection CASCADE')->execute();
-            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_new_column CASCADE')->execute();
-            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_delete_col CASCADE')->execute();
-            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_add_one_mood_at_last CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_pristines_device CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_editcolumns_device CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_editcolumns_connection CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_newcolumns_new_column CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_newcolumns_delete_col CASCADE')->execute();
         }
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%pristines}}')->execute();
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%newcolumns}}')->execute();
@@ -218,10 +218,10 @@ class EnumTest extends DbTestCase
     private function createTableForEditEnumToString() // and vice versa
     {
         if (ApiGenerator::isPostgres()) {
-            Yii::$app->db->createCommand('CREATE TYPE enum_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')')->execute();
+            Yii::$app->db->createCommand('CREATE TYPE enum_itt_editcolumns_device AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')')->execute();
             Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
                 'id' => 'pk',
-                'device' => 'enum_device NOT NULL DEFAULT \'TV\'',
+                'device' => 'enum_itt_editcolumns_device NOT NULL DEFAULT \'TV\'',
                 'connection' => 'string'
             ])->execute();
             return;
@@ -236,10 +236,10 @@ class EnumTest extends DbTestCase
     private function createTableForNewEnumColumn()
     {
         if (ApiGenerator::isPostgres()) {
-            Yii::$app->db->createCommand('CREATE TYPE enum_delete_col AS ENUM(\'FOUR\', \'FIVE\', \'SIX\')')->execute();
+            Yii::$app->db->createCommand('CREATE TYPE enum_itt_newcolumns_delete_col AS ENUM(\'FOUR\', \'FIVE\', \'SIX\')')->execute();
             Yii::$app->db->createCommand()->createTable('{{%newcolumns}}', [
                 'id' => 'pk',
-                'delete_col' => 'enum_delete_col'
+                'delete_col' => 'enum_itt_newcolumns_delete_col'
             ])->execute();
             return;
         }

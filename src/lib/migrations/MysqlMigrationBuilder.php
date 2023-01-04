@@ -39,13 +39,14 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
     protected function compareColumns(ColumnSchema $current, ColumnSchema $desired):array
     {
         $changedAttributes = [];
+        $tableAlias = $this->model->getTableAlias();
 
         $this->modifyCurrent($current);
         $this->modifyDesired($desired);
         $this->modifyDesiredInContextOfCurrent($current, $desired);
 
         // Why this is needed? Often manually created ColumnSchem instance have dbType 'varchar' with size 255 and ColumnSchema fetched from db have 'varchar(255)'. So varchar !== varchar(255). such normal mistake was leading to errors. So desired column is saved in temporary table and it is fetched from that temp. table and then compared with current ColumnSchema
-        $desiredFromDb = $this->tmpSaveNewCol($desired);
+        $desiredFromDb = $this->tmpSaveNewCol($tableAlias, $desired);
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
 
