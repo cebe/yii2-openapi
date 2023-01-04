@@ -8,8 +8,8 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
     public function safeUp()
     {
         $this->addColumn('{{%v2_posts}}', 'id', $this->bigPrimaryKey());
-        $this->execute('CREATE TYPE "enum_lang" AS ENUM(\'ru\', \'eng\')');
-        $this->addColumn('{{%v2_posts}}', 'lang', 'enum_lang NULL DEFAULT \'ru\'');
+        $this->execute('CREATE TYPE "enum_itt_v2_posts_lang" AS ENUM(\'ru\', \'eng\')');
+        $this->addColumn('{{%v2_posts}}', 'lang', 'enum_itt_v2_posts_lang NULL DEFAULT \'ru\'');
         $this->dropColumn('{{%v2_posts}}', 'uid');
         $this->alterColumn('{{%v2_posts}}', 'active', "DROP DEFAULT");
         $this->alterColumn('{{%v2_posts}}', 'category_id', 'bigint NOT NULL USING "category_id"::bigint');
@@ -25,7 +25,7 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
         $this->addColumn('{{%v2_posts}}', 'uid', $this->bigInteger()->notNull());
         $this->dropColumn('{{%v2_posts}}', 'lang');
         $this->dropColumn('{{%v2_posts}}', 'id');
-        $this->execute('DROP TYPE "enum_lang"');
+        $this->execute('DROP TYPE "enum_itt_v2_posts_lang"');
         $this->alterColumn('{{%v2_posts}}', 'active', "SET DEFAULT 'f'");
     }
 }
