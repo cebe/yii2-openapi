@@ -228,9 +228,14 @@ abstract class BaseMigrationBuilder
      */
     protected function buildColumnsCreation(array $columns):void
     {
+        $tableName = $this->model->getTableAlias();
+
         foreach ($columns as $column) {
-            $tableName = $this->model->getTableAlias();
-            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column))
+            /** @var $column ColumnSchema */
+
+            $previousColumnName = $this->previousColumnName($column);
+
+            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column, $previousColumnName))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
         }
     }
@@ -506,5 +511,31 @@ abstract class BaseMigrationBuilder
             return true;
         }
         return false;
+    }
+
+    /**
+     * Given a column, compute its previous column name present in OpenAPI schema
+     * For the first column, `null` is returned
+     * Also due to a issue https://github.com/cebe/yii2-openapi/issues/100 (TODO), existance (if it exists in DB table schema) of previous column is checked.
+     * This should be avoided once above issue is solved.
+     */
+    public function previousColumnName(ColumnSchema $column): ?string
+    {
+        $columnNames = array_keys($this->newColumns);
+
+        $key = array_search($column->name, $columnNames);
+        if ($key > 0) {
+            $prevColName = $columnNames[$key-1];
+
+            if ($this->tableSchema) {
+                $columnSchema = $this->tableSchema->getColumn($prevColName);
+                if ($columnSchema) {
+                    return $prevColName;
+                }
+            }
+            // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
+        }
+
+        return null;
     }
 }

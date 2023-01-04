@@ -77,8 +77,10 @@ final class MigrationRecordBuilder
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    public function addColumn(string $tableAlias, ColumnSchema $column):string
+    public function addColumn(string $tableAlias, ColumnSchema $column, ?string $previousColumnName = null):string
     {
+        // TODO implement previous column name
+        // $converter = $this->columnToCode($column, false, false, $previousColumnName);
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($tableAlias, $column, false);
             $name = static::quote($column->name);
@@ -265,7 +267,8 @@ final class MigrationRecordBuilder
         bool $fromDb = false,
         bool $alter = false,
         bool $raw = false,
-        bool $alterByXDbType = false
+        bool $alterByXDbType = false,
+        ?string $previousColumnName = null
     ): ColumnToCode {
         return Yii::createObject(ColumnToCode::class, [
             $this->dbSchema,
@@ -274,7 +277,8 @@ final class MigrationRecordBuilder
             $fromDb,
             $alter,
             $raw,
-            $alterByXDbType
+            $alterByXDbType,
+            $previousColumnName
         ]);
     }
 

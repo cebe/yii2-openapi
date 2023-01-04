@@ -2,10 +2,15 @@
 
 namespace tests\unit;
 
+use cebe\yii2openapi\lib\ColumnToCode;
+use cebe\yii2openapi\lib\items\DbModel;
+use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\generator\ApiGenerator;
+use cebe\yii2openapi\lib\migrations\MysqlMigrationBuilder;
 use tests\DbTestCase;
 use Yii;
 use yii\db\mysql\Schema as MySqlSchema;
+use yii\db\ColumnSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\helpers\FileHelper;
 use function array_filter;
@@ -118,5 +123,84 @@ class MultiDbFreshMigrationTest extends DbTestCase
             });
         \sort($expectedFiles);
         return $expectedFiles;
+    }
+
+    public function testPreviousColumnName()
+    {
+        $dbName = 'mysql';
+        Yii::$app->set('db', Yii::$app->mysql);
+        $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
+
+        $table = Yii::$app->db->getTableSchema('{{%users_after}}');
+        if (!$table) {
+            Yii::$app->db->createCommand()->createTable('{{%users_after}}', [
+                'id' => 'pk',
+                'username' => 'string',
+                'email' => 'string',
+            ])->execute();
+        }
+
+        $dbModel = new DbModel([
+            'name' => 'User',
+            'tableName' => 'users_after',
+            'description' => 'The User',
+            'attributes' => [
+                'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
+                    ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
+                'username' => (new Attribute('username', ['phpType' => 'string', 'dbType' => 'string']))
+                    ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
+                'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
+                    ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
+            ],
+        ]);
+
+        $builder = new MysqlMigrationBuilder(Yii::$app->db, $dbModel);
+        $builder->build();
+        $name = $builder->previousColumnName(new ColumnSchema(['name' => 'email']));
+        $this->assertSame($name, 'username');
+    }
+
+    public function testAfterKeyword()
+    {
+        $dbName = 'mysql';
+        Yii::$app->set('db', Yii::$app->mysql);
+        $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
+
+        $dbSchema = Yii::$app->db->schema;
+        $columnSchema = new ColumnSchema([
+            'type' => 'integer',
+            'dbType' => \version_compare($version, '8.0.17', '>') ? 'int unsigned' : 'int(11) unsigned',
+            'phpType' => 'integer',
+            'allowNull' => true,
+            'autoIncrement' => false,
+            'enumValues' => null,
+            'size' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'precision' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'scale' => null,
+            'defaultValue' => 1,
+        ]);
+
+        $column = new ColumnToCode(
+            $dbSchema, $columnSchema, false, false, 'username'
+        );
+        $columnWithoutPreviousCol = new ColumnToCode(
+            $dbSchema, $columnSchema, false, false
+        );
+
+        $this->assertContains('AFTER username', $column->getCode());
+        $this->assertNotContains('AFTER username', $columnWithoutPreviousCol->getCode());
+
+        // test `after` for fluent part in function call `after()`
+        unset($column, $columnWithoutPreviousCol);
+
+        $column = new ColumnToCode(
+            $dbSchema, $columnSchema, true, false, 'username'
+        );
+        $columnWithoutPreviousCol = new ColumnToCode(
+            $dbSchema, $columnSchema, true, false
+        );
+
+        $this->assertContains("->after('username')", $column->getCode());
+        $this->assertNotContains("->after('username')", $columnWithoutPreviousCol->getCode());
     }
 }
