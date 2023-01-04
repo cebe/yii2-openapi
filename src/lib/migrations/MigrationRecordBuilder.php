@@ -82,12 +82,12 @@ final class MigrationRecordBuilder
         // TODO implement previous column name
         // $converter = $this->columnToCode($column, false, false, $previousColumnName);
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
-            $converter = $this->columnToCode($tableAlias, $column, false);
+            $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $previousColumnName);
             $name = static::quote($column->name);
             return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, $converter->getCode());
         }
 
-        $converter = $this->columnToCode($tableAlias, $column, false);
+        $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $previousColumnName);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 

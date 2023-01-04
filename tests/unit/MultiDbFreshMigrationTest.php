@@ -181,10 +181,10 @@ class MultiDbFreshMigrationTest extends DbTestCase
         ]);
 
         $column = new ColumnToCode(
-            $dbSchema, $columnSchema, false, false, 'username'
+            $dbSchema, 'tableName', $columnSchema, false, false, false, false, 'username'
         );
         $columnWithoutPreviousCol = new ColumnToCode(
-            $dbSchema, $columnSchema, false, false
+            $dbSchema, 'tableName', $columnSchema, false, false
         );
 
         $this->assertContains('AFTER username', $column->getCode());
@@ -194,10 +194,10 @@ class MultiDbFreshMigrationTest extends DbTestCase
         unset($column, $columnWithoutPreviousCol);
 
         $column = new ColumnToCode(
-            $dbSchema, $columnSchema, true, false, 'username'
+            $dbSchema, 'tableName', $columnSchema, true, false, false, false, 'username'
         );
         $columnWithoutPreviousCol = new ColumnToCode(
-            $dbSchema, $columnSchema, true, false
+            $dbSchema, 'tableName', $columnSchema, true, false
         );
 
         $this->assertContains("->after('username')", $column->getCode());
