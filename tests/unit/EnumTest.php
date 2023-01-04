@@ -205,6 +205,7 @@ class EnumTest extends DbTestCase
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_pristines_device CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_editcolumns_device CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_editcolumns_connection CASCADE')->execute();
+            Yii::$app->db->createCommand('DROP TYPE IF EXISTS "enum_itt_editcolumns_camelCaseCol" CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_newcolumns_new_column CASCADE')->execute();
             Yii::$app->db->createCommand('DROP TYPE IF EXISTS enum_itt_newcolumns_delete_col CASCADE')->execute();
         }
@@ -222,14 +223,16 @@ class EnumTest extends DbTestCase
             Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
                 'id' => 'pk',
                 'device' => 'enum_itt_editcolumns_device NOT NULL DEFAULT \'TV\'',
-                'connection' => 'string'
+                'connection' => 'string',
+                'camelCaseCol' => 'string',
             ])->execute();
             return;
         }
         Yii::$app->db->createCommand()->createTable('{{%editcolumns}}', [
             'id' => 'pk',
             'device' => 'enum("MOBILE", "TV", "COMPUTER") NOT NULL DEFAULT \'TV\'',
-            'connection' => 'string'
+            'connection' => 'string',
+            'camelCaseCol' => 'string',
         ])->execute();
     }
 

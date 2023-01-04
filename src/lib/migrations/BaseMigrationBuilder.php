@@ -416,7 +416,7 @@ abstract class BaseMigrationBuilder
             return '"tmp_enum_'.$columnName.'_"';
         };
         $rawTableName = $this->db->schema->getRawTableName($tableAlias);
-        $innerEnumTypeName = "enum_{$tmpTableName}_$columnSchema->name";
+        $innerEnumTypeName = "\"enum_{$tmpTableName}_{$columnSchema->name}\"";
 
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tmpTableName)->execute();
 

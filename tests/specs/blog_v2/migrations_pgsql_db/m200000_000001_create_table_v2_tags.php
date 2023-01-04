@@ -11,7 +11,7 @@ class m200000_000001_create_table_v2_tags extends \yii\db\Migration
         $this->createTable('{{%v2_tags}}', [
             'id' => $this->bigPrimaryKey(),
             0 => '"name" varchar(100) NOT NULL',
-            'lang' => 'enum_itt_v2_tags_lang NOT NULL',
+            'lang' => '"enum_itt_v2_tags_lang" NOT NULL',
         ]);
         $this->createIndex('v2_tags_name_key', '{{%v2_tags}}', 'name', true);
     }

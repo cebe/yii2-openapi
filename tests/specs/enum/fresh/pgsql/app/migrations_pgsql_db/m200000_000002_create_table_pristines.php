@@ -10,7 +10,7 @@ class m200000_000002_create_table_pristines extends \yii\db\Migration
         $this->execute('CREATE TYPE "enum_itt_pristines_device" AS ENUM(\'MOBILE\', \'TV\', \'COMPUTER\')');
         $this->createTable('{{%pristines}}', [
             'id' => $this->primaryKey(),
-            'device' => 'enum_itt_pristines_device NOT NULL DEFAULT \'TV\'',
+            'device' => '"enum_itt_pristines_device" NOT NULL DEFAULT \'TV\'',
         ]);
     }
 

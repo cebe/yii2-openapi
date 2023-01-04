@@ -10,7 +10,7 @@ class m200000_000001_create_table_newcolumns extends \yii\db\Migration
         $this->execute('CREATE TYPE "enum_itt_newcolumns_new_column" AS ENUM(\'ONE\', \'TWO\', \'THREE\')');
         $this->createTable('{{%newcolumns}}', [
             'id' => $this->primaryKey(),
-            'new_column' => 'enum_itt_newcolumns_new_column NOT NULL DEFAULT \'ONE\'',
+            'new_column' => '"enum_itt_newcolumns_new_column" NOT NULL DEFAULT \'ONE\'',
         ]);
     }
 

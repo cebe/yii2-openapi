@@ -78,6 +78,15 @@ components:
           default:
             WIRED
           nullable: false
+        camelCaseCol:
+          type: string
+          enum:
+            - ONE
+            - TWO
+            - THREE
+          default:
+            TWO
+          nullable: false
 
     # Enumvaluechange:
     #   type: object
