@@ -10,21 +10,24 @@ Base on [Gii, the Yii Framework Code Generator](https://www.yiiframework.com/ext
 [![License](https://poser.pugx.org/cebe/yii2-openapi/license)](https://packagist.org/packages/cebe/yii2-openapi)
 ![yii2-openapi](https://github.com/cebe/yii2-openapi/workflows/yii2-openapi/badge.svg?branch=wip)
 
-## what should this do?
+## TLDR; what is this?
+
+A code generator for OpenAPI and Yii Framework based PHP API application.
 
 Input: [OpenAPI 3.0 YAML or JSON](https://github.com/OAI/OpenAPI-Specification#the-openapi-specification) (via [cebe/php-openapi](https://github.com/cebe/php-openapi))
 
-Output: Controllers, Models, database schema
+Output: Yii Framework Application with Controllers, Models, database schema
+
 
 ## Features
 
-This library is currently work in progress, current features are checked here when ready:
+Currently available features:
 
-- [x] generate Controllers + Actions
-- [x] generate Models
-- [x] generate Database migration
-- [x] provide Dummy API via Faker
-- [x] update Database and models when API schema changes
+- Generate Path mappings, **Controllers** and Actions **for API Endpoints**. CRUD Endpoints are ready-to-use, other Endpoints are generated as abstract functions that need to be implemented
+- Generate **Models** and validation based on OpenAPI Schema
+- Generate **Database Schema** from OpenAPI Schema
+- Generates **Database Migrations** for schema changes
+- Provide **Dummy Data** via Faker for development
 
 ## Requirements
 
@@ -33,7 +36,7 @@ This library is currently work in progress, current features are checked here wh
 
 ## Install
 
-    composer require cebe/yii2-openapi:^2.0@alpha
+    composer require cebe/yii2-openapi:^2.0@beta
 
 ## Usage
 
@@ -116,8 +119,8 @@ Explicitly specify primary key name for table, if it is different from "id"
 
 ### `x-db-type`
 
-Explicitly specify the database type for a column. (MUST contains only real DB type! (`json`, `jsonb`, `uuid`, `varchar` etc.)).
-If x-db-type sets as `false`, property will be processed as virtual;
+Explicitly specify the database type for a column. (MUST contain only real DB type! (`json`, `jsonb`, `uuid`, `varchar` etc.)).
+If `x-db-type` is set to `false`, property will be processed as virtual;
 It will be added in model as public property, but skipped for migrations generation.
 
 Example values of `x-db-type` are:
@@ -139,6 +142,7 @@ Such values are not allowed:
    - MEDIUMINT(10) UNSIGNED ZEROFILL NULL DEFAULT '7' COMMENT 'comment' AFTER `seti`, ADD INDEX `t` (`w`)
 
 ### `x-indexes`
+
 Specify table indexes
 
 ```yaml
@@ -241,7 +245,18 @@ User:
  - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)
  
 
-## Things to keep in mind
+## Assumptions
+
+When generating code from an OpenAPI description there are many possible ways to achive a fitting result. 
+Thus there are some assumptions and limitations that are currently applied to make this work.
+Here is a (possibly incomplete) list:
+
+- The current implementation works best with OpenAPI description that follows the [JSON:API](https://jsonapi.org/) guidelines.
+  - The request and response format/schema is currently not extracted from OpenAPI schema and may need to be adjusted manually if it does not follow JSON:API
+- column/field/property with name `id` is considered as Primary Key by this library and it is automatically handled by DB/Yii; so remove it from validation `rules()`
+  - other fields can currently be used as primary keys using the `x-pk` OpenAPI extension (see below) but it may not be work correctly in all cases, please report bugs if you find them.
+
+Other things to keep in mind:
 
 ### Adding columns to existing tables
 
@@ -256,7 +271,7 @@ Such a migration will fail when the table is not empty:
 $this->addColumn('{{%company}}', 'name', $this->string(128)->notNull());
 ```
 
-Fail on a PostgreSQL database with 
+Fails on a PostgreSQL database with 
 
 > add column name string(128) NOT NULL to table {{%company}} ...Exception: SQLSTATE[23502]: Not null violation: 7 ERROR:  column "name" contains null values
 
@@ -330,6 +345,7 @@ It work on MariaDb.
 ```
 
 ### Handling of `numeric` (#numeric, #MariaDb)
+
 precision-default = 10
 scale-default = 2
 
@@ -360,6 +376,7 @@ DB-Result = decimal(12,2)
 ```
 DB-Result = decimal(10,2)
 
+
 ## Screenshots
 
 Gii Generator Form:
@@ -369,6 +386,7 @@ Gii Generator Form:
 Generated files:
 
 ![Gii Generated Files](doc/screenshot-files.png)
+
 
 # Development
 
@@ -395,6 +413,7 @@ To apply multiple migration with one command:
 ./yii migrate-pgsql/up --interactive=0 && \
 ./yii migrate-pgsql/down --interactive=0 4
 ```
+
 
 # Support
 
