@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\migrations;
 
+use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
@@ -15,6 +16,7 @@ use Yii;
 use yii\db\ColumnSchema;
 use yii\helpers\VarDumper;
 use yii\db\Connection;
+use yii\db\Expression;
 
 abstract class BaseMigrationBuilder
 {
@@ -202,14 +204,6 @@ abstract class BaseMigrationBuilder
             if ($current->isPrimaryKey || in_array($desired->dbType, ['pk', 'upk', 'bigpk', 'ubigpk'])) {
                 // do not adjust existing primary keys
                 continue;
-            }
-            if (!empty($current->enumValues)) {
-                $current->type = 'enum';
-                $current->dbType = 'enum';
-            }
-            if (!empty($desired->enumValues)) {
-                $desired->type = 'enum';
-                $desired->dbType = 'enum';
             }
             $changedAttributes = $this->compareColumns($current, $desired);
             if (empty($changedAttributes)) {
@@ -406,44 +400,111 @@ abstract class BaseMigrationBuilder
         return str_replace($this->db->tablePrefix, '', $tableName);
     }
 
-    protected function isNeedUsingExpression(string $fromType, string $toType):bool
+    protected function isNeedUsingExpression(string $fromDbType, string $toDbType):bool
     {
-        $strings = ['string', 'text', 'char'];
-        if (in_array($fromType, $strings) && in_array($toType, $strings)) {
+        if ($fromDbType === $toDbType) {
             return false;
         }
-        $ints = ['smallint', 'integer', 'bigint', 'float', 'decimal'];
-        if (in_array($fromType, $ints) && in_array($toType, $ints)) {
-            return false;
-        }
-        $dates = ['date', 'timestamp'];
-        return !(in_array($fromType, $dates) && in_array($toType, $dates));
+        return true;
     }
 
-    public function tmpSaveNewCol(\cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
+    // temporary save new/changed/desired column to temporary table. If saved we can fetch it from DB and then it can be used to compare with current column
+    public function tmpSaveNewCol(string $tableAlias, \cebe\yii2openapi\db\ColumnSchema $columnSchema): \yii\db\ColumnSchema
     {
-        $tableName = 'tmp_table_';
+        $tmpTableName = 'tmp_table_';
+        $tmpEnumName = function (string $columnName): string {
+            return '"tmp_enum_'.$columnName.'_"';
+        };
+        $rawTableName = $this->db->schema->getRawTableName($tableAlias);
+        $innerEnumTypeName = "\"enum_{$tmpTableName}_{$columnSchema->name}\"";
 
-        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tableName)->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS '.$tmpTableName)->execute();
 
         if (is_string($columnSchema->xDbType) && !empty($columnSchema->xDbType)) {
-            $column = [$columnSchema->name.' '.$this->newColStr($columnSchema)];
+            $name = MigrationRecordBuilder::quote($columnSchema->name);
+            $column = [$name.' '.$this->newColStr($tmpTableName, $columnSchema)];
+            if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+                $column = strtr($column, [$innerEnumTypeName => $tmpEnumName($columnSchema->name)]);
+            }
         } else {
-            $column = [$columnSchema->name => $this->newColStr($columnSchema)];
+            $column = [$columnSchema->name => $this->newColStr($tmpTableName, $columnSchema)];
+            if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+                $column[$columnSchema->name] = strtr($column[$columnSchema->name], [$innerEnumTypeName => $tmpEnumName($columnSchema->name)]);
+            }
         }
 
-        Yii::$app->db->createCommand()->createTable($tableName, $column)->execute();
+        // create enum if relevant
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {
+            $allEnumValues = $columnSchema->enumValues;
+            $allEnumValues = array_map(function ($aValue) {
+                return "'$aValue'";
+            }, $allEnumValues);
+            Yii::$app->db->createCommand(
+                'CREATE TYPE '.$tmpEnumName($columnSchema->name).' AS ENUM('.implode(', ', $allEnumValues).')'
+            )->execute();
+        }
 
-        $table = Yii::$app->db->getTableSchema($tableName);
+        Yii::$app->db->createCommand()->createTable($tmpTableName, $column)->execute();
 
-        Yii::$app->db->createCommand()->dropTable($tableName)->execute();
+        $table = Yii::$app->db->getTableSchema($tmpTableName);
+
+        Yii::$app->db->createCommand()->dropTable($tmpTableName)->execute();
+
+        if (ApiGenerator::isPostgres() && static::isEnum($columnSchema)) {// drop enum
+            Yii::$app->db->createCommand('DROP TYPE '.$tmpEnumName($columnSchema->name))->execute();
+            if ('"'.$table->columns[$columnSchema->name]->dbType.'"' !== $tmpEnumName($columnSchema->name)) {
+                throw new \Exception('Unknown error related to PgSQL enum '.$table->columns[$columnSchema->name]->dbType);
+            }
+            // reset back column enum name to original as we are comparing with current
+            // e.g. we get different enum type name such as `enum_status` and `tmp_enum_status_` even there is no change, so below statement fix this issue
+            $table->columns[$columnSchema->name]->dbType = 'enum_'.$rawTableName.'_'.$columnSchema->name;
+        }
 
         return $table->columns[$columnSchema->name];
     }
 
-    public function newColStr(\cebe\yii2openapi\db\ColumnSchema $columnSchema): string
+    public function newColStr(string $tableAlias, \cebe\yii2openapi\db\ColumnSchema $columnSchema): string
     {
-        $ctc = new ColumnToCode(\Yii::$app->db->schema, $columnSchema, false, false, true);
+        $ctc = new ColumnToCode(\Yii::$app->db->schema, $tableAlias, $columnSchema, false, false, true);
         return ColumnToCode::undoEscapeQuotes($ctc->getCode());
+    }
+
+    public static function isEnum(\yii\db\ColumnSchema $columnSchema): bool
+    {
+        if (!empty($columnSchema->enumValues) && is_array($columnSchema->enumValues)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isEnumValuesChanged(
+        \yii\db\ColumnSchema $current,
+        \yii\db\ColumnSchema $desired
+    ): bool {
+        if (static::isEnum($current) && static::isEnum($desired) &&
+            $current->enumValues !== $desired->enumValues) {
+            return true;
+        }
+        return false;
+    }
+
+    public function isDefaultValueChanged(
+        ColumnSchema $current,
+        ColumnSchema $desired
+    ): bool {
+        // if the default value is object of \yii\db\Expression then default value is expression instead of constant. See https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+        // in such case instead of comparing two objects, we should compare expression
+
+        if ($current->defaultValue instanceof Expression &&
+            $desired->defaultValue instanceof Expression
+            && $current->defaultValue->expression === $desired->defaultValue->expression
+        ) {
+            return false;
+        }
+
+        if ($current->defaultValue !== $desired->defaultValue) {
+            return true;
+        }
+        return false;
     }
 }

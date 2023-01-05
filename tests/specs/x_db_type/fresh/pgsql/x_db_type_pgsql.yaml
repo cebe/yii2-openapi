@@ -54,6 +54,11 @@ components:
         col_11:
           type: string
           x-db-type: TEXT
+        price:
+          description: price in EUR
+          type: number
+          x-db-type: decimal(10,2)
+          default: 0
 
 
     Alldbdatatype: # All DB data type
@@ -505,7 +510,7 @@ components:
           default: fox jumps over dog
         json_col_2:
           type: string
-          x-db-type: json
+          x-db-type: jsonb
           nullable: false
           default: []
         numeric_col:

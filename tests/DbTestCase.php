@@ -8,7 +8,7 @@ use yii\di\Container;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use \SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
-use yii\helpers\ArrayHelper;
+use yii\helpers\{ArrayHelper, VarDumper};
 use yii\helpers\FileHelper;
 
 class DbTestCase extends \PHPUnit\Framework\TestCase
@@ -53,7 +53,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         }
     }
 
-    protected function runGenerator($configFile, string $dbName)
+    protected function runGenerator($configFile, string $dbName = 'mysql')
     {
         $config = require $configFile;
         $config['migrationPath'] = "@app/migrations_{$dbName}_db/";
@@ -88,5 +88,42 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         self::assertNotInstanceOf(MariaDbSchema::class, Yii::$app->db->schema);
         self::assertNotInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
         self::assertInstanceOf(PgSqlSchema::class, Yii::$app->db->schema);
+    }
+
+    protected function checkFiles(array $actual, array $expected)
+    {
+        self::assertEquals(
+            count($actual),
+            count($expected)
+        );
+        foreach ($actual as $index => $file) {
+            $expectedFilePath = $expected[$index];
+            self::assertFileExists($file);
+            self::assertFileExists($expectedFilePath);
+
+            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
+        }
+    }
+
+    protected function runActualMigrations(string $db = 'mysql', int $number = 2): void
+    {
+        // up
+        exec('cd tests; ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
+        $last = count($upOutput) - 1;
+        $lastThird = count($upOutput) - 3;
+        $this->assertSame($upExitCode, 0);
+        $this->assertSame($upOutput[$last], 'Migrated up successfully.');
+        $this->assertSame($upOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' applied.');
+        // 1 migration was applied.
+        // 2 migrations were applied.
+
+        // down
+        exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
+        $last = count($downOutput) - 1;
+        $lastThird = count($downOutput) - 3;
+        $this->assertSame($downExitCode, 0);
+        $this->assertSame($downOutput[$last], 'Migrated down successfully.');
+        $this->assertSame($downOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' reverted.');
+
     }
 }

@@ -54,6 +54,12 @@ class ColumnToCode
     private $dbSchema;
 
     /**
+     * @var string
+     * @example {{%table}}
+     */
+    private $tableAlias;
+
+    /**
      * @var bool
      */
     private $fromDb;
@@ -107,6 +113,7 @@ class ColumnToCode
      */
     public function __construct(
         Schema $dbSchema,
+        string $tableAlias,
         ColumnSchema $column,
         bool $fromDb = false,
         bool $alter = false,
@@ -114,6 +121,7 @@ class ColumnToCode
         bool $alterByXDbType = false
     ) {
         $this->dbSchema = $dbSchema;
+        $this->tableAlias = $tableAlias;
         $this->column = $column;
         $this->fromDb = $fromDb;
         $this->alter = $alter;
@@ -148,8 +156,8 @@ class ColumnToCode
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
-        if (ApiGenerator::isMysql() && $this->isEnum()) {
-            return $quoted ? '"' . str_replace("\'", "'", $code) . '"' : $code;
+        if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
+            return $quoted ? "'" . $code . "'" : $code;
         }
         if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
             return $quoted ? "'" . $this->rawParts['type'] . "'" : $this->rawParts['type'];
@@ -160,13 +168,18 @@ class ColumnToCode
     public function getAlterExpression(bool $addUsingExpression = false):string
     {
         if ($this->isEnum() && ApiGenerator::isPostgres()) {
-            return "'" . sprintf('enum_%1$s USING %1$s::enum_%1$s', $this->column->name) . "'";
+            $rawTableName = $this->dbSchema->getRawTableName($this->tableAlias);
+            $enumTypeName = 'enum_'.$rawTableName.'_'.$this->column->name;
+            return "'" . sprintf('"'.$enumTypeName.'" USING "%1$s"::"'.$enumTypeName.'"', $this->column->name) . "'";
         }
         if ($this->column->dbType === 'tsvector') {
             return "'" . $this->rawParts['type'] . "'";
         }
         if ($addUsingExpression && ApiGenerator::isPostgres()) {
-            return "'" . $this->rawParts['type'] . " ".$this->rawParts['nullable']
+            return "'" . $this->rawParts['type'] .
+                ($this->alterByXDbType ?
+                    '' :
+                    " ".$this->rawParts['nullable'])
                 .' USING "'.$this->column->name.'"::'.$this->typeWithoutSize($this->rawParts['type'])."'";
         }
 
@@ -270,7 +283,9 @@ class ColumnToCode
 
     public static function mysqlEnumToString(array $enum):string
     {
-        return implode(', ', array_map('self::wrapQuotes', $enum));
+        return implode(', ', array_map(function ($aEnumValue) {
+            return self::wrapQuotes($aEnumValue, '"');
+        }, $enum));
     }
 
     private function defaultValueJson(array $value):string
@@ -329,7 +344,7 @@ class ColumnToCode
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
         }
-        
+
         $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
 
         $this->resolveDefaultValue();
@@ -346,7 +361,7 @@ class ColumnToCode
             return false;
         }
 
-        if ($this->isEnum() && ApiGenerator::isMariaDb()) {
+        if ($this->isEnum()) {
             return false;
         }
         if ($this->fromDb === true) {
@@ -363,7 +378,8 @@ class ColumnToCode
     private function resolveEnumType():void
     {
         if (ApiGenerator::isPostgres()) {
-            $this->rawParts['type'] = 'enum_' . $this->column->name;
+            $rawTableName = $this->dbSchema->getRawTableName($this->tableAlias);
+            $this->rawParts['type'] = '"enum_'.$rawTableName.'_' . $this->column->name.'"';
             return;
         }
         $this->rawParts['type'] = 'enum(' . self::mysqlEnumToString($this->column->enumValues) . ')';
@@ -421,16 +437,18 @@ class ColumnToCode
                 break;
             default:
                 $isExpression = StringHelper::startsWith($value, 'CURRENT')
+                    || StringHelper::startsWith($value, 'current')
                     || StringHelper::startsWith($value, 'LOCAL')
                     || substr($value, -1, 1) === ')';
                 if ($isExpression) {
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                    $this->rawParts['default'] = $value;
                 } else {
                     $this->fluentParts['default'] = $expectInteger
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
+                    $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
                 }
-                $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-                if (ApiGenerator::isMysql() && $this->isEnum()) {
+                if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
         }

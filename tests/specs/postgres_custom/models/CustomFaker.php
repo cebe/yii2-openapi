@@ -35,6 +35,7 @@ class CustomFaker extends BaseModelFaker
         $model->json2 = [];
         $model->json3 = [];
         $model->json4 = [];
+        $model->status = $faker->randomElement(['active','draft']);
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {

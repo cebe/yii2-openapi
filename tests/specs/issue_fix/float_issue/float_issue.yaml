@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: float_issue
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: Test model for float_issue
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        vat_percent:
+          type: number
+          format: float
+          default: 0

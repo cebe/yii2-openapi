@@ -14,9 +14,10 @@ class m200000_000000_create_table_v3_pgcustom extends \yii\db\Migration
             'json2' => 'json NOT NULL DEFAULT \'[]\'',
             'json3' => 'json NOT NULL DEFAULT \'[{"foo":"foobar"},{"xxx":"yyy"}]\'',
             'json4' => 'json NOT NULL DEFAULT \'{"foo":"bar","bar":"baz"}\'',
+            'status' => 'enum(\'active\', \'draft\') NULL DEFAULT \'draft\'',
             'search' => 'tsvector NULL',
         ]);
-        $this->createIndex('v3_pgcustom_search_gin_index', '{{%v3_pgcustom}}', 'search', 'gin(to_tsvector(\'english\'))');
+        $this->createIndex('v3_pgcustom_search_gin_index', '{{%v3_pgcustom}}', 'search', 'gin(to_tsvector(\'english\', status))');
     }
 
     public function down()

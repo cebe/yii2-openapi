@@ -1,0 +1,33 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Change column name test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Column_name_change:
+      type: object
+      description: Test model for change in column name test
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          x-db-type: varchar(255)
+        updated_at_2:
+          readOnly: true
+          type: string
+          format: datetime
+          nullable: false
+          x-db-type: datetime

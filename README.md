@@ -331,8 +331,8 @@ e.g. attribute = 'my_property'.
         nullable: false
 ```
 
-### Handling of `enum` (#enum, #MariaDb)
-It work on MariaDb.
+### Handling of `enum` (#enum)
+It works on all 3 DB: MySQL, MariaDb and PgSQL.
 
  ```yaml
   test_table:
@@ -343,6 +343,8 @@ It work on MariaDb.
           - two
           - three
 ```
+
+Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handled manually.
 
 ### Handling of `numeric` (#numeric, #MariaDb)
 
@@ -390,9 +392,10 @@ Generated files:
 
 # Development
 
-There commands are available to develop and check the tests. It can be used inside the Docker container. To enter into bash of container run `make cli` .
+There commands are available to develop and check the tests. It is available inside the Docker container. To enter into bash shell of container, run `make cli` .
 
 ```bash
+cd tests
 ./yii migrate-mysql/up
 ./yii migrate-mysql/down 4
 
@@ -424,4 +427,3 @@ Professional support, consulting as well as software development services are av
 https://www.cebe.cc/en/contact
 
 Development of this library is sponsored by [cebe.:cloud: "Your Professional Deployment Platform"](https://cebe.cloud).
-

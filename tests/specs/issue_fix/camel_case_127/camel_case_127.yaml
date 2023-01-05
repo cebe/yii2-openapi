@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Camel case column name issue \#127
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Pristine:
+      type: object
+      description: Camel Case column name test
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        newColumn:
+          type: string
+          x-db-type: varchar(255)
