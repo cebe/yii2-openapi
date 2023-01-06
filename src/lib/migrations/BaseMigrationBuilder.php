@@ -20,6 +20,9 @@ use yii\db\Expression;
 
 abstract class BaseMigrationBuilder
 {
+    public const POS_FIRST = 'FIRST';
+    public const POS_AFTER = 'AFTER';
+
     /**
      * @var \yii\db\Connection
      */
@@ -233,9 +236,9 @@ abstract class BaseMigrationBuilder
         foreach ($columns as $column) {
             /** @var $column ColumnSchema */
 
-            $previousColumnName = $this->previousColumnName($column);
+            $position = $this->findPosition($column);
 
-            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column, $previousColumnName))
+            $this->migration->addUpCode($this->recordBuilder->addColumn($tableName, $column, $position))
                             ->addDownCode($this->recordBuilder->dropColumn($tableName, $column->name));
         }
     }
@@ -253,7 +256,8 @@ abstract class BaseMigrationBuilder
                 $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name], $pkName))
                                 ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name], $pkName));
             }
-            $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column))
+            $position = $this->findPosition($column);
+            $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column, $position))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
         }
     }
@@ -515,25 +519,27 @@ abstract class BaseMigrationBuilder
 
     /**
      * Given a column, compute its previous column name present in OpenAPI schema
-     * For the first column, `null` is returned
-     * Also due to a issue https://github.com/cebe/yii2-openapi/issues/100 (TODO), existance (if it exists in DB table schema) of previous column is checked.
-     * This should be avoided once above issue is solved.
+     * TODO docs
      */
-    public function previousColumnName(ColumnSchema $column): ?string
+    public function findPosition(ColumnSchema $column): ?string
     {
         $columnNames = array_keys($this->newColumns);
+
+        // TODO if it is added at last then return `null`, no need to add `after` statement there
 
         $key = array_search($column->name, $columnNames);
         if ($key > 0) {
             $prevColName = $columnNames[$key-1];
 
-            if ($this->tableSchema) {
-                $columnSchema = $this->tableSchema->getColumn($prevColName);
-                if ($columnSchema) {
-                    return $prevColName;
-                }
-            }
+            // if ($this->tableSchema) {
+            //     $columnSchema = $this->tableSchema->getColumn($prevColName);
+            //     if ($columnSchema) {
+                    return self::POS_AFTER . ' ' . $prevColName;
+            //     }
+            // }
             // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
+        } elseif ($key === 0) {
+            return self::POS_FIRST;
         }
 
         return null;

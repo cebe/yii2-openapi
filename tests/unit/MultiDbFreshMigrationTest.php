@@ -125,7 +125,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         return $expectedFiles;
     }
 
-    public function testPreviousColumnName()
+    public function testPosition()
     {
         $dbName = 'mysql';
         Yii::$app->set('db', Yii::$app->mysql);
@@ -156,7 +156,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
 
         $builder = new MysqlMigrationBuilder(Yii::$app->db, $dbModel);
         $builder->build();
-        $name = $builder->previousColumnName(new ColumnSchema(['name' => 'email']));
+        $name = $builder->findPosition(new ColumnSchema(['name' => 'email']));
         $this->assertSame($name, 'username');
     }
 
