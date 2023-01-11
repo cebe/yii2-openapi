@@ -366,7 +366,6 @@ class ColumnToCode
             if ($this->position === BaseMigrationBuilder::POS_FIRST) { // TODO
                 $this->fluentParts['position'] = 'first()';
                 $this->rawParts['position'] = BaseMigrationBuilder::POS_FIRST;
-
             } elseif (strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
                 $previousColumn = str_replace(BaseMigrationBuilder::POS_AFTER.' ', '', $this->position);
                 $this->fluentParts['position'] = 'after(\''.$previousColumn.'\')';

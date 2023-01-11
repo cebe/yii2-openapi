@@ -519,7 +519,10 @@ abstract class BaseMigrationBuilder
 
     /**
      * Given a column, compute its previous column name present in OpenAPI schema
-     * TODO docs
+     * @return ?string
+     * `null` if column is added at last
+     * 'FIRST' if column is added at first position
+     * 'AFTER <columnName>' if column is added in between e.g. if 'email' is added after 'username' then 'AFTER username'
      */
     public function findPosition(ColumnSchema $column): ?string
     {
@@ -536,8 +539,8 @@ abstract class BaseMigrationBuilder
             // if ($this->tableSchema) {
             //     $columnSchema = $this->tableSchema->getColumn($prevColName);
             //     if ($columnSchema) {
-                    return self::POS_AFTER . ' ' . $prevColName;
-            //     }
+            return self::POS_AFTER . ' ' . $prevColName;
+        //     }
             // }
             // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
         } elseif ($key === 0) {

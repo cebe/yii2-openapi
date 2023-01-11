@@ -125,7 +125,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         return $expectedFiles;
     }
 
-    public function testPosition()
+    public function testFindPosition()
     {
         $dbName = 'mysql';
         Yii::$app->set('db', Yii::$app->mysql);
@@ -136,7 +136,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
             Yii::$app->db->createCommand()->createTable('{{%users_after}}', [
                 'id' => 'pk',
                 'username' => 'string',
-                'email' => 'string',
+                // 'email' => 'string',
             ])->execute();
         }
 
@@ -145,11 +145,15 @@ class MultiDbFreshMigrationTest extends DbTestCase
             'tableName' => 'users_after',
             'description' => 'The User',
             'attributes' => [
+                'email_2' => (new Attribute('email_2', ['phpType' => 'string', 'dbType' => 'string']))
+                    ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
                 'id' => (new Attribute('id', ['phpType' => 'int', 'dbType' => 'pk']))
                     ->setReadOnly()->setRequired()->setIsPrimary()->setFakerStub('$uniqueFaker->numberBetween(0, 1000000)'),
+                'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
+                    ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
                 'username' => (new Attribute('username', ['phpType' => 'string', 'dbType' => 'string']))
                     ->setSize(200)->setRequired()->setFakerStub('substr($faker->userName, 0, 200)'),
-                'email' => (new Attribute('email', ['phpType' => 'string', 'dbType' => 'string']))
+                'email_3' => (new Attribute('email_3', ['phpType' => 'string', 'dbType' => 'string']))
                     ->setSize(200)->setRequired()->setFakerStub('substr($faker->safeEmail, 0, 200)'),
             ],
         ]);
@@ -157,7 +161,11 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $builder = new MysqlMigrationBuilder(Yii::$app->db, $dbModel);
         $builder->build();
         $name = $builder->findPosition(new ColumnSchema(['name' => 'email']));
-        $this->assertSame($name, 'username');
+        $this->assertSame($name, 'AFTER id');
+        $name_2 = $builder->findPosition(new ColumnSchema(['name' => 'email_2']));
+        $this->assertSame($name_2, 'FIRST');
+        $name_3 = $builder->findPosition(new ColumnSchema(['name' => 'email_3']));
+        $this->assertNull($name_3);
     }
 
     public function testAfterKeyword()
@@ -181,7 +189,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         ]);
 
         $column = new ColumnToCode(
-            $dbSchema, 'tableName', $columnSchema, false, false, false, false, 'username'
+            $dbSchema, 'tableName', $columnSchema, false, false, false, false, 'AFTER username'
         );
         $columnWithoutPreviousCol = new ColumnToCode(
             $dbSchema, 'tableName', $columnSchema, false, false
@@ -194,7 +202,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         unset($column, $columnWithoutPreviousCol);
 
         $column = new ColumnToCode(
-            $dbSchema, 'tableName', $columnSchema, true, false, false, false, 'username'
+            $dbSchema, 'tableName', $columnSchema, true, false, false, false, 'AFTER username'
         );
         $columnWithoutPreviousCol = new ColumnToCode(
             $dbSchema, 'tableName', $columnSchema, true, false
