@@ -7,8 +7,8 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
 {
     public function up()
     {
-        $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN first_name varchar(255) NULL DEFAULT NULL')->execute();
-        $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN json_col_def_n json NOT NULL')->execute();
+        $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN first_name varchar(255) NULL DEFAULT NULL AFTER tag')->execute();
+        $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN json_col_def_n json NOT NULL AFTER numeric_col')->execute();
         $this->db->createCommand('ALTER TABLE {{%editcolumns}} ADD COLUMN json_col_def_n_2 json NOT NULL')->execute();
         $this->alterColumn('{{%editcolumns}}', 'dec_col', $this->decimal(12,2)->null()->defaultValue("3.14"));
         $this->alterColumn('{{%editcolumns}}', 'json_col', $this->text()->notNull());

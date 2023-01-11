@@ -8,7 +8,7 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
     public function up()
     {
         $this->addColumn('{{%v2_posts}}', 'id', $this->bigPrimaryKey());
-        $this->addColumn('{{%v2_posts}}', 'lang', 'enum("ru", "eng") NULL DEFAULT \'ru\'');
+        $this->addColumn('{{%v2_posts}}', 'lang', 'enum("ru", "eng") NULL DEFAULT \'ru\' AFTER slug');
         $this->dropColumn('{{%v2_posts}}', 'uid');
         $this->alterColumn('{{%v2_posts}}', 'active', $this->tinyInteger(1)->notNull());
         $this->alterColumn('{{%v2_posts}}', 'category_id', $this->bigInteger()->notNull());

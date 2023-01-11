@@ -373,6 +373,7 @@ class ColumnToCode
                 $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
             }
         }
+
         $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
 
         $this->resolveDefaultValue();

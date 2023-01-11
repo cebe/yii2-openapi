@@ -7,7 +7,7 @@ class m200000_000004_change_table_v2_users extends \yii\db\Migration
 {
     public function up()
     {
-        $this->addColumn('{{%v2_users}}', 'login', $this->text()->notNull());
+        $this->addColumn('{{%v2_users}}', 'login', $this->text()->notNull()->after('id'));
         $this->dropColumn('{{%v2_users}}', 'username');
         $this->alterColumn('{{%v2_users}}', 'created_at', $this->timestamp()->null()->defaultValue(null));
         $this->alterColumn('{{%v2_users}}', 'email', $this->string(255)->notNull());

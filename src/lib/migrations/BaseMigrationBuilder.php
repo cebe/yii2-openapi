@@ -525,11 +525,13 @@ abstract class BaseMigrationBuilder
     {
         $columnNames = array_keys($this->newColumns);
 
-        // TODO if it is added at last then return `null`, no need to add `after` statement there
-
         $key = array_search($column->name, $columnNames);
         if ($key > 0) {
             $prevColName = $columnNames[$key-1];
+
+            if (!isset($columnNames[$key+1])) { // if new col is added at last then no need to add 'AFTER' SQL part. This is checked as if next column is present or not
+                return null;
+            }
 
             // if ($this->tableSchema) {
             //     $columnSchema = $this->tableSchema->getColumn($prevColName);
