@@ -1,0 +1,25 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: New columns position test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: New columns position test for migration code generation
+      required:
+        - name
+      properties:
+        name:
+          type: integer
+        email:
+          type: string

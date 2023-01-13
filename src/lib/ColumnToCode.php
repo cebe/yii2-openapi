@@ -322,6 +322,7 @@ class ColumnToCode
     {
         $dbType = $this->typeWithoutSize(strtolower($this->column->dbType));
         $type = $this->column->type;
+        $this->resolvePosition();
         //Primary Keys
         if (array_key_exists($type, self::PK_TYPE_MAP)) {
             $this->rawParts['type'] = $type;
@@ -360,17 +361,6 @@ class ColumnToCode
             $this->fluentParts['type'] = $type . $fluentSize;
             $this->rawParts['type'] =
                 $this->column->dbType . (strpos($this->column->dbType, '(') !== false ? '' : $rawSize);
-        }
-
-        if (ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) {
-            if ($this->position === BaseMigrationBuilder::POS_FIRST) { // TODO
-                $this->fluentParts['position'] = 'first()';
-                $this->rawParts['position'] = BaseMigrationBuilder::POS_FIRST;
-            } elseif (strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
-                $previousColumn = str_replace(BaseMigrationBuilder::POS_AFTER.' ', '', $this->position);
-                $this->fluentParts['position'] = 'after(\''.$previousColumn.'\')';
-                $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
-            }
         }
 
         $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
@@ -507,5 +497,19 @@ class ColumnToCode
     private function typeWithoutSize(string $type):string
     {
         return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
+    }
+
+    public function resolvePosition()
+    {
+        if (ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) {
+            if ($this->position === BaseMigrationBuilder::POS_FIRST) {
+                $this->fluentParts['position'] = 'first()';
+                $this->rawParts['position'] = BaseMigrationBuilder::POS_FIRST;
+            } elseif (strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
+                $previousColumn = str_replace(BaseMigrationBuilder::POS_AFTER.' ', '', $this->position);
+                $this->fluentParts['position'] = 'after(\''.$previousColumn.'\')';
+                $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
+            }
+        }
     }
 }

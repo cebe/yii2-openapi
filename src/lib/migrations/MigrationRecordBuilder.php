@@ -96,11 +96,11 @@ final class MigrationRecordBuilder
     public function addDbColumn(string $tableAlias, ColumnSchema $column, ?string $position = null):string
     {
         if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
-            $converter = $this->columnToCode($tableAlias, $column, true);
+            $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
             $name = static::quote($column->name);
             return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
         }
-        $converter = $this->columnToCode($tableAlias, $column, true);
+        $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
