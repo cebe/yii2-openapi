@@ -1,0 +1,160 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: New columns position test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit: # one new column at first position
+      type: object
+      description: New columns position test for migration code generation
+      required:
+        - name
+      properties:
+        name:
+          type: integer
+        email:
+          type: string
+
+    Fruit2: # one new column at first position - raw
+      type: object
+      description: New columns position test for migration code generation
+      required:
+        - name
+      properties:
+        name:
+          type: integer
+          x-db-type: text
+        email:
+          type: string
+
+    Twocol: # two new columns at first position
+      type: object
+      description: New 2 columns position test for migration code generation
+      properties:
+        email:
+          type: string
+        last_name:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+    Twocol2: # two new columns at first position - raw
+      type: object
+      description: New 2 columns position test for migration code generation
+      properties:
+        email:
+          type: string
+          x-db-type: text
+        last_name:
+          type: string
+          x-db-type: text
+        name:
+          type: string
+        address:
+          type: string
+
+    Dropfirstcol: # drop first column and see its `down()` code
+      type: object
+      description: Drop first column
+      properties:
+        address:
+          type: string
+
+    # not relavant because data type is fetched from DB and not x-db-type
+    # Dropfirstcol2: # drop first column and see its `down()` code - raw
+    #   type: object
+    #   description: Drop first column
+    #   properties:
+    #     address:
+    #       type: string
+
+    Dropfirsttwocol:
+      type: object
+      description: Drop first two columns and see its `down()` code
+      properties:
+        last_name:
+          type: string
+        email:
+          type: string
+    # Dropfirsttwocol2: # raw - not relavant
+    #   type: object
+    #   description: Drop first two columns and see its `down()` code
+    #   properties:
+    #     last_name:
+    #       type: string
+    #     email:
+    #       type: string
+
+    Addtwonewcolinbetweens: # Add two new columns in between
+      type: object
+      description: Add two new columns in between for `after` test
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+        address:
+          type: string
+        last_name:
+          type: string
+        screen_name:
+          type: string
+        nick_name:
+          type: string
+        email:
+          type: string
+    Addtwonewcolinbetween2s: # Add two new columns in between - raw
+      type: object
+      description: Add two new columns in between for `after` test
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+          x-db-type: text
+        address:
+          type: string
+        last_name:
+          type: string
+        screen_name:
+          type: string
+          x-db-type: text
+        nick_name:
+          type: string
+          x-db-type: text
+        email:
+          type: string
+
+    Twonewcolatlast: # Two new columns at last
+      type: object
+      description: Two new columns at last
+      properties:
+        email:
+          type: string
+        name:
+          type: integer
+        last_name:
+          type: integer
+    Twonewcolatlast2: # Two new columns at last - raw
+      type: object
+      description: Two new columns at last
+      properties:
+        email:
+          type: string
+        name:
+          type: integer
+          x-db-type: text
+        last_name:
+          type: integer
+          x-db-type: text
+
