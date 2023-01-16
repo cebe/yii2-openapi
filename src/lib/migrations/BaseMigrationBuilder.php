@@ -173,8 +173,6 @@ abstract class BaseMigrationBuilder
         $this->newColumns = $relation->columnSchema ?? $this->model->attributesToColumnSchema();
         $wantNames = array_keys($this->newColumns);
         $haveNames = $this->tableSchema->columnNames;
-        // sort($wantNames);
-        // sort($haveNames);
         $columnsForCreate = array_map(
             function (string $missingColumn) {
                 return $this->newColumns[$missingColumn];
@@ -537,6 +535,14 @@ abstract class BaseMigrationBuilder
             }
 
             // TODO docs down() addCol after <colName> is not concrete
+            // in case of `down()` code of migration, putting 'after <colName>' in add column statmenet is erroneous because <colName> may not exist.
+            // Example: From col a, b, c, d, if I drop c and d then their migration code will be generated like:
+            // `up()` code
+            // drop c
+            // drop d
+            // `down()` code
+            // add d after c (c does not exist! Error!)
+            // add c
             if ($forDrop) {
                 return null;
             }
