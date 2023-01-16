@@ -544,7 +544,7 @@ abstract class BaseMigrationBuilder
 
             return self::POS_AFTER . ' ' . $prevColName;
 
-            // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
+        // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
         } elseif ($key === 0) {
             return self::POS_FIRST;
         }
