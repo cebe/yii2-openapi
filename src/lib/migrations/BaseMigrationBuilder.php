@@ -534,7 +534,6 @@ abstract class BaseMigrationBuilder
                 return null;
             }
 
-            // TODO docs down() addCol after <colName> is not concrete
             // in case of `down()` code of migration, putting 'after <colName>' in add column statmenet is erroneous because <colName> may not exist.
             // Example: From col a, b, c, d, if I drop c and d then their migration code will be generated like:
             // `up()` code
