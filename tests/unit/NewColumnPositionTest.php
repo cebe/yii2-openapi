@@ -13,10 +13,8 @@ use yii\helpers\VarDumper;
 
 class NewColumnPositionTest extends DbTestCase
 {
-    public function testAddNewColumnAtFirstPosition()
+    public function testAddOneNewColumnAtFirstPosition()
     {
-        // test new col is added to first position
-
         // default DB is Mysql ------------------------------------------------
         $this->deleteTables();
         $this->createTables();
@@ -52,10 +50,30 @@ class NewColumnPositionTest extends DbTestCase
         Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
             'email' => 'text'
         ])->execute();
+
+        Yii::$app->db->createCommand()->createTable('{{%twocols}}', [
+            'name' => 'text',
+            'address' => 'text',
+        ])->execute();
+
+        Yii::$app->db->createCommand()->createTable('{{%dropfirstcols}}', [
+            'name' => 'text',
+            'address' => 'text',
+        ])->execute();
+
+        Yii::$app->db->createCommand()->createTable('{{%dropfirsttwocols}}', [
+            'name' => 'text',
+            'address' => 'text',
+            'last_name' => 'text',
+            'email' => 'text',
+        ])->execute();
     }
 
     private function deleteTables()
     {
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%twocols}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%dropfirstcols}}')->execute();
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%dropfirsttwocols}}')->execute();
     }
 }

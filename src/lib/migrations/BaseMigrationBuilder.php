@@ -256,7 +256,7 @@ abstract class BaseMigrationBuilder
                 $this->migration->addDownCode($this->recordBuilder->addPrimaryKey($tableName, [$column->name], $pkName))
                                 ->addUpCode($this->recordBuilder->dropPrimaryKey($tableName, [$column->name], $pkName));
             }
-            $position = $this->findPosition($column);
+            $position = $this->findPosition($column, true);
             $this->migration->addDownCode($this->recordBuilder->addDbColumn($tableName, $column, $position))
                             ->addUpCode($this->recordBuilder->dropColumn($tableName, $column->name));
         }
@@ -524,9 +524,9 @@ abstract class BaseMigrationBuilder
      * 'FIRST' if column is added at first position
      * 'AFTER <columnName>' if column is added in between e.g. if 'email' is added after 'username' then 'AFTER username'
      */
-    public function findPosition(ColumnSchema $column): ?string
+    public function findPosition(ColumnSchema $column, bool $forDrop = false): ?string
     {
-        $columnNames = array_keys($this->newColumns);
+        $columnNames = array_keys($forDrop ? $this->tableSchema->columns : $this->newColumns);
 
         $key = array_search($column->name, $columnNames);
         if ($key > 0) {
@@ -536,12 +536,14 @@ abstract class BaseMigrationBuilder
                 return null;
             }
 
-            // if ($this->tableSchema) {
-            //     $columnSchema = $this->tableSchema->getColumn($prevColName);
-            //     if ($columnSchema) {
+            // TODO docs down() addCol after <colName> is not concrete
+            if ($forDrop) {
+                return null;
+            }
+
+
             return self::POS_AFTER . ' ' . $prevColName;
-        //     }
-            // }
+
             // if no `$columnSchema` is found, previous column does not exist. This happens when 'after column' is not yet added in migration or added after currently undertaken column
         } elseif ($key === 0) {
             return self::POS_FIRST;

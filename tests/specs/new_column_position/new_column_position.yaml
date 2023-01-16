@@ -13,7 +13,7 @@ paths:
 
 components:
   schemas:
-    Fruit:
+    Fruit: # one new column at first position
       type: object
       description: New columns position test for migration code generation
       required:
@@ -21,5 +21,34 @@ components:
       properties:
         name:
           type: integer
+        email:
+          type: string
+
+    Twocol: # two new columns at first position
+      type: object
+      description: New 2 columns position test for migration code generation
+      properties:
+        email:
+          type: string
+        last_name:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+
+    Dropfirstcol: # drop first column and see its `down()` code
+      type: object
+      description: Drop first column
+      properties:
+        address:
+          type: string
+
+    Dropfirsttwocol:
+      type: object
+      description: Drop first two columns and see its `down()` code
+      properties:
+        last_name:
+          type: string
         email:
           type: string
