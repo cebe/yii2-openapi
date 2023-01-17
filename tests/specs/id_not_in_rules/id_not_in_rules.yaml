@@ -24,3 +24,12 @@ components:
           type: integer
         name:
           type: string
+    Post:
+      x-table: posts
+      x-pk: uid
+      properties:
+        uid:
+           type: string
+        title:
+           type: string
+
