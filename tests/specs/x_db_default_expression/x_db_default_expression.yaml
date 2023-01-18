@@ -33,3 +33,20 @@ components:
           format: datetime
           default: '2022-11-11 00:00:00'
           x-db-default-expression: CURRENT_TIMESTAMP
+        ts4:
+          type: string
+          x-db-type: timestamp
+          default: '2022-11-11 00:00:00'
+        ts5:
+          type: string
+          x-db-type: timestamp
+          x-db-default-expression: CURRENT_TIMESTAMP
+        ts6:
+          type: string
+          x-db-type: timestamp
+          default: '2000-11-11 00:00:00'
+          x-db-default-expression: CURRENT_TIMESTAMP
+        d:
+          type: string
+          x-db-type: date
+          x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR

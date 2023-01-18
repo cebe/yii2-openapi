@@ -169,7 +169,7 @@ class ColumnToCode
         if ($this->rawParts['default'] === null) {
             $default = '';
             if ($this->rawParts['defaultExpression'] !== null) {
-                $default = 'DEFAULT '.$this->rawParts['defaultExpression'];
+                $default = ' DEFAULT '.$this->rawParts['defaultExpression'];
             }
         } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
@@ -453,6 +453,7 @@ class ColumnToCode
                     $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
                     $this->rawParts['default'] = $this->defaultValueArray($value->getValue());
                 } else {
+                    // TODO
                     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
                     $this->rawParts['default'] = self::escapeQuotes((string)$value);
                 }
@@ -540,7 +541,7 @@ class ColumnToCode
         $this->fluentParts['default'] = null;
         $this->rawParts['default'] = null;
 
-        $this->rawParts['defaultExpression'] = '('.$xDbDefaultExpression.')';
+        $this->rawParts['defaultExpression'] = '('.$xDbDefaultExpression.') '; # <--- space is workaround of bug
         $this->fluentParts['defaultExpression'] = 'defaultExpression("'.$xDbDefaultExpression.'")';
     }
 }
