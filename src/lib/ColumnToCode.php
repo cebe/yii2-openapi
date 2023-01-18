@@ -84,9 +84,9 @@ class ColumnToCode
      */
     private $isPk = false;
 
-    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null];
+    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null, 'defaultExpression' => null];
 
-    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null];
+    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null, 'defaultExpression' => null];
 
     /**
      * @var bool
@@ -156,12 +156,21 @@ class ColumnToCode
             return '$this->' . $this->fluentParts['type'];
         }
         if ($this->isBuiltinType) {
-            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default'], $this->fluentParts['position']];
+            $parts = [
+                $this->fluentParts['type'],
+                $this->fluentParts['nullable'],
+                $this->fluentParts['default'],
+                $this->fluentParts['defaultExpression'],
+                $this->fluentParts['position']
+            ];
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
         if ($this->rawParts['default'] === null) {
             $default = '';
+            if ($this->rawParts['defaultExpression'] !== null) {
+                $default = 'DEFAULT '.$this->rawParts['defaultExpression'];
+            }
         } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
                 $this->rawParts['default'] !== null ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
@@ -366,6 +375,7 @@ class ColumnToCode
         $this->isBuiltinType = $this->raw ? false : $this->getIsBuiltinType($type, $dbType);
 
         $this->resolveDefaultValue();
+        $this->resolveDefaultExpression();
     }
 
     /**
@@ -454,18 +464,19 @@ class ColumnToCode
                     : $this->defaultValueArray($value);
                 break;
             default:
-                $isExpression = StringHelper::startsWith($value, 'CURRENT')
-                    || StringHelper::startsWith($value, 'current')
-                    || StringHelper::startsWith($value, 'LOCAL')
-                    || substr($value, -1, 1) === ')';
-                if ($isExpression) {
-                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
-                    $this->rawParts['default'] = $value;
-                } else {
+                // $isExpression = StringHelper::startsWith($value, 'CURRENT')
+                //     || StringHelper::startsWith($value, 'current')
+                //     || StringHelper::startsWith($value, 'LOCAL')
+                //     || substr($value, -1, 1) === ')';
+                // if ($isExpression) {
+                //     $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
+                //     $this->rawParts['default'] = $value;
+                // } else {
                     $this->fluentParts['default'] = $expectInteger
                         ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
                     $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-                }
+                // }
+
                 if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
@@ -511,5 +522,25 @@ class ColumnToCode
                 $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
             }
         }
+    }
+
+    private function resolveDefaultExpression():void
+    {
+        if ($this->getDefaultValue() !== 'NULL' && $this->getDefaultValue() !== null) {
+            return;
+        }
+        $xDbDefaultExpression = null;
+        if (property_exists($this->column, 'xDbDefaultExpression') && is_string($this->column->xDbDefaultExpression) && !empty($this->column->xDbDefaultExpression)) {
+            $xDbDefaultExpression = $this->column->xDbDefaultExpression;
+        }
+        if ($xDbDefaultExpression === null) {
+            return;
+        }
+
+        $this->fluentParts['default'] = null;
+        $this->rawParts['default'] = null;
+
+        $this->rawParts['defaultExpression'] = '('.$xDbDefaultExpression.')';
+        $this->fluentParts['defaultExpression'] = 'defaultExpression("'.$xDbDefaultExpression.'")';
     }
 }

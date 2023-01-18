@@ -121,6 +121,16 @@ class Attribute extends BaseObject
      **/
     public $isVirtual = false;
 
+    /**
+     * @var ?string
+     * Provide default value by database expression
+     * @example `current_timestamp()`
+     * if `default` and `x-db-default-expression` both are provided then `default` will be considered
+     * @see https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+     * @see https://github.com/cebe/yii2-openapi/blob/master/README.md#x-db-default-expression
+     */
+    public $xDbDefaultExpression;
+
     public function __construct(string $propertyName, array $config = [])
     {
         $this->propertyName = $propertyName;
@@ -143,6 +153,12 @@ class Attribute extends BaseObject
     public function setXDbType($xDbType):Attribute
     {
         $this->xDbType = $xDbType;
+        return $this;
+    }
+
+    public function setXDbDefaultExpression($xDbDefaultExpression): Attribute
+    {
+        $this->xDbDefaultExpression = $xDbDefaultExpression;
         return $this;
     }
 
@@ -285,6 +301,7 @@ class Attribute extends BaseObject
             'allowNull' => $this->allowNull(),
             'size' => $this->size > 0 ? $this->size : null,
             'xDbType' => $this->xDbType,
+            'xDbDefaultExpression' => $this->xDbDefaultExpression,
         ]);
         $column->isPrimaryKey = $this->primary;
         $column->autoIncrement = $this->primary && $this->phpType === 'int';

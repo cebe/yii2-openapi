@@ -25,4 +25,13 @@ class ColumnSchema extends \yii\db\ColumnSchema
      * ```
      */
     public $xDbType;
+
+    /**
+     * @var ?string
+     * Provide default value by database expression
+     * @example `current_timestamp()`
+     * @see https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+     * @see https://github.com/cebe/yii2-openapi/blob/master/README.md#x-db-default-expression
+     */
+    public $xDbDefaultExpression;
 }

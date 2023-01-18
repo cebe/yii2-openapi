@@ -1,0 +1,35 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: x-db-default-expression test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: x-db-default-expression test
+      properties:
+        ts:
+          type: string
+          format: datetime
+          # x-db-type: timestamp
+          x-db-default-expression: CURRENT_TIMESTAMP
+        ts2:
+          type: string
+          format: datetime
+          default: '2011-11-11 00:00:00'
+          # x-db-type: timestamp
+          # x-db-default-expression: CURRENT_TIMESTAMP
+        ts3:
+          type: string
+          format: datetime
+          default: '2022-11-11 00:00:00'
+          x-db-default-expression: CURRENT_TIMESTAMP

@@ -169,6 +169,35 @@ Specify table indexes
            default: '{}' 
 ```
 
+### `x-db-default-expression`
+
+Ability to provide default value by database expression
+
+```yaml
+created_at:
+  readOnly: true
+  type: string
+  format: datetime
+  x-db-type: datetime
+  nullable: false
+  x-db-default-expression: current_timestamp()
+```
+
+Note: If both `default` and `x-db-default-expression` are present then `default` will be considered.
+
+```yaml
+created_at:
+  readOnly: true
+  type: string
+  format: datetime
+  x-db-type: datetime
+  nullable: false
+  x-db-default-expression: current_timestamp() # this will be ignored
+  default: "2011-11-11" # this will be considered
+```
+
+Also see: https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+
 ### Many-to-Many relation definition
 
 There are two ways for define many-to-many relations:
@@ -427,4 +456,3 @@ Professional support, consulting as well as software development services are av
 https://www.cebe.cc/en/contact
 
 Development of this library is sponsored by [cebe.:cloud: "Your Professional Deployment Platform"](https://cebe.cloud).
-
