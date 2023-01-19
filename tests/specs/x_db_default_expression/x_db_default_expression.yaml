@@ -50,3 +50,11 @@ components:
           type: string
           x-db-type: date
           x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR
+        d2:
+          type: string
+          x-db-type: text
+          x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR
+        ts7:
+          type: string
+          format: date
+          x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR

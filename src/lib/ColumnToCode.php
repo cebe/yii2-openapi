@@ -541,7 +541,7 @@ class ColumnToCode
         $this->fluentParts['default'] = null;
         $this->rawParts['default'] = null;
 
-        $this->rawParts['defaultExpression'] = '('.$xDbDefaultExpression.') '; # <--- space is workaround of bug
-        $this->fluentParts['defaultExpression'] = 'defaultExpression("'.$xDbDefaultExpression.'")';
+        $this->rawParts['defaultExpression'] = '('.$xDbDefaultExpression.')';
+        $this->fluentParts['defaultExpression'] = 'defaultExpression("('.$xDbDefaultExpression.')")';
     }
 }

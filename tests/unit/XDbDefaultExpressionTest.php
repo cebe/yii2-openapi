@@ -31,10 +31,10 @@ class XDbDefaultExpressionTest extends DbTestCase
         // $this->checkFiles($actualFiles, $expectedFiles);
         // $this->runActualMigrations('mysql', 3);
 
-        // $this->changeDbToMariadb();
-        // $this->deleteTables();
-        // $testFile = Yii::getAlias("@specs/enum/fresh/mysql/enum.php");
-        // $this->runGenerator($testFile, 'maria');
+        $this->changeDbToMariadb();
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_default_expression/x_db_default_expression.php");
+        $this->runGenerator($testFile, 'maria');
         // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
         //     'recursive' => true,
         //     'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
