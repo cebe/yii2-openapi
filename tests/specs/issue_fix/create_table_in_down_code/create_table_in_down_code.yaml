@@ -1,0 +1,24 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Create table in down code
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: Create table in down code
+      properties:
+        id:
+          type: integer
+        colourName:
+          type: string
+          maxLength: 255

@@ -127,4 +127,39 @@ class IssueFixTest extends DbTestCase
             'colourName' => 'varchar(255)',
         ])->execute();
     }
+
+    // Stub -> https://github.com/cebe/yii2-openapi/issues/132
+    // public function testCreateTableInDownCode()
+    // {
+    //     $testFile = Yii::getAlias("@specs/issue_fix/create_table_in_down_code/create_table_in_down_code.php");
+    //     $this->deleteTablesForCreateTableInDownCode();
+    //     $this->createTableForCreateTableInDownCode();
+    //     $this->runGenerator($testFile, 'mysql');
+    //     // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+    //     //     'recursive' => true,
+    //     // ]);
+    //     // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/create_table_in_down_code/mysql/app"), [
+    //     //     'recursive' => true,
+    //     // ]);
+    //     // $this->checkFiles($actualFiles, $expectedFiles);
+    //     // $this->runActualMigrations('mysql', 1);
+    // }
+
+    // private function deleteTablesForCreateTableInDownCode()
+    // {
+    //     Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
+    //     Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%animals}}')->execute();
+    // }
+
+    // private function createTableForCreateTableInDownCode()
+    // {
+    //     Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
+    //         'id' => 'pk',
+    //         'colourName' => 'varchar(255)',
+    //     ])->execute();
+    //     Yii::$app->db->createCommand()->createTable('{{%animals}}', [
+    //         'id' => 'pk',
+    //         'colourName' => 'varchar(255)',
+    //     ])->execute();
+    // }
 }
