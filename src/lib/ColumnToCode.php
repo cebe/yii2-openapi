@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib;
 
 use yii\db\ArrayExpression;
+use cebe\yii2openapi\lib\migrations\BaseMigrationBuilder;
 use cebe\yii2openapi\generator\ApiGenerator;
 use yii\db\ColumnSchema;
 use yii\db\ColumnSchemaBuilder;
@@ -83,9 +84,9 @@ class ColumnToCode
      */
     private $isPk = false;
 
-    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null];
+    private $rawParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null];
 
-    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null];
+    private $fluentParts = ['type' => null, 'nullable' => null, 'default' => null, 'position' => null];
 
     /**
      * @var bool
@@ -103,6 +104,17 @@ class ColumnToCode
     private $alterByXDbType;
 
     /**
+     * @var null|string
+     * Column name of previous column/field.
+     * Used for `AFTER` in MySQL/Mariadb to preserve order as in OpenAPI schema defination.
+     * Its possible values are:
+     *      `'FIRST'`
+     *      `'AFTER <columnName>'` e.g. AFTER first_name
+     *      `null` means append new column at the end
+     */
+    private $position;
+
+    /**
      * ColumnToCode constructor.
      * @param \yii\db\Schema       $dbSchema
      * @param \yii\db\ColumnSchema $column
@@ -118,7 +130,8 @@ class ColumnToCode
         bool $fromDb = false,
         bool $alter = false,
         bool $raw = false,
-        bool $alterByXDbType = false
+        bool $alterByXDbType = false,
+        ?string $position = null
     ) {
         $this->dbSchema = $dbSchema;
         $this->tableAlias = $tableAlias;
@@ -127,6 +140,7 @@ class ColumnToCode
         $this->alter = $alter;
         $this->raw = $raw;
         $this->alterByXDbType = $alterByXDbType;
+        $this->position = $position;
 
         // We use `property_exists()` because sometimes we can have instance of \yii\db\mysql\ColumnSchema (or of Maria/Pgsql) or \cebe\yii2openapi\db\ColumnSchema
         if (property_exists($this->column, 'xDbType') && is_string($this->column->xDbType) && !empty($this->column->xDbType)) {
@@ -142,7 +156,7 @@ class ColumnToCode
             return '$this->' . $this->fluentParts['type'];
         }
         if ($this->isBuiltinType) {
-            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default']];
+            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default'], $this->fluentParts['position']];
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
@@ -156,6 +170,9 @@ class ColumnToCode
         }
 
         $code = $this->rawParts['type'] . ' ' . $this->rawParts['nullable'] . $default;
+        if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->rawParts['position']) {
+            $code .= ' ' . $this->rawParts['position'];
+        }
         if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
             return $quoted ? "'" . $code . "'" : $code;
         }
@@ -305,6 +322,7 @@ class ColumnToCode
     {
         $dbType = $this->typeWithoutSize(strtolower($this->column->dbType));
         $type = $this->column->type;
+        $this->resolvePosition();
         //Primary Keys
         if (array_key_exists($type, self::PK_TYPE_MAP)) {
             $this->rawParts['type'] = $type;
@@ -479,5 +497,19 @@ class ColumnToCode
     private function typeWithoutSize(string $type):string
     {
         return preg_replace('~(.*)(\(\d+\))~', '$1', $type);
+    }
+
+    public function resolvePosition()
+    {
+        if (ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) {
+            if ($this->position === BaseMigrationBuilder::POS_FIRST) {
+                $this->fluentParts['position'] = 'first()';
+                $this->rawParts['position'] = BaseMigrationBuilder::POS_FIRST;
+            } elseif (strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
+                $previousColumn = str_replace(BaseMigrationBuilder::POS_AFTER.' ', '', $this->position);
+                $this->fluentParts['position'] = 'after(\''.$previousColumn.'\')';
+                $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
+            }
+        }
     }
 }

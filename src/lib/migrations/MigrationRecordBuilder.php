@@ -77,29 +77,30 @@ final class MigrationRecordBuilder
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    public function addColumn(string $tableAlias, ColumnSchema $column):string
+    public function addColumn(string $tableAlias, ColumnSchema $column, ?string $position = null):string
     {
+        // $converter = $this->columnToCode($column, false, false, $position);
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
-            $converter = $this->columnToCode($tableAlias, $column, false);
+            $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
             $name = static::quote($column->name);
             return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, $converter->getCode());
         }
 
-        $converter = $this->columnToCode($tableAlias, $column, false);
+        $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
     /**
      * @throws \yii\base\InvalidConfigException
      */
-    public function addDbColumn(string $tableAlias, ColumnSchema $column):string
+    public function addDbColumn(string $tableAlias, ColumnSchema $column, ?string $position = null):string
     {
         if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
-            $converter = $this->columnToCode($tableAlias, $column, true);
+            $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
             $name = static::quote($column->name);
             return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
         }
-        $converter = $this->columnToCode($tableAlias, $column, true);
+        $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
     }
 
@@ -140,6 +141,7 @@ final class MigrationRecordBuilder
     }
 
     /**
+     * This method is only used in Pgsql
      * @throws \yii\base\InvalidConfigException
      */
     public function alterColumnTypeFromDb(string $tableAlias, ColumnSchema $column, bool $addUsing = false) :string
@@ -265,7 +267,8 @@ final class MigrationRecordBuilder
         bool $fromDb = false,
         bool $alter = false,
         bool $raw = false,
-        bool $alterByXDbType = false
+        bool $alterByXDbType = false,
+        ?string $position = null
     ): ColumnToCode {
         return Yii::createObject(ColumnToCode::class, [
             $this->dbSchema,
@@ -274,7 +277,8 @@ final class MigrationRecordBuilder
             $fromDb,
             $alter,
             $raw,
-            $alterByXDbType
+            $alterByXDbType,
+            $position
         ]);
     }
 
