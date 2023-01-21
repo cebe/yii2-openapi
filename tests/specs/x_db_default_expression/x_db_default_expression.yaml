@@ -54,6 +54,11 @@ components:
           type: string
           x-db-type: text
           x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR
+        d3:
+          type: string
+          x-db-type: text
+          default: text default # default literal constant for 'text' is not allowed in MySQL
+          x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR
         ts7:
           type: string
           format: date

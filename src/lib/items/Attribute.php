@@ -129,7 +129,7 @@ class Attribute extends BaseObject
      * @see https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
      * @see https://github.com/cebe/yii2-openapi/blob/master/README.md#x-db-default-expression
      */
-    public $xDbDefaultExpression;
+    // public $xDbDefaultExpression;
 
     public function __construct(string $propertyName, array $config = [])
     {
@@ -158,7 +158,12 @@ class Attribute extends BaseObject
 
     public function setXDbDefaultExpression($xDbDefaultExpression): Attribute
     {
-        $this->xDbDefaultExpression = $xDbDefaultExpression;
+        // $this->xDbDefaultExpression = $xDbDefaultExpression;
+
+        // first priority is given to `default` and then to `x-db-default-expression`
+        if ($xDbDefaultExpression !== null && $this->defaultValue === null) {
+            $this->defaultValue = new \yii\db\Expression('('.$xDbDefaultExpression.')');
+        }
         return $this;
     }
 
@@ -301,7 +306,7 @@ class Attribute extends BaseObject
             'allowNull' => $this->allowNull(),
             'size' => $this->size > 0 ? $this->size : null,
             'xDbType' => $this->xDbType,
-            'xDbDefaultExpression' => $this->xDbDefaultExpression,
+            // 'xDbDefaultExpression' => $this->xDbDefaultExpression,
         ]);
         $column->isPrimaryKey = $this->primary;
         $column->autoIncrement = $this->primary && $this->phpType === 'int';
