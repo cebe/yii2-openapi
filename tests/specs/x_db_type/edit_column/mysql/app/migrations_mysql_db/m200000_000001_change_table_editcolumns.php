@@ -21,7 +21,7 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
 
     public function down()
     {
-        $this->alterColumn('{{%editcolumns}}', 'numeric_col', $this->integer(11)->null()->defaultValue(null));
+        $this->alterColumn('{{%editcolumns}}', 'numeric_col', $this->integer()->null()->defaultValue(null));
         $this->alterColumn('{{%editcolumns}}', 'json_col_2', 'json NULL');
         $this->alterColumn('{{%editcolumns}}', 'json_col', 'json NULL');
         $this->alterColumn('{{%editcolumns}}', 'str_col_def', $this->string(255)->null()->defaultValue("hi there"));

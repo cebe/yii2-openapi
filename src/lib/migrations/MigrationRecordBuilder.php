@@ -298,7 +298,7 @@ final class MigrationRecordBuilder
     public static function makeString(array $codeColumns): string
     {
         $finalStr = ''.PHP_EOL;
-        foreach($codeColumns as $key => $column) {
+        foreach ($codeColumns as $key => $column) {
             if (is_string($key)) {
                 if (substr($column, 0, 5) === '$this') {
                     $finalStr .= VarDumper::export($key).' => '.$column.','.PHP_EOL;
