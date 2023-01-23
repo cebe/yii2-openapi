@@ -453,8 +453,9 @@ class ColumnToCode
                     $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
                     $this->rawParts['default'] = $this->defaultValueArray($value->getValue());
                 } else {
-                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
-                    $this->rawParts['default'] = self::escapeQuotes((string)$value);
+                    // $value instanceof \yii\db\Expression
+                    $this->fluentParts['default'] = 'defaultExpression("' . (string)$value . '")';
+                    $this->rawParts['default'] = (string)$value;
                 }
                 break;
             case 'array':

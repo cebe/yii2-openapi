@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'openApiPath' => '@specs/x_db_default_expression/x_db_default_expression.yaml',
+    'openApiPath' => '@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.yaml',
     'generateUrls' => false,
     'generateModels' => false,
     'excludeModels' => [
