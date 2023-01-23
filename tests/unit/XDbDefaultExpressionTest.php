@@ -181,7 +181,7 @@ class XDbDefaultExpressionTest extends DbTestCase
 
     private function createTablesForEditExpression()
     {
-        Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
+        $mysqlColumns = [
             'ts' => 'datetime DEFAULT \'2011-11-11 00:00:00\'',
             'ts2' => 'datetime DEFAULT CURRENT_TIMESTAMP',
             'ts3' => 'datetime DEFAULT CURRENT_TIMESTAMP',
@@ -191,7 +191,15 @@ class XDbDefaultExpressionTest extends DbTestCase
             'd' => 'date DEFAULT \'2011-11-11\'',
             'd2' => 'text', // DEFAULT "2011-11-11"
             'd3' => 'text', // DEFAULT CURRENT_DATE + INTERVAL 1 YEAR
-            'ts7' => 'date DEFAULT \'2011-11-11\'',
-        ])->execute();
+            'ts7' => 'date DEFAULT (CURRENT_DATE + INTERVAL 2 YEAR)',
+        ];
+        if (ApiGenerator::isPostgres()) {
+            $pgsqlColumns = $mysqlColumns;
+            $pgsqlColumns['ts7'] = 'date DEFAULT (CURRENT_DATE + INTERVAL \'2 YEAR\')';
+            Yii::$app->db->createCommand()->createTable('{{%fruits}}', $pgsqlColumns)->execute();
+            return;
+        }
+
+        Yii::$app->db->createCommand()->createTable('{{%fruits}}', $mysqlColumns)->execute();
     }
 }
