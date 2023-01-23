@@ -21,15 +21,15 @@ class XDbDefaultExpressionTest extends DbTestCase
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/mysql/simple/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 1);
 
         // see https://mariadb.com/kb/en/timestamp/#examples
         // Only the first timestamp is automatically inserted and updated, other will have value default '0000-00-00 00:00:00'
@@ -37,29 +37,29 @@ class XDbDefaultExpressionTest extends DbTestCase
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'maria');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/maria/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('maria', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/maria/simple/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 1);
 
         $this->changeDbToPgsql();
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/pgsql/x_db_default_expression_pgsql.php");
         $this->runGenerator($testFile, 'pgsql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_maria_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/pgsql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('pgsql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/pgsql/simple/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
     }
 
     private function deleteTables()
@@ -74,45 +74,45 @@ class XDbDefaultExpressionTest extends DbTestCase
         $this->createTablesForEdit();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/mysql/edit/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 1);
 
         $this->changeDbToMariadb();
         $this->deleteTables();
         $this->createTablesForEdit();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'maria');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/maria/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('maria', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/maria/edit/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 1);
 
         $this->changeDbToPgsql();
         $this->deleteTables();
         $this->createTablesForEdit();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/pgsql/x_db_default_expression_pgsql.php");
         $this->runGenerator($testFile, 'pgsql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_maria_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/pgsql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('pgsql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/pgsql/edit/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
     }
 
     private function createTablesForEdit()
@@ -138,45 +138,45 @@ class XDbDefaultExpressionTest extends DbTestCase
         $this->createTablesForEditExpression();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/mysql/edit_expression/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 1);
 
         $this->changeDbToMariadb();
         $this->deleteTables();
         $this->createTablesForEditExpression();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/mysql/x_db_default_expression_mysql.php");
         $this->runGenerator($testFile, 'maria');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/maria/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('maria', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/maria/edit_expression/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('maria', 1);
 
         $this->changeDbToPgsql();
         $this->deleteTables();
         $this->createTablesForEditExpression();
         $testFile = Yii::getAlias("@specs/x_db_default_expression/pgsql/x_db_default_expression_pgsql.php");
         $this->runGenerator($testFile, 'pgsql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_mysql_db', 'migrations_maria_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/enum/fresh/pgsql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('pgsql', 3);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_default_expression/pgsql/edit_expression/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
     }
 
     private function createTablesForEditExpression()
