@@ -63,3 +63,9 @@ components:
           type: string
           format: date
           x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR
+
+        # https://github.com/yiisoft/yii2/issues/19747
+        # ts8:
+        #   type: string
+        #   format: date
+        #   x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR

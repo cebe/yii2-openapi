@@ -191,11 +191,14 @@ class XDbDefaultExpressionTest extends DbTestCase
             'd' => 'date DEFAULT \'2011-11-11\'',
             'd2' => 'text', // DEFAULT "2011-11-11"
             'd3' => 'text', // DEFAULT CURRENT_DATE + INTERVAL 1 YEAR
-            'ts7' => 'date DEFAULT (CURRENT_DATE + INTERVAL 2 YEAR)',
+            'ts7' => 'date DEFAULT \'2011-11-11\'',
+
+            // https://github.com/yiisoft/yii2/issues/19747
+            // 'ts8' => 'date DEFAULT (CURRENT_DATE + INTERVAL 2 YEAR)',
         ];
         if (ApiGenerator::isPostgres()) {
             $pgsqlColumns = $mysqlColumns;
-            $pgsqlColumns['ts7'] = 'date DEFAULT (CURRENT_DATE + INTERVAL \'2 YEAR\')';
+            $pgsqlColumns['ts7'] = 'date DEFAULT \'2011-11-11\'';
             Yii::$app->db->createCommand()->createTable('{{%fruits}}', $pgsqlColumns)->execute();
             return;
         }
