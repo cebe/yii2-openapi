@@ -146,6 +146,15 @@ class Attribute extends BaseObject
         return $this;
     }
 
+    public function setXDbDefaultExpression($xDbDefaultExpression): Attribute
+    {
+        // first priority is given to `default` and then to `x-db-default-expression`
+        if ($xDbDefaultExpression !== null && $this->defaultValue === null) {
+            $this->defaultValue = new \yii\db\Expression('('.$xDbDefaultExpression.')');
+        }
+        return $this;
+    }
+
     public function setNullable($nullable):Attribute
     {
         $this->nullable = $nullable;

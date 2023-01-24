@@ -19,13 +19,13 @@ class <?= $migration->fileClassName ?> extends \yii\db\Migration
 {
     public function <?=$isTransactional? 'safeUp':'up'?>()
     {
-<?= str_replace(["'\$this", ")',"], ['$this', '),'], $migration->upCodeString) ?>
+<?= $migration->upCodeString ?>
 
     }
 
     public function <?=$isTransactional? 'safeDown':'down'?>()
     {
-<?= str_replace(["'\$this", ")',"], ['$this', '),'], $migration->downCodeString) ?>
+<?= $migration->downCodeString ?>
 
     }
 }

@@ -22,4 +22,11 @@ class CustomSpecAttr
     public const FAKER = 'x-faker';
     // Custom db type (MUST CONTAINS ONLY DB TYPE! (json, jsonb, uuid, varchar etc))
     public const DB_TYPE = 'x-db-type';
+    /**
+     * Provide default value by database expression
+     * @example `current_timestamp()`
+     * @see https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
+     * @see https://github.com/cebe/yii2-openapi/blob/master/README.md#x-db-default-expression
+     */
+    public const DB_DEFAULT_EXPRESSION = 'x-db-default-expression';
 }

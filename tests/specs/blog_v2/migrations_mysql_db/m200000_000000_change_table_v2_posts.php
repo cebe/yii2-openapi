@@ -19,10 +19,10 @@ class m200000_000000_change_table_v2_posts extends \yii\db\Migration
     public function down()
     {
         $this->createIndex('v2_posts_slug_key', '{{%v2_posts}}', 'slug', true);
-        $this->alterColumn('{{%v2_posts}}', 'created_by_id', $this->integer(11)->null()->defaultValue(null));
+        $this->alterColumn('{{%v2_posts}}', 'created_by_id', $this->integer()->null()->defaultValue(null));
         $this->alterColumn('{{%v2_posts}}', 'active', $this->tinyInteger(1)->notNull()->defaultValue(0));
-        $this->alterColumn('{{%v2_posts}}', 'category_id', $this->integer(11)->notNull());
-        $this->addColumn('{{%v2_posts}}', 'uid', $this->bigInteger(20)->notNull()->first());
+        $this->alterColumn('{{%v2_posts}}', 'category_id', $this->integer()->notNull());
+        $this->addColumn('{{%v2_posts}}', 'uid', $this->bigInteger()->notNull()->first());
         $this->dropColumn('{{%v2_posts}}', 'lang');
         $this->dropColumn('{{%v2_posts}}', 'id');
     }

@@ -14,7 +14,7 @@ class m200000_000001_create_table_users extends \yii\db\Migration
             'password' => $this->string()->notNull(),
             'role' => $this->string(20)->null()->defaultValue("reader"),
             'flags' => $this->integer()->null()->defaultValue(0),
-            'created_at' => $this->timestamp()->null()->defaultExpression("CURRENT_TIMESTAMP"),
+            'created_at' => $this->timestamp()->null()->defaultExpression("(CURRENT_TIMESTAMP)"),
         ]);
         $this->createIndex('users_username_key', '{{%users}}', 'username', true);
         $this->createIndex('users_email_key', '{{%users}}', 'email', true);

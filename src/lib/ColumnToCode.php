@@ -156,7 +156,12 @@ class ColumnToCode
             return '$this->' . $this->fluentParts['type'];
         }
         if ($this->isBuiltinType) {
-            $parts = [$this->fluentParts['type'], $this->fluentParts['nullable'], $this->fluentParts['default'], $this->fluentParts['position']];
+            $parts = [
+                $this->fluentParts['type'],
+                $this->fluentParts['nullable'],
+                $this->fluentParts['default'],
+                $this->fluentParts['position']
+            ];
             array_unshift($parts, '$this');
             return implode('->', array_filter(array_map('trim', $parts), 'trim'));
         }
@@ -443,8 +448,9 @@ class ColumnToCode
                     $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
                     $this->rawParts['default'] = $this->defaultValueArray($value->getValue());
                 } else {
-                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
-                    $this->rawParts['default'] = self::escapeQuotes((string)$value);
+                    // $value instanceof \yii\db\Expression
+                    $this->fluentParts['default'] = 'defaultExpression("' . (string)$value . '")';
+                    $this->rawParts['default'] = (string)$value;
                 }
                 break;
             case 'array':
@@ -454,18 +460,10 @@ class ColumnToCode
                     : $this->defaultValueArray($value);
                 break;
             default:
-                $isExpression = StringHelper::startsWith($value, 'CURRENT')
-                    || StringHelper::startsWith($value, 'current')
-                    || StringHelper::startsWith($value, 'LOCAL')
-                    || substr($value, -1, 1) === ')';
-                if ($isExpression) {
-                    $this->fluentParts['default'] = 'defaultExpression("' . self::escapeQuotes((string)$value) . '")';
-                    $this->rawParts['default'] = $value;
-                } else {
-                    $this->fluentParts['default'] = $expectInteger
-                        ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
-                    $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-                }
+                $this->fluentParts['default'] = $expectInteger
+                    ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
+                $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
+
                 if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
                     $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
                 }
@@ -474,6 +472,11 @@ class ColumnToCode
 
     private function isDefaultAllowed():bool
     {
+        // default expression with parenthases is allowed
+        if ($this->column->defaultValue instanceof \yii\db\Expression) {
+            return true;
+        }
+
         $type = strtolower($this->column->dbType);
         switch ($type) {
             case 'tsvector':
