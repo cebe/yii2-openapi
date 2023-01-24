@@ -142,6 +142,7 @@ abstract class BaseMigrationBuilder
             $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
                             ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
         }
+        // VarDumper::dump($this->model->getHasOneRelations());
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();

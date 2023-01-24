@@ -89,7 +89,14 @@ class AttributeResolver
      */
     public function resolve():DbModel
     {
+        echo PHP_EOL;echo PHP_EOL;
+        VarDumper::dump($this->schema->allOf);
         foreach ($this->schema->getProperties() as $property) {
+            echo PHP_EOL;VarDumper::dump($property->getName());echo PHP_EOL;
+            if ($property->getName() === 'user') {
+                VarDumper::dump($property->getProperty()->allOf[1]
+                     ->{'x-fk-on-update'});
+            }
             $isRequired = $this->schema->isRequiredProperty($property->getName());
             if ($this->isJunctionSchema) {
                 $this->resolveJunctionTableProperty($property, $isRequired);

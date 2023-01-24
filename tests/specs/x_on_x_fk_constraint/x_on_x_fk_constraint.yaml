@@ -1,0 +1,37 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: x on-x (update|delete) foreign key constraint
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    User:
+      type: object
+      description: x on-x (update|delete) foreign key constraint
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Post:
+      type: object
+      description: x on-x (update|delete) foreign key constraint
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        user:
+          # $ref: '#/components/schemas/User'
+          allOf:
+            - $ref: '#/components/schemas/User'
+            - x-fk-on-update: CASCADE
+            - x-fk-on-delete: SET NULL
