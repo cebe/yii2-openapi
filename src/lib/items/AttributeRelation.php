@@ -13,6 +13,9 @@ use function reset;
 
 class AttributeRelation
 {
+    public $onUpdateFkConstraint;
+    public $onDeleteFkConstraint;
+
     public const HAS_ONE = 'hasOne';
     public const HAS_MANY = 'hasMany';
 

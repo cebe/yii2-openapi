@@ -68,6 +68,10 @@ class PropertySchema
      */
     private $schema;
 
+    // TODO docs
+    public $onUpdateFkConstraint;
+    public $onDeleteFkConstraint;
+
     /**
      * @param \cebe\openapi\SpecObjectInterface             $property
      * @param string                                        $name

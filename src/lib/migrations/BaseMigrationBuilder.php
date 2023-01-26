@@ -142,13 +142,12 @@ abstract class BaseMigrationBuilder
             $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
                             ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
         }
-        // VarDumper::dump($this->model->getHasOneRelations());
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
             $refTable = $relation->getTableAlias();
             $fkName = $this->foreignKeyName($this->model->tableName, $fkCol, $relation->getTableName(), $refCol);
-            $this->migration->addUpCode($builder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol))
+            $this->migration->addUpCode($builder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol, $relation->onUpdateFkConstraint, $relation->onDeleteFkConstraint))
                             ->addDownCode($builder->dropFk($fkName, $tableName));
             if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;

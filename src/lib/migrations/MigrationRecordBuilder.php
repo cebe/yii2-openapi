@@ -30,7 +30,11 @@ final class MigrationRecordBuilder
     public const ADD_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('CREATE TYPE \"enum_%s_%s\" AS ENUM(%s)');";
     public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE \"enum_%s_%s\"');";
     public const DROP_TABLE = MigrationRecordBuilder::INDENT . "\$this->dropTable('%s');";
+
     public const ADD_FK = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s');";
+    public const ADD_FK_WITH_JUST_ON_UPDATE = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s', '%s');";
+    public const ADD_FK_WITH_ON_DELETE = MigrationRecordBuilder::INDENT . "\$this->addForeignKey('%s', '%s', '%s', '%s', '%s', %s, '%s');";
+
     public const ADD_PK = MigrationRecordBuilder::INDENT . "\$this->addPrimaryKey('%s', '%s', '%s');";
     public const ADD_COLUMN = MigrationRecordBuilder::INDENT . "\$this->addColumn('%s', '%s', %s);";
     public const ALTER_COLUMN = MigrationRecordBuilder::INDENT . "\$this->alterColumn('%s', '%s', %s);";
@@ -205,9 +209,17 @@ final class MigrationRecordBuilder
         return sprintf(self::ADD_ENUM, $rawTableName, $columnName, ColumnToCode::enumToString($values));
     }
 
-    public function addFk(string $fkName, string $tableAlias, string $fkCol, string $refTable, string $refCol):string
+    public function addFk(string $fkName, string $tableAlias, string $fkCol, string $refTable, string $refCol, ?string $onUpdate = null, ?string $onDelete = null):string
     {
-        return sprintf(self::ADD_FK, $fkName, $tableAlias, $fkCol, $refTable, $refCol);
+        if ($onUpdate === null && $onDelete === null) {
+            return sprintf(self::ADD_FK, $fkName, $tableAlias, $fkCol, $refTable, $refCol);
+        } elseif ($onUpdate !== null && $onDelete === null) {
+            return sprintf(self::ADD_FK_WITH_JUST_ON_UPDATE, $fkName, $tableAlias, $fkCol, $refTable, $refCol, $onUpdate);
+        } elseif ($onDelete !== null) {
+            return sprintf(self::ADD_FK_WITH_ON_DELETE, $fkName, $tableAlias, $fkCol, $refTable, $refCol,
+                $onUpdate === null ? null : "'$onUpdate'",
+                $onDelete);
+        }
     }
 
     public function addUniqueIndex(string $tableAlias, string $indexName, array $columns):string

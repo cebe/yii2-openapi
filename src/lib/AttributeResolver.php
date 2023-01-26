@@ -89,14 +89,28 @@ class AttributeResolver
      */
     public function resolve():DbModel
     {
-        echo PHP_EOL;echo PHP_EOL;
-        VarDumper::dump($this->schema->allOf);
         foreach ($this->schema->getProperties() as $property) {
-            echo PHP_EOL;VarDumper::dump($property->getName());echo PHP_EOL;
-            if ($property->getName() === 'user') {
-                VarDumper::dump($property->getProperty()->allOf[1]
-                     ->{'x-fk-on-update'});
+            /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
+            $onUpdate = $onDelete = null;
+            if (!empty($property->getProperty()->allOf[1]) &&
+                !empty($property->getProperty()->allOf[1]->{'x-fk-on-update'})
+            ) {
+                $onUpdate = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
             }
+            if (!empty($property->getProperty()->allOf[2]) &&
+                !empty($property->getProperty()->allOf[2]->{'x-fk-on-delete'})
+            ) {
+                $onDelete = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
+            }
+
+            if ($onUpdate !== null || $onDelete !== null) {
+                $newProperty = new PropertySchema($property->getProperty()->allOf[0], $property->getName(), $this->schema);
+                $newProperty->onUpdateFkConstraint = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
+                $newProperty->onDeleteFkConstraint = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
+                unset($property);
+                $property = clone $newProperty;
+            }
+
             $isRequired = $this->schema->isRequiredProperty($property->getName());
             if ($this->isJunctionSchema) {
                 $this->resolveJunctionTableProperty($property, $isRequired);
@@ -255,6 +269,8 @@ class AttributeResolver
                 [$property->getName(), $relatedTableName, $relatedClassName]
             )
                            ->asHasOne([$fkProperty->getName() => $attribute->columnName]);
+            $relation->onUpdateFkConstraint = $property->onUpdateFkConstraint;
+            $relation->onDeleteFkConstraint = $property->onDeleteFkConstraint;
             if ($property->isRefPointerToSelf()) {
                 $relation->asSelfReference();
             }
