@@ -216,9 +216,16 @@ final class MigrationRecordBuilder
         } elseif ($onUpdate !== null && $onDelete === null) {
             return sprintf(self::ADD_FK_WITH_JUST_ON_UPDATE, $fkName, $tableAlias, $fkCol, $refTable, $refCol, $onUpdate);
         } elseif ($onDelete !== null) {
-            return sprintf(self::ADD_FK_WITH_ON_DELETE, $fkName, $tableAlias, $fkCol, $refTable, $refCol,
+            return sprintf(
+                self::ADD_FK_WITH_ON_DELETE,
+                $fkName,
+                $tableAlias,
+                $fkCol,
+                $refTable,
+                $refCol,
                 $onUpdate === null ? null : "'$onUpdate'",
-                $onDelete);
+                $onDelete
+            );
         }
     }
 
