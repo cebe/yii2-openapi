@@ -1,0 +1,71 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: x-db-default-expression test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: x-db-default-expression test
+      properties:
+        ts:
+          type: string
+          format: datetime
+          # x-db-type: timestamp
+          x-db-default-expression: CURRENT_TIMESTAMP
+        ts2:
+          type: string
+          format: datetime
+          default: '2011-11-11 00:00:00'
+          # x-db-type: timestamp
+          # x-db-default-expression: CURRENT_TIMESTAMP
+        ts3:
+          type: string
+          format: datetime
+          default: '2022-11-11 00:00:00'
+          x-db-default-expression: CURRENT_TIMESTAMP
+        ts4:
+          type: string
+          x-db-type: timestamp
+          default: '2022-11-11 00:00:00'
+        ts5:
+          type: string
+          x-db-type: timestamp
+          x-db-default-expression: CURRENT_TIMESTAMP
+        ts6:
+          type: string
+          x-db-type: timestamp
+          default: '2000-11-11 00:00:00'
+          x-db-default-expression: CURRENT_TIMESTAMP
+        d:
+          type: string
+          x-db-type: date
+          x-db-default-expression: CURRENT_DATE + INTERVAL '1 YEAR'
+        d2:
+          type: string
+          x-db-type: text
+          x-db-default-expression: CURRENT_DATE + INTERVAL '1 YEAR'
+        d3:
+          type: string
+          x-db-type: text
+          default: text default # default literal constant for 'text' is not allowed in MySQL
+          x-db-default-expression: CURRENT_DATE + INTERVAL '1 YEAR'
+        ts7:
+          type: string
+          format: date
+          x-db-default-expression: CURRENT_DATE + INTERVAL '1 YEAR'
+
+        # https://github.com/yiisoft/yii2/issues/19747
+        # ts8:
+        #   type: string
+        #   format: date
+        #   x-db-default-expression: CURRENT_DATE + INTERVAL 1 YEAR

@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib;
 
+use cebe\yii2openapi\lib\CustomSpecAttr;
 use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\AttributeRelation;
@@ -203,7 +204,8 @@ class AttributeResolver
                   ->setDescription($property->getAttr('description', ''))
                   ->setReadOnly($property->isReadonly())
                   ->setDefault($property->guessDefault())
-                  ->setXDbType($property->getAttr('x-db-type'))
+                  ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
+                  ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
                   ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
                   ->setIsPrimary($property->isPrimaryKey());
         if ($property->isReference()) {

@@ -77,7 +77,7 @@ components:
         created_at:
           type: string
           format: date-time
-          default: CURRENT_TIMESTAMP
+          x-db-default-expression: CURRENT_TIMESTAMP
     Users:
       type: array
       items:

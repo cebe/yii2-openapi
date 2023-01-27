@@ -70,7 +70,8 @@ final class MigrationRecordBuilder
             }
         }
 
-        $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT, "'"], VarDumper::export($codeColumns));
+        $codeColumns = static::makeString($codeColumns);
+
         return sprintf(self::ADD_TABLE, $tableAlias, $codeColumns);
     }
 
@@ -289,5 +290,29 @@ final class MigrationRecordBuilder
             return '"'.$columnName.'"';
         }
         return $columnName;
+    }
+
+    /**
+     * Convert code columns array to comlpete syntactically correct PHP code string which will be written to migration file
+     */
+    public static function makeString(array $codeColumns): string
+    {
+        $finalStr = ''.PHP_EOL;
+        foreach ($codeColumns as $key => $column) {
+            if (is_string($key)) {
+                if (substr($column, 0, 5) === '$this') {
+                    $finalStr .= VarDumper::export($key).' => '.$column.','.PHP_EOL;
+                } else {
+                    $finalStr .= VarDumper::export($key).' => '.VarDumper::export($column).','.PHP_EOL;
+                }
+            } else {
+                $finalStr .= VarDumper::export($key).' => '.VarDumper::export($column).','.PHP_EOL;
+            }
+        }
+
+        $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT.'    ', "'"], $finalStr);
+        $codeColumns = trim($codeColumns);
+        $codeColumns = '['.PHP_EOL.self::INDENT.'    '.$codeColumns.PHP_EOL . self::INDENT.']';
+        return $codeColumns;
     }
 }
