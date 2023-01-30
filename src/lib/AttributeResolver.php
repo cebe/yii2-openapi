@@ -91,10 +91,20 @@ class AttributeResolver
     {
         foreach ($this->schema->getProperties() as $property) {
             /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
+
+            if ($property->getName() === 'user') {
+                VarDumper::dump($property->getProperty());
+            }
+
             $onUpdate = $onDelete = null;
             if (!empty($property->getProperty()->allOf[1]) &&
                 !empty($property->getProperty()->allOf[1]->{'x-fk-on-update'})
             ) {
+                // VarDumper::dump($property);
+                // VarDumper::dump($property->getProperty()->allOf[0]->resolve()->getSerializableData());
+                foreach($property->getProperty()->allOf as $key => $value) {
+                    // VarDumper::dump((array) $value->getSerializableData());
+                }
                 $onUpdate = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
             }
             if (!empty($property->getProperty()->allOf[2]) &&

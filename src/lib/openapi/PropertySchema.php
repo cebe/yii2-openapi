@@ -40,22 +40,22 @@ class PropertySchema
      */
     private $property;
 
-    /**@var string* */
+    /** @var string* */
     private $name;
 
-    /**@var bool $isReference * */
+    /** @var bool $isReference * */
     private $isReference = false;
 
-    /**@var bool $isItemsReference * */
+    /** @var bool $isItemsReference * */
     private $isItemsReference = false;
 
-    /**@var bool $isNonDbReference * */
+    /** @var bool $isNonDbReference * */
     private $isNonDbReference = false;
 
-    /**@var string $refPointer * */
+    /** @var string $refPointer */
     private $refPointer;
 
-    /**@var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema * */
+    /** @var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema */
     private $refSchema;
 
     /**
