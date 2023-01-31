@@ -60,6 +60,8 @@ if (YII_ENV_DEV) {
         'generators' => [
             // add ApiGenerator to Gii module
             'api' => \cebe\yii2openapi\generator\ApiGenerator::class,
+            // to disable generation of migrations files
+            // 'generateMigrations' => false
         ],
     ];
 }
@@ -71,7 +73,7 @@ To use the web generator, open `index.php?r=gii` and select the `REST API Genera
 
 On console you can run the generator with `./yii gii/api --openApiPath=@app/openapi.yaml`. Where `@app/openapi.yaml` should be the absolute path to your OpenAPI spec file. This can be JSON as well as YAML (see also [cebe/php-openapi](https://github.com/cebe/php-openapi/) for supported formats).
 
-Run `./yii gii/api --help` for all options.
+Run `./yii gii/api --help` for all options. Example: Disable generation of migrations files `./yii gii/api --generateMigrations=0`
 
 See [Petstore example](https://github.com/OAI/OpenAPI-Specification/blob/main/examples/v3.0/petstore.yaml) for example OpenAPI spec.
 
@@ -198,11 +200,12 @@ created_at:
 
 Also see: https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
 
-### Many-to-Many relation definition
+
+## Many-to-Many relation definition
 
 There are two ways for define many-to-many relations:
 
-#### Simple many-to-many without junction model
+### Simple many-to-many without junction model
 
    - property name for many-to-many relation should be equal lower-cased, pluralized related schema name
      
@@ -231,7 +234,7 @@ Tag:
         $ref: '#/components/schemas/Post'
 ```
   
-#### Many-to-many with junction model 
+### Many-to-many with junction model
 
 This way allowed creating multiple many-to-many relations between to models 
 
@@ -274,45 +277,7 @@ User:
  - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)
  
 
-## Assumptions
-
-When generating code from an OpenAPI description there are many possible ways to achive a fitting result. 
-Thus there are some assumptions and limitations that are currently applied to make this work.
-Here is a (possibly incomplete) list:
-
-- The current implementation works best with OpenAPI description that follows the [JSON:API](https://jsonapi.org/) guidelines.
-  - The request and response format/schema is currently not extracted from OpenAPI schema and may need to be adjusted manually if it does not follow JSON:API
-- column/field/property with name `id` is considered as Primary Key by this library and it is automatically handled by DB/Yii; so remove it from validation `rules()`
-  - other fields can currently be used as primary keys using the `x-pk` OpenAPI extension (see below) but it may not be work correctly in all cases, please report bugs if you find them.
-
-Other things to keep in mind:
-
-### Adding columns to existing tables
-
-When adding new fields in the API models, new migrations will be generated to add these fields to the table.
-For a project that is already in production, it should be considered to adjust the generated migration to add default
-values for existing data records.
-
-One case where this is important is the addition of a new column with `NOT NULL` contraint, which does not provide a default value.
-Such a migration will fail when the table is not empty:
-
-```php
-$this->addColumn('{{%company}}', 'name', $this->string(128)->notNull());
-```
-
-Fails on a PostgreSQL database with 
-
-> add column name string(128) NOT NULL to table {{%company}} ...Exception: SQLSTATE[23502]: Not null violation: 7 ERROR:  column "name" contains null values
-
-The solution would be to create the column, allowing NULL, set the value to a default and add the null constraint later.
-
-```php
-$this->addColumn('{{%company}}', 'name', $this->string(128)->null());
-$this->update('{{%company}}', ['name' => 'No name']);
-$this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
-```
-
-### Handling of `NOT NULL` constraints
+## Handling of `NOT NULL` constraints
 
 `NOT NULL` in DB migrations is determined by `nullable` and `required` properties of the OpenAPI schema.
 e.g. attribute = 'my_property'.
@@ -360,7 +325,7 @@ e.g. attribute = 'my_property'.
         nullable: false
 ```
 
-### Handling of `enum` (#enum)
+## Handling of `enum` (#enum)
 It works on all 3 DB: MySQL, MariaDb and PgSQL.
 
  ```yaml
@@ -375,7 +340,7 @@ It works on all 3 DB: MySQL, MariaDb and PgSQL.
 
 Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handled manually.
 
-### Handling of `numeric` (#numeric, #MariaDb)
+## Handling of `numeric` (#numeric, #MariaDb)
 
 precision-default = 10
 scale-default = 2
@@ -408,6 +373,44 @@ DB-Result = decimal(12,2)
 DB-Result = decimal(10,2)
 
 
+## Assumptions
+
+When generating code from an OpenAPI description there are many possible ways to achive a fitting result.
+Thus there are some assumptions and limitations that are currently applied to make this work.
+Here is a (possibly incomplete) list:
+
+- The current implementation works best with OpenAPI description that follows the [JSON:API](https://jsonapi.org/) guidelines.
+  - The request and response format/schema is currently not extracted from OpenAPI schema and may need to be adjusted manually if it does not follow JSON:API
+- column/field/property with name `id` is considered as Primary Key by this library and it is automatically handled by DB/Yii; so remove it from validation `rules()`
+  - other fields can currently be used as primary keys using the `x-pk` OpenAPI extension (see below) but it may not be work correctly in all cases, please report bugs if you find them.
+
+Other things to keep in mind:
+
+### Adding columns to existing tables
+
+When adding new fields in the API models, new migrations will be generated to add these fields to the table.
+For a project that is already in production, it should be considered to adjust the generated migration to add default
+values for existing data records.
+
+One case where this is important is the addition of a new column with `NOT NULL` contraint, which does not provide a default value.
+Such a migration will fail when the table is not empty:
+
+```php
+$this->addColumn('{{%company}}', 'name', $this->string(128)->notNull());
+```
+
+Fails on a PostgreSQL database with
+
+> add column name string(128) NOT NULL to table {{%company}} ...Exception: SQLSTATE[23502]: Not null violation: 7 ERROR:  column "name" contains null values
+
+The solution would be to create the column, allowing NULL, set the value to a default and add the null constraint later.
+
+```php
+$this->addColumn('{{%company}}', 'name', $this->string(128)->null());
+$this->update('{{%company}}', ['name' => 'No name']);
+$this->alterColumn('{{%company}}', 'name', $this->string(128)->notNull());
+```
+
 ## Screenshots
 
 Gii Generator Form:
@@ -421,7 +424,25 @@ Generated files:
 
 # Development
 
-There commands are available to develop and check the tests. It is available inside the Docker container. To enter into bash shell of container, run `make cli` .
+To contribute or play around, steps to set up this project locally are:
+
+```bash
+# in your CLI
+git clone https://github.com/cebe/yii2-openapi.git
+cd yii2-openapi
+make clean_all
+make up
+make cli
+composer install
+make migrate
+
+# to check everything is setup up correctly ensure all tests passes
+./vendor/bin/phpunit
+
+# create new branch from master and Happy contributing!
+```
+
+These commands are available to develop and check the tests. It is available inside the Docker container. To enter into bash shell of container, run `make cli` .
 
 ```bash
 cd tests
