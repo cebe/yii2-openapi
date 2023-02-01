@@ -4,18 +4,18 @@ namespace app\models;
 use Faker\UniqueGenerator;
 
 /**
- * Fake data generator for ColumnNameChange
- * @method static ColumnNameChange makeOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
- * @method static ColumnNameChange saveOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
- * @method static ColumnNameChange[] make(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
- * @method static ColumnNameChange[] save(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
+ * Fake data generator for Newcolumn
+ * @method static Newcolumn makeOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
+ * @method static Newcolumn saveOne($attributes = [], ?UniqueGenerator $uniqueFaker = null);
+ * @method static Newcolumn[] make(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
+ * @method static Newcolumn[] save(int $number, $commonAttributes = [], ?UniqueGenerator $uniqueFaker = null)
  */
-class ColumnNameChangeFaker extends BaseModelFaker
+class NewcolumnFaker extends BaseModelFaker
 {
 
     /**
      * @param array|callable $attributes
-     * @return ColumnNameChange|\yii\db\ActiveRecord
+     * @return Newcolumn|\yii\db\ActiveRecord
      * @example
      *  $model = (new PostFaker())->generateModels(['author_id' => 1]);
      *  $model = (new PostFaker())->generateModels(function($model, $faker, $uniqueFaker) {
@@ -28,10 +28,15 @@ class ColumnNameChangeFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new ColumnNameChange();
+        $model = new Newcolumn();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = substr($faker->text(255), 0, 255);
-        $model->updated_at_2 = $faker->sentence;
+        $model->last_name = $faker->sentence;
+        $model->dec_col = $faker->randomFloat();
+        $model->json_col = [];
+        $model->varchar_col = substr($faker->text(5), 0, 5);
+        $model->numeric_col = $faker->randomFloat();
+        $model->json_col_def_n = [];
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {

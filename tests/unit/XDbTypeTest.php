@@ -201,10 +201,13 @@ class XDbTypeTest extends DbTestCase
     {
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
-        // var_dump($testFile);die;
-        // $testFile['generateMigrations'] = false;
-        // $testFile['generateModels'] = true;
-        // $testFile['generateModelFaker'] = true;
         $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/rules_and_more/mysql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 }

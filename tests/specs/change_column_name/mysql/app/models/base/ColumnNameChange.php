@@ -22,7 +22,7 @@ abstract class ColumnNameChange extends \yii\db\ActiveRecord
         return [
             'trim' => [['name'], 'trim'],
             'required' => [['name'], 'required'],
-            'name_string' => [['name'], 'string'],
+            'name_string' => [['name'], 'string', 'max' => 255],
         ];
     }
 }
