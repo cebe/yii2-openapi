@@ -196,4 +196,15 @@ class XDbTypeTest extends DbTestCase
             'numeric_col' => 'integer',
         ])->execute();
     }
+
+    public function testValidationRules()
+    {
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
+        // var_dump($testFile);die;
+        // $testFile['generateMigrations'] = false;
+        // $testFile['generateModels'] = true;
+        // $testFile['generateModelFaker'] = true;
+        $this->runGenerator($testFile, 'mysql');
+    }
 }
