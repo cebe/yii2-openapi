@@ -10,6 +10,7 @@ namespace cebe\yii2openapi\lib;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
+use yii\helpers\VarDumper;
 use function count;
 use function implode;
 use function in_array;
@@ -87,20 +88,35 @@ class ValidationRulesBuilder
     private function resolveAttributeRules(Attribute $attribute):void
     {
         if ($attribute->isReadOnly()) {
+            // VarDumper::dump('--------------------------------');
+            // VarDumper::dump($attribute->columnName);
             return;
+        } else {
+            // VarDumper::dump('++++++++++++++++++++++++++++++++');
         }
         if ($attribute->phpType === 'bool') {
             $this->rules[$attribute->columnName . '_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
+            if ($attribute->defaultValue !== null) {
+                $this->addDefaultRule($attribute);
+            }
             return;
         }
 
         if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
             $key = $attribute->columnName . '_' . $attribute->dbType;
             $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
+            // TODO refactor
+            if ($attribute->defaultValue !== null) {
+                $this->addDefaultRule($attribute);
+            }
             return;
         }
         if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
             $this->addNumericRule($attribute);
+            // TODO refactor
+            if ($attribute->defaultValue !== null) {
+                $this->addDefaultRule($attribute);
+            }
             return;
         }
         if ($attribute->phpType === 'string' && !$attribute->isReference()) {
@@ -110,7 +126,14 @@ class ValidationRulesBuilder
             $key = $attribute->columnName . '_in';
             $this->rules[$key] =
                 new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
+            // TODO refactor
+            if ($attribute->defaultValue !== null) {
+                $this->addDefaultRule($attribute);
+            }
             return;
+        }
+        if ($attribute->defaultValue !== null) {
+            $this->addDefaultRule($attribute);
         }
         $this->addRulesByAttributeName($attribute);
     }
@@ -165,6 +188,16 @@ class ValidationRulesBuilder
         }
         $key = $attribute->columnName . '_string';
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
+    }
+
+    private function addDefaultRule(Attribute $attribute):void
+    {
+        $params = [];
+        if ($attribute->defaultValue !== null) {
+            $params['value'] = $attribute->defaultValue;
+        }
+        $key = $attribute->columnName . '_default';
+        $this->rules[$key] = new ValidationRule([$attribute->columnName], 'default', $params);
     }
 
     private function addNumericRule(Attribute $attribute):void

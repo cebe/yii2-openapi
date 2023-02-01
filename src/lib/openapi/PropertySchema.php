@@ -425,6 +425,7 @@ class PropertySchema
      */
     public function guessDefault()
     {
+        // VarDumper::dump($this->getAttr('default'));
         if (!$this->hasAttr('default')) {
             return null;
         }
