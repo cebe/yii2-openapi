@@ -199,16 +199,26 @@ class XDbTypeTest extends DbTestCase
 
     public function testValidationRules()
     {
+        // TODO remove
+        // $faker = \Faker\Factory::create();
+        // VarDumper::dump($faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM));
+        // return;
+
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
+            'except' => ['migrations_mysql_db']
         ]);
         $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/rules_and_more/mysql/app"), [
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runUpMigrations('mysql', 4);
+        Yii::$app->db->schema->refresh();
+        $this->runFaker();
+        $this->runDownMigrations('mysql', 4);
         // TODO run faker and check it has no model validation errors
     }
 }

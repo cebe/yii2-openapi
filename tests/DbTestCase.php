@@ -8,7 +8,7 @@ use yii\di\Container;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use \SamIT\Yii2\MariaDb\Schema as MariaDbSchema;
-use yii\helpers\{ArrayHelper, VarDumper};
+use yii\helpers\{ArrayHelper, VarDumper, StringHelper, Console};
 use yii\helpers\FileHelper;
 
 class DbTestCase extends \PHPUnit\Framework\TestCase
@@ -107,6 +107,38 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
 
     protected function runActualMigrations(string $db = 'mysql', int $number = 2): void
     {
+        $this->runUpMigrations($db, $number);
+        $this->runDownMigrations($db, $number);
+    }
+
+    protected function runFaker()
+    {
+        $fakers = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'only' => ['*Faker.php'],
+            'except' => ['BaseModelFaker.php'],
+        ]);
+
+        foreach($fakers as $fakerFile) {
+            $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php');
+            // $this->stdout('Generating fake data for ' . StringHelper::basename($fakerFile, 'Faker.php') . '...');
+            $faker = new $className;
+            for($i = 0; $i < 10; $i++) {
+                $model = $faker->generateModel();
+                if (!$model->validate()) {
+                    VarDumper::dump($model->getErrors());
+                    echo 'ERROR';
+                    // $this->stdout("ERROR.\n", Console::BOLD, Console::FG_RED);
+                    exit(3);
+                }
+            }
+        }
+        echo 'SUCCESS';
+        // $this->stdout("SUCCESS.\n", Console::BOLD, Console::FG_GREEN);
+    }
+
+    protected function runUpMigrations(string $db = 'mysql', int $number = 2): void
+    {
         // up
         exec('cd tests; ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
         $last = count($upOutput) - 1;
@@ -116,7 +148,10 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         $this->assertSame($upOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' applied.');
         // 1 migration was applied.
         // 2 migrations were applied.
+    }
 
+    protected function runDownMigrations(string $db = 'mysql', int $number = 2): void
+    {
         // down
         exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
         $last = count($downOutput) - 1;
@@ -124,6 +159,5 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         $this->assertSame($downExitCode, 0);
         $this->assertSame($downOutput[$last], 'Migrated down successfully.');
         $this->assertSame($downOutput[$lastThird], $number.' '.(($number === 1) ? 'migration was' : 'migrations were').' reverted.');
-
     }
 }
