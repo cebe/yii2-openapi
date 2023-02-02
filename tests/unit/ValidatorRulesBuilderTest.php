@@ -56,6 +56,7 @@ class ValidatorRulesBuilderTest extends TestCase
             ]),
             'title_string' => new ValidationRule(['title'], 'string', ['max' => 60]),
             'article_string' => new ValidationRule(['article'], 'string'),
+            'article_default' => new ValidationRule(['article'], 'default', ['value' => '']),
             'active_boolean' => new ValidationRule(['active'], 'boolean'),
             'state_string' => new ValidationRule(['state'], 'string'),
             'state_in' => new ValidationRule(['state'], 'in', ['range' => ['active', 'draft']]),
@@ -63,6 +64,7 @@ class ValidatorRulesBuilderTest extends TestCase
             'contact_email_string' => new ValidationRule(['contact_email'], 'string'),
             'contact_email_email' => new ValidationRule(['contact_email'], 'email'),
             'required_with_def_string' => new ValidationRule(['required_with_def'], 'string'),
+            'required_with_def_default' => new ValidationRule(['required_with_def'], 'default', ['value' => 'xxx']),
         ];
 
         $rules = (new ValidationRulesBuilder($model))->build();

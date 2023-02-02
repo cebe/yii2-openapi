@@ -38,6 +38,7 @@ abstract class Post extends \yii\db\ActiveRecord
             'title_string' => [['title'], 'string', 'max' => 255],
             'slug_string' => [['slug'], 'string', 'min' => 1, 'max' => 200],
             'active_boolean' => [['active'], 'boolean'],
+            'active_default' => [['active'], 'default', 'value' => false],
             'created_at_date' => [['created_at'], 'date'],
         ];
     }

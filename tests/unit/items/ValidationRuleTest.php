@@ -55,19 +55,22 @@ class ValidationRuleTest extends TestCase
             ],
             [
                 new ValidationRule(['foo'], 'in', ['range' => ['one', 'two', 'three']]),
-                "[['foo'], 'in', 'range' => ['one', 'two', 'three']]",
+                "[['foo'], 'in', 'range' => [
+        'one',
+        'two',
+        'three',
+    ]]",
             ],
             [
                 new ValidationRule(['foo'], 'exist', ['targetAttribute' => ['a2', 'a1' => 'a3']]),
-                "[['foo'], 'exist', 'targetAttribute' => ['a2', 'a1' => 'a3']]",
+                "[['foo'], 'exist', 'targetAttribute' => [
+        0 => 'a2',
+        'a1' => 'a3',
+    ]]",
             ],
             [
-                new ValidationRule(['foo'], 'filter', [
-                    'filter' => function($v) {
-                        return strtolower($v);
-                    },
-                ]),
-                "[['foo'], 'filter', 'filter' => '']",
+                new ValidationRule(['foo'], 'filter', ['filter' => function($v) {return strtolower($v);}]),
+                '[[\'foo\'], \'filter\', \'filter\' => function($v) {return strtolower($v);}]',
             ],
         ];
     }

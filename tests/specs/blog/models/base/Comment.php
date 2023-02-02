@@ -31,6 +31,8 @@ abstract class Comment extends \yii\db\ActiveRecord
             'post_id_exist' => [['post_id'], 'exist', 'targetRelation' => 'Post'],
             'author_id_integer' => [['author_id'], 'integer'],
             'author_id_exist' => [['author_id'], 'exist', 'targetRelation' => 'Author'],
+            'message_default' => [['message'], 'default', 'value' => []],
+            'meta_data_default' => [['meta_data'], 'default', 'value' => []],
             'created_at_integer' => [['created_at'], 'integer'],
             'safe' => [['message', 'meta_data'], 'safe'],
         ];

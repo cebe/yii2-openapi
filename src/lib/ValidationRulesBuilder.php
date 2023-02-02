@@ -88,35 +88,23 @@ class ValidationRulesBuilder
     private function resolveAttributeRules(Attribute $attribute):void
     {
         if ($attribute->isReadOnly()) {
-            // VarDumper::dump('--------------------------------');
-            // VarDumper::dump($attribute->columnName);
             return;
-        } else {
-            // VarDumper::dump('++++++++++++++++++++++++++++++++');
         }
         if ($attribute->phpType === 'bool') {
             $this->rules[$attribute->columnName . '_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
-            if ($attribute->defaultValue !== null) {
-                $this->addDefaultRule($attribute);
-            }
+            $this->defaultRule($attribute);
             return;
         }
 
         if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
             $key = $attribute->columnName . '_' . $attribute->dbType;
             $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
-            // TODO refactor
-            if ($attribute->defaultValue !== null) {
-                $this->addDefaultRule($attribute);
-            }
+            $this->defaultRule($attribute);
             return;
         }
         if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
             $this->addNumericRule($attribute);
-            // TODO refactor
-            if ($attribute->defaultValue !== null) {
-                $this->addDefaultRule($attribute);
-            }
+            $this->defaultRule($attribute);
             return;
         }
         if ($attribute->phpType === 'string' && !$attribute->isReference()) {
@@ -126,15 +114,10 @@ class ValidationRulesBuilder
             $key = $attribute->columnName . '_in';
             $this->rules[$key] =
                 new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
-            // TODO refactor
-            if ($attribute->defaultValue !== null) {
-                $this->addDefaultRule($attribute);
-            }
+            $this->defaultRule($attribute);
             return;
         }
-        if ($attribute->defaultValue !== null) {
-            $this->addDefaultRule($attribute);
-        }
+        $this->defaultRule($attribute);
         $this->addRulesByAttributeName($attribute);
     }
 
@@ -190,12 +173,17 @@ class ValidationRulesBuilder
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
     }
 
-    private function addDefaultRule(Attribute $attribute):void
+    private function defaultRule(Attribute $attribute):void
     {
-        $params = [];
-        if ($attribute->defaultValue !== null) {
-            $params['value'] = $attribute->defaultValue;
+        if ($attribute->defaultValue === null) {
+            return;
         }
+        if ($attribute->defaultValue instanceof \yii\db\Expression) {
+            return;
+        }
+
+        $params = [];
+        $params['value'] = $attribute->defaultValue;
         $key = $attribute->columnName . '_default';
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'default', $params);
     }

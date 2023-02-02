@@ -72,7 +72,9 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
             'char_6_col_string' => [['char_6_col'], 'string'],
             'char_7_col_string' => [['char_7_col'], 'string', 'max' => 6],
             'char_8_col_string' => [['char_8_col'], 'string'],
+            'char_8_col_default' => [['char_8_col'], 'default', 'value' => 'd'],
             'decimal_col_double' => [['decimal_col'], 'double'],
+            'mi_default' => [['mi'], 'default', 'value' => 7],
             'numeric_col_double' => [['numeric_col'], 'double'],
             'float_col_double' => [['float_col'], 'double'],
             'float_2_double' => [['float_2'], 'double'],
@@ -86,7 +88,14 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
             'datetime_col_datetime' => [['datetime_col'], 'datetime'],
             'timestamp_col_string' => [['timestamp_col'], 'string'],
             'year_col_string' => [['year_col'], 'string'],
+            'json_col_def_default' => [['json_col_def'], 'default', 'value' => []],
+            'json_col_def_2_default' => [['json_col_def_2'], 'default', 'value' => []],
+            'blob_def_default' => [['blob_def'], 'default', 'value' => 'the blob'],
             'text_def_string' => [['text_def'], 'string'],
+            'text_def_default' => [['text_def'], 'default', 'value' => 'the text'],
+            'json_def_default' => [['json_def'], 'default', 'value' => [
+                'a' => 'b',
+            ]],
             'safe' => [['varbinary_col', 'blob_col', 'bit_col', 'bit_2', 'bit_3', 'ti', 'ti_2', 'ti_3', 'si_col', 'si_col_2', 'mi', 'bi', 'int_col', 'int_col_2', 'json_col', 'json_col_def', 'json_col_def_2', 'blob_def', 'json_def'], 'safe'],
         ];
     }

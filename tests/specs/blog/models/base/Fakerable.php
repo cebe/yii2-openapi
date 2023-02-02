@@ -38,6 +38,7 @@ abstract class Fakerable extends \yii\db\ActiveRecord
             'floatval_lim_double' => [['floatval_lim'], 'double', 'min' => 0, 'max' => 1],
             'doubleval_double' => [['doubleval'], 'double'],
             'int_min_integer' => [['int_min'], 'integer', 'min' => 5],
+            'int_min_default' => [['int_min'], 'default', 'value' => 3],
             'int_max_integer' => [['int_max'], 'integer', 'max' => 5],
             'int_minmax_integer' => [['int_minmax'], 'integer', 'min' => 5, 'max' => 25],
             'int_created_at_integer' => [['int_created_at'], 'integer'],

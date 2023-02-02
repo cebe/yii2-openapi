@@ -209,5 +209,6 @@ class XDbTypeTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        // TODO run faker and check it has no model validation errors
     }
 }

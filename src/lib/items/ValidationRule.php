@@ -44,33 +44,8 @@ final class ValidationRule
         $params = [];
         foreach ($data as $key => $val) {
             $type = gettype($val);
-            switch ($type) {
-                case 'NULL':
-                case 'boolean':
-                    $value = VarDumper::export($val);
-                    break;
-                case 'integer':
-                case 'float':
-                case 'double':
-                    $value = $val;
-                    break;
-                case 'array':
-                    if (empty($val)) {
-                        $value = '[]';
-                    } elseif (ArrayHelper::isIndexed($val)) {
-                        $value = "['" . implode("', '", $val) . "']";
-                    } else {
-                        $value = '[' . $this->arrayToString($val) . ']';
-                    }
-                    break;
-                case 'resource':
-                case 'object':
-                    //probably will be resolved later
-                    $value = "''";
-                    break;
-                default:
-                    $value = "'$val'";
-            }
+            $value = VarDumper::export($val);
+            $value = str_replace(PHP_EOL, PHP_EOL.'    ', $value);
             $params[] = is_string($key) ? "'$key' => $value" : $value;
         }
         return implode(', ', $params);
