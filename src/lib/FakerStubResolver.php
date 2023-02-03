@@ -69,13 +69,13 @@ class FakerStubResolver
     {
         $formats = [
             'date' => '$faker->dateTimeThisCentury->format(\'Y-m-d\')',
-            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
+            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'c\')', // ISO-8601
             'email' => '$faker->safeEmail',
 
             // for x-db-type
-            'datetime' => '$faker->dateTime()',
-            'timestamp' => '$faker->dateTime()',
-            'time' => '$faker->time',
+            'datetime' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'c\')', // ISO-8601
+            'timestamp' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'c\')', // ISO-8601
+            'time' => '$faker->time(\'H:i:s\')',
             'year' => '$faker->year',
         ];
         $format = $this->property->getAttr('format');

@@ -61,10 +61,10 @@ class AlldbdatatypeFaker extends BaseModelFaker
         $model->double_p_2 = $faker->randomFloat();
         $model->real_col = $faker->randomFloat();
         $model->date_col = $faker->dateTimeThisCentury->format('Y-m-d');
-        $model->time_col = $faker->time;
-        $model->datetime_col = $faker->dateTime();
-        $model->timestamp_col = $faker->dateTime();
-        $model->year_col = $faker->sentence;
+        $model->time_col = $faker->time('H:i:s');
+        $model->datetime_col = $faker->dateTimeThisYear('now', 'UTC')->format('c');
+        $model->timestamp_col = $faker->dateTimeThisYear('now', 'UTC')->format('c');
+        $model->year_col = $faker->year;
         $model->json_col = [];
         $model->json_col_def = [];
         $model->json_col_def_2 = [];

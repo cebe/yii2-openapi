@@ -11,6 +11,7 @@ use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
 use yii\helpers\VarDumper;
+use yii\validators\DateValidator;
 use function count;
 use function implode;
 use function in_array;
@@ -98,7 +99,20 @@ class ValidationRulesBuilder
 
         if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
             $key = $attribute->columnName . '_' . $attribute->dbType;
-            $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
+            $params = [];
+            if ($attribute->dbType === 'date') {
+                $params['format'] = 'php:Y-m-d';
+            }
+            if ($attribute->dbType === 'datetime') {
+                $params['format'] = 'php:c';
+                // $params['type'] = DateValidator::TYPE_DATETIME;
+            }
+            if ($attribute->dbType === 'time') {
+                $params['format'] = 'php:H:i:s';
+                // $params['type'] = DateValidator::TYPE_TIME;
+            }
+
+            $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, $params);
             $this->defaultRule($attribute);
             return;
         }

@@ -202,9 +202,20 @@ class XDbTypeTest extends DbTestCase
         // TODO remove
         // $faker = \Faker\Factory::create();
         // VarDumper::dump($faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM));
+        // VarDumper::dump($faker->dateTimeThisYear('now', 'UTC')->format('c'));
+        // VarDumper::dump($faker->dateTime);
+
+        // $dt = new \DateTime;
+        // VarDumper::dump($dt->format('c'));
+        // VarDumper::dump($dt->format(DATE_ATOM));
+
         // return;
 
         $this->deleteTables();
+
+        // TODO remove
+        $this->removeStaleMigrationsRecords();
+
         $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
@@ -220,5 +231,10 @@ class XDbTypeTest extends DbTestCase
         $this->runFaker();
         $this->runDownMigrations('mysql', 4);
         // TODO run faker and check it has no model validation errors
+    }
+
+    private function removeStaleMigrationsRecords()
+    {
+        Yii::$app->db->createCommand()->delete('{{%migration}}', 'apply_time >   1675421340')->execute();
     }
 }

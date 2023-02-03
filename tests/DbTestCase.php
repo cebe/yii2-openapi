@@ -131,7 +131,9 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
                     // $this->stdout("ERROR.\n", Console::BOLD, Console::FG_RED);
                     exit(3);
                 }
+                unset($model);
             }
+            unset($faker);
         }
         echo 'SUCCESS';
         // $this->stdout("SUCCESS.\n", Console::BOLD, Console::FG_GREEN);
