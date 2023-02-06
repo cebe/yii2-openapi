@@ -60,7 +60,7 @@ class ValidatorRulesBuilderTest extends TestCase
             'active_boolean' => new ValidationRule(['active'], 'boolean'),
             'state_string' => new ValidationRule(['state'], 'string'),
             'state_in' => new ValidationRule(['state'], 'in', ['range' => ['active', 'draft']]),
-            'created_at_datetime' => new ValidationRule(['created_at'], 'datetime'),
+            'created_at_datetime' => new ValidationRule(['created_at'], 'datetime', ['format' => 'php:Y-m-d H:i:s']),
             'contact_email_string' => new ValidationRule(['contact_email'], 'string'),
             'contact_email_email' => new ValidationRule(['contact_email'], 'email'),
             'required_with_def_string' => new ValidationRule(['required_with_def'], 'string'),

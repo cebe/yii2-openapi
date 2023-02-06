@@ -39,7 +39,7 @@ abstract class Post extends \yii\db\ActiveRecord
             'slug_string' => [['slug'], 'string', 'min' => 1, 'max' => 200],
             'active_boolean' => [['active'], 'boolean'],
             'active_default' => [['active'], 'default', 'value' => false],
-            'created_at_date' => [['created_at'], 'date'],
+            'created_at_date' => [['created_at'], 'date', 'format' => 'php:Y-m-d'],
         ];
     }
 

@@ -45,8 +45,8 @@ abstract class Fakerable extends \yii\db\ActiveRecord
             'int_simple_integer' => [['int_simple'], 'integer'],
             'str_text_string' => [['str_text'], 'string'],
             'str_varchar_string' => [['str_varchar'], 'string', 'max' => 100],
-            'str_date_date' => [['str_date'], 'date'],
-            'str_datetime_datetime' => [['str_datetime'], 'datetime'],
+            'str_date_date' => [['str_date'], 'date', 'format' => 'php:Y-m-d'],
+            'str_datetime_datetime' => [['str_datetime'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
             'str_country_string' => [['str_country'], 'string'],
         ];
     }

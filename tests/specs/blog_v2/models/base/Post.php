@@ -45,7 +45,7 @@ abstract class Post extends \yii\db\ActiveRecord
             ]],
             'lang_default' => [['lang'], 'default', 'value' => 'ru'],
             'active_boolean' => [['active'], 'boolean'],
-            'created_at_date' => [['created_at'], 'date'],
+            'created_at_date' => [['created_at'], 'date', 'format' => 'php:Y-m-d'],
         ];
     }
 

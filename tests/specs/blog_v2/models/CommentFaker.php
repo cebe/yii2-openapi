@@ -32,7 +32,7 @@ class CommentFaker extends BaseModelFaker
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->message = $faker->sentence;
         $model->meta_data = substr($faker->text(300), 0, 300);
-        $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
+        $model->created_at = $faker->dateTimeThisYear('now', 'UTC')->format('Y-m-d H:i:s');
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {
