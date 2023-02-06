@@ -104,12 +104,10 @@ class ValidationRulesBuilder
                 $params['format'] = 'php:Y-m-d';
             }
             if ($attribute->dbType === 'datetime') {
-                $params['format'] = 'php:c';
-                // $params['type'] = DateValidator::TYPE_DATETIME;
+                $params['format'] = 'php:Y-m-d H:i:s';
             }
             if ($attribute->dbType === 'time') {
                 $params['format'] = 'php:H:i:s';
-                // $params['type'] = DateValidator::TYPE_TIME;
             }
 
             $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, $params);

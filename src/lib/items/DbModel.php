@@ -91,7 +91,17 @@ class DbModel extends BaseObject
         $rules = Yii::createObject(ValidationRulesBuilder::class, [$this])->build();
         $rules = array_map('strval', $rules);
         $rules = VarDumper::export($rules);
-        return str_replace([PHP_EOL, "\'", "'[[", "]',"], [PHP_EOL . '        ', "'", '[[', '],'], $rules);
+        return str_replace([
+            PHP_EOL,
+            "\'",
+            "'[[",
+            "]',"
+        ], [
+            PHP_EOL . '        ',
+            "'",
+            '[[',
+            '],'
+        ], $rules);
     }
 
     /**

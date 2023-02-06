@@ -118,25 +118,18 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
             'only' => ['*Faker.php'],
             'except' => ['BaseModelFaker.php'],
         ]);
-
         foreach($fakers as $fakerFile) {
             $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php');
-            // $this->stdout('Generating fake data for ' . StringHelper::basename($fakerFile, 'Faker.php') . '...');
             $faker = new $className;
             for($i = 0; $i < 10; $i++) {
                 $model = $faker->generateModel();
                 if (!$model->validate()) {
-                    VarDumper::dump($model->getErrors());
-                    echo 'ERROR';
-                    // $this->stdout("ERROR.\n", Console::BOLD, Console::FG_RED);
-                    exit(3);
+                    $this->assertSame([], $model->getErrors());
                 }
                 unset($model);
             }
             unset($faker);
         }
-        echo 'SUCCESS';
-        // $this->stdout("SUCCESS.\n", Console::BOLD, Console::FG_GREEN);
     }
 
     protected function runUpMigrations(string $db = 'mysql', int $number = 2): void

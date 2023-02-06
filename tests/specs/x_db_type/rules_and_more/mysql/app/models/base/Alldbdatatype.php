@@ -85,7 +85,7 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
             'real_col_double' => [['real_col'], 'double'],
             'date_col_date' => [['date_col'], 'date', 'format' => 'php:Y-m-d'],
             'time_col_time' => [['time_col'], 'time', 'format' => 'php:H:i:s'],
-            'datetime_col_datetime' => [['datetime_col'], 'datetime', 'format' => 'php:c'],
+            'datetime_col_datetime' => [['datetime_col'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
             'timestamp_col_string' => [['timestamp_col'], 'string'],
             'year_col_string' => [['year_col'], 'string'],
             'json_col_def_default' => [['json_col_def'], 'default', 'value' => []],
