@@ -119,7 +119,10 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
             'except' => ['BaseModelFaker.php'],
         ]);
         foreach($fakers as $fakerFile) {
-            $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php');
+            $className = 'app\\models\\' .
+                (ApiGenerator::isPostgres() ? "pgsqlfaker\\" : '') .
+                (ApiGenerator::isMariaDb() ? "mariafaker\\" : '') .
+                StringHelper::basename($fakerFile, '.php');
             $faker = new $className;
             for($i = 0; $i < 10; $i++) {
                 $model = $faker->generateModel();
