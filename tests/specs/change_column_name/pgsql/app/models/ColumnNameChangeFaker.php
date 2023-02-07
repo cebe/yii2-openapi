@@ -30,8 +30,8 @@ class ColumnNameChangeFaker extends BaseModelFaker
         $uniqueFaker = $this->uniqueFaker;
         $model = new ColumnNameChange();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
-        $model->name = $faker->sentence;
-        $model->updated_at_2 = $faker->sentence;
+        $model->name = substr($faker->text(255), 0, 255);
+        $model->updated_at_2 = $faker->dateTimeThisYear('now', 'UTC')->format('Y-m-d H:i:s');
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {

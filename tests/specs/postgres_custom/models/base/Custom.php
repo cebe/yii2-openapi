@@ -27,8 +27,27 @@ abstract class Custom extends \yii\db\ActiveRecord
         return [
             'trim' => [['status'], 'trim'],
             'num_integer' => [['num'], 'integer'],
+            'num_default' => [['num'], 'default', 'value' => 0],
+            'json1_default' => [['json1'], 'default', 'value' => []],
+            'json2_default' => [['json2'], 'default', 'value' => []],
+            'json3_default' => [['json3'], 'default', 'value' => [
+                [
+                    'foo' => 'foobar',
+                ],
+                [
+                    'xxx' => 'yyy',
+                ],
+            ]],
+            'json4_default' => [['json4'], 'default', 'value' => [
+                'foo' => 'bar',
+                'bar' => 'baz',
+            ]],
             'status_string' => [['status'], 'string'],
-            'status_in' => [['status'], 'in', 'range' => ['active', 'draft']],
+            'status_in' => [['status'], 'in', 'range' => [
+                'active',
+                'draft',
+            ]],
+            'status_default' => [['status'], 'default', 'value' => 'draft'],
             'safe' => [['json1', 'json2', 'json3', 'json4'], 'safe'],
         ];
     }

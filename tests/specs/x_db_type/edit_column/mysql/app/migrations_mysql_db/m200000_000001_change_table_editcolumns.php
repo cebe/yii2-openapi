@@ -13,7 +13,7 @@ class m200000_000001_change_table_editcolumns extends \yii\db\Migration
         $this->alterColumn('{{%editcolumns}}', 'name', $this->string(255)->notNull()->defaultValue("Horse-2"));
         $this->alterColumn('{{%editcolumns}}', 'string_col', $this->text()->null());
         $this->alterColumn('{{%editcolumns}}', 'dec_col', $this->decimal(12,2)->null()->defaultValue("3.14"));
-        $this->alterColumn('{{%editcolumns}}', 'str_col_def', $this->string(255)->notNull());
+        $this->alterColumn('{{%editcolumns}}', 'str_col_def', $this->string(3)->notNull());
         $this->alterColumn('{{%editcolumns}}', 'json_col', $this->text()->notNull());
         $this->alterColumn('{{%editcolumns}}', 'json_col_2', 'json NOT NULL');
         $this->alterColumn('{{%editcolumns}}', 'numeric_col', $this->double()->null()->defaultValue(null));

@@ -33,7 +33,8 @@ abstract class Comment extends \yii\db\ActiveRecord
             'user_id_exist' => [['user_id'], 'exist', 'targetRelation' => 'User'],
             'message_string' => [['message'], 'string'],
             'meta_data_string' => [['meta_data'], 'string', 'min' => 1, 'max' => 300],
-            'created_at_datetime' => [['created_at'], 'datetime'],
+            'meta_data_default' => [['meta_data'], 'default', 'value' => ''],
+            'created_at_datetime' => [['created_at'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
         ];
     }
 

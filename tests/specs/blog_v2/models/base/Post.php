@@ -39,9 +39,13 @@ abstract class Post extends \yii\db\ActiveRecord
             'title_string' => [['title'], 'string', 'max' => 255],
             'slug_string' => [['slug'], 'string', 'min' => 1, 'max' => 200],
             'lang_string' => [['lang'], 'string'],
-            'lang_in' => [['lang'], 'in', 'range' => ['ru', 'eng']],
+            'lang_in' => [['lang'], 'in', 'range' => [
+                'ru',
+                'eng',
+            ]],
+            'lang_default' => [['lang'], 'default', 'value' => 'ru'],
             'active_boolean' => [['active'], 'boolean'],
-            'created_at_date' => [['created_at'], 'date'],
+            'created_at_date' => [['created_at'], 'date', 'format' => 'php:Y-m-d'],
         ];
     }
 
