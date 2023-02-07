@@ -31,6 +31,7 @@ abstract class Pristine extends \yii\db\ActiveRecord
         return [
             'trim' => [['name', 'tag', 'new_col', 'col_9', 'col_10', 'col_11'], 'trim'],
             'required' => [['custom_id_col', 'name'], 'required'],
+            'custom_id_col_integer' => [['custom_id_col'], 'integer'],
             'name_string' => [['name'], 'string'],
             'tag_string' => [['tag'], 'string'],
             'tag_default' => [['tag'], 'default', 'value' => '4 leg'],
@@ -43,7 +44,7 @@ abstract class Pristine extends \yii\db\ActiveRecord
             'col_11_string' => [['col_11'], 'string'],
             'price_double' => [['price'], 'double'],
             'price_default' => [['price'], 'default', 'value' => 0],
-            'safe' => [['custom_id_col', 'col_8'], 'safe'],
+            'safe' => [['col_8'], 'safe'],
         ];
     }
 }

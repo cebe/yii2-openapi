@@ -74,7 +74,19 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
             'char_8_col_string' => [['char_8_col'], 'string'],
             'char_8_col_default' => [['char_8_col'], 'default', 'value' => 'd'],
             'decimal_col_double' => [['decimal_col'], 'double'],
+            'bit_col_integer' => [['bit_col'], 'integer'],
+            'bit_2_integer' => [['bit_2'], 'integer'],
+            'bit_3_integer' => [['bit_3'], 'integer'],
+            'ti_integer' => [['ti'], 'integer'],
+            'ti_2_integer' => [['ti_2'], 'integer'],
+            'ti_3_integer' => [['ti_3'], 'integer'],
+            'si_col_integer' => [['si_col'], 'integer'],
+            'si_col_2_integer' => [['si_col_2'], 'integer'],
+            'mi_integer' => [['mi'], 'integer'],
             'mi_default' => [['mi'], 'default', 'value' => 7],
+            'bi_integer' => [['bi'], 'integer'],
+            'int_col_integer' => [['int_col'], 'integer'],
+            'int_col_2_integer' => [['int_col_2'], 'integer'],
             'numeric_col_double' => [['numeric_col'], 'double'],
             'float_col_double' => [['float_col'], 'double'],
             'float_2_double' => [['float_2'], 'double'],
@@ -96,7 +108,7 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
             'json_def_default' => [['json_def'], 'default', 'value' => [
                 'a' => 'b',
             ]],
-            'safe' => [['varbinary_col', 'blob_col', 'bit_col', 'bit_2', 'bit_3', 'ti', 'ti_2', 'ti_3', 'si_col', 'si_col_2', 'mi', 'bi', 'int_col', 'int_col_2', 'json_col', 'json_col_def', 'json_col_def_2', 'blob_def', 'json_def'], 'safe'],
+            'safe' => [['varbinary_col', 'blob_col', 'json_col', 'json_col_def', 'json_col_def_2', 'blob_def', 'json_def'], 'safe'],
         ];
     }
 }

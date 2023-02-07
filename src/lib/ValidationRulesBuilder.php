@@ -91,7 +91,7 @@ class ValidationRulesBuilder
         if ($attribute->isReadOnly()) {
             return;
         }
-        if ($attribute->phpType === 'bool') {
+        if ($attribute->phpType === 'bool' || $attribute->phpType === 'boolean') {
             $this->rules[$attribute->columnName . '_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
             $this->defaultRule($attribute);
             return;
@@ -114,7 +114,8 @@ class ValidationRulesBuilder
             $this->defaultRule($attribute);
             return;
         }
-        if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
+
+        if (in_array($attribute->phpType, ['int', 'integer', 'double', 'float']) && !$attribute->isReference()) {
             $this->addNumericRule($attribute);
             $this->defaultRule($attribute);
             return;
@@ -155,7 +156,7 @@ class ValidationRulesBuilder
     private function addExistRules(array $relations):void
     {
         foreach ($relations as $attribute) {
-            if ($attribute->phpType === 'int') {
+            if ($attribute->phpType === 'int' || $attribute->phpType === 'integer') {
                 $this->addNumericRule($attribute);
             } elseif ($attribute->phpType === 'string') {
                 $this->addStringRule($attribute);
@@ -209,7 +210,7 @@ class ValidationRulesBuilder
         if ($attribute->limits['max'] !== null) {
             $params['max'] = $attribute->limits['max'];
         }
-        $validator = $attribute->phpType === 'int' ? 'integer' : 'double';
+        $validator = ($attribute->phpType === 'int' || $attribute->phpType === 'integer') ? 'integer' : 'double';
         $key = $attribute->columnName . '_' . $validator;
         $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
@@ -239,7 +240,7 @@ class ValidationRulesBuilder
                 continue;
             }
 
-            if (in_array($attribute->phpType, ['int', 'string', 'bool', 'float', 'double'])) {
+            if (in_array($attribute->phpType, ['int', 'integer', 'string', 'bool', 'boolean', 'float', 'double'])) {
                 continue;
             }
 
