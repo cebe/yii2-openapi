@@ -202,7 +202,7 @@ class XDbTypeTest extends DbTestCase
     {
         $this->deleteTables();
 
-        // TODO remove
+        // remove
         // $this->removeStaleMigrationsRecords();
 
         $this->deleteTables();
