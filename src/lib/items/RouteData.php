@@ -194,6 +194,9 @@ final class RouteData extends BaseObject
                     'type' => $pathParameters[$paramName]->schema->type ?? null,
                     //'model' => $additional ? SchemaResponseResolver::guessModelByRef($additional) : null,
                 ];
+                if (isset($pathParameters[$paramName]->schema->pattern)) {
+                    $this->params[$paramName]['pattern'] = $pathParameters[$paramName]->schema->pattern;
+                }
             } else {
                 $this->params[$paramName] = null;
             }
