@@ -33,8 +33,10 @@ abstract class User extends \yii\db\ActiveRecord
             'email_email' => [['email'], 'email'],
             'password_string' => [['password'], 'string'],
             'role_string' => [['role'], 'string', 'max' => 20],
+            'role_default' => [['role'], 'default', 'value' => 'reader'],
             'flags_integer' => [['flags'], 'integer'],
-            'created_at_datetime' => [['created_at'], 'datetime'],
+            'flags_default' => [['flags'], 'default', 'value' => 0],
+            'created_at_datetime' => [['created_at'], 'datetime', 'format' => 'php:Y-m-d H:i:s'],
         ];
     }
 }

@@ -304,7 +304,18 @@ class PropertySchema
 
     public function getMaxLength():?int
     {
-        return $this->getAttr('maxLength');
+        $ml = $this->getAttr('maxLength');
+
+        // if x-db-type is set and maxLength is not set then check for maxlength in x-db-type
+        // e.g. varchar(17) => 17
+        if ($ml === null) {
+            if (!empty($this->property->{CustomSpecAttr::DB_TYPE})) {
+                $regex = '/(\w+)(\()([0-9]+)(\))/';
+                preg_match($regex, $this->property->{CustomSpecAttr::DB_TYPE}, $matches);
+                $ml = isset($matches[3]) ? $matches[3] : $ml;
+            }
+        }
+        return $ml;
     }
 
     public function getMinLength():?int

@@ -9,6 +9,7 @@ use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
 use yii\helpers\FileHelper;
 use yii\helpers\VarDumper;
+use yii\validators\DateValidator;
 use function array_filter;
 use function getenv;
 use function strpos;
@@ -196,4 +197,74 @@ class XDbTypeTest extends DbTestCase
             'numeric_col' => 'integer',
         ])->execute();
     }
+
+    public function testValidationRules()
+    {
+        $this->deleteTables();
+
+        // remove
+        // $this->removeStaleMigrationsRecords();
+
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/rules_and_more/mysql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runUpMigrations('mysql', 4);
+        Yii::$app->db->schema->refresh();
+        $this->runFaker();
+        $this->runDownMigrations('mysql', 4);
+        FileHelper::removeDirectory(Yii::getAlias('@app').'/models');
+
+        // MariaDB
+        $this->changeDbToMariadb();
+        // $this->removeStaleMigrationsRecords();
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_maria.php");
+        $this->runGenerator($testFile, 'maria');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/rules_and_more/maria/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runUpMigrations('maria', 4);
+        Yii::$app->db->schema->refresh();
+        $this->runFaker();
+        $this->runDownMigrations('maria', 4);
+        FileHelper::removeDirectory(Yii::getAlias('@app').'/models');
+
+        // for PgSQL
+        $this->changeDbToPgsql();
+        // $this->removeStaleMigrationsRecords();
+        $this->deleteTables();
+        $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_pgsql.php");
+        $this->runGenerator($testFile, 'pgsql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_mysql_db', 'migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/rules_and_more/pgsql/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runUpMigrations('pgsql', 4);
+        Yii::$app->db->schema->refresh();
+        $this->runFaker();
+        $this->runDownMigrations('pgsql', 4);
+
+    }
+
+    // private function removeStaleMigrationsRecords()
+    // {
+    //     Yii::$app->db->createCommand()->delete('{{%migration}}', 'apply_time >   1675687069')->execute();
+    // }
 }

@@ -1,0 +1,115 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: URI path param regex test
+paths:
+  '/domains': # check none
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+  '/domains/{domainname}':
+    parameters:
+      - name: domainname
+        in: path
+        description: DNS domain name
+        required: true
+        schema:
+          type: string
+          pattern: '^[a-z-.]$'
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+  '/domains_2/{domainname}':
+    parameters:
+      - name: domainname
+        in: path
+        description: DNS domain name
+        required: true
+        schema:
+          type: string
+          pattern: '^[a-z0-9-_]$'
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+  '/domains_3/{domainname}': # check default string
+    parameters:
+      - name: domainname
+        in: path
+        description: DNS domain name
+        required: true
+        schema:
+          type: string
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+  '/age/{age}': # check default int
+    parameters:
+      - name: age
+        in: path
+        description: The age
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+  '/age_without_start_end_char/{age}':
+    parameters:
+      - name: age
+        in: path
+        description: The age
+        required: true
+        schema:
+          type: integer
+          pattern: '[0-13]'
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+  '/north-american-telephone-number-with-an-optional-area-code/{number}':
+    parameters:
+      - name: number
+        in: path
+        description: The age
+        required: true
+        schema:
+          type: integer
+          pattern: '^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$'
+    get:
+      summary: The summary
+      operationId: The operation ID
+      responses:
+        '200':
+          description: The description
+
+
+components:
+  schemas:
+    Domain:
+      type: object
+      description: Domain test
+      properties:
+        ts:
+          type: string
+          format: datetime
+        ts2:
+          type: string
+          format: datetime
+          default: '2011-11-11 00:00:00'

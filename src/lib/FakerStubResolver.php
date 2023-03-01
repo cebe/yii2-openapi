@@ -51,6 +51,7 @@ class FakerStubResolver
             case 'bool':
                 return '$faker->boolean';
             case 'int':
+            case 'integer':
                 return $this->fakeForInt($limits['min'], $limits['max']);
             case 'string':
                 return $this->fakeForString();
@@ -68,10 +69,17 @@ class FakerStubResolver
     {
         $formats = [
             'date' => '$faker->dateTimeThisCentury->format(\'Y-m-d\')',
-            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)', // ISO-8601
+            'date-time' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'Y-m-d H:i:s\')', // DATE_ATOM=>ISO-8601
             'email' => '$faker->safeEmail',
+
+            // for x-db-type
+            'datetime' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'Y-m-d H:i:s\')', // DATE_ATOM=>ISO-8601
+            'timestamp' => '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'Y-m-d H:i:s\')', // DATE_ATOM=>ISO-8601
+            'time' => '$faker->time(\'H:i:s\')',
+            'year' => '$faker->year',
         ];
         $format = $this->property->getAttr('format');
+        $format = $format === null ? $this->property->getAttr('x-db-type') : $format;
         if ($format && isset($formats[$format])) {
             return $formats[$format];
         }
@@ -135,7 +143,11 @@ class FakerStubResolver
         // TODO maybe also consider OpenAPI examples here
 
         if ($size) {
-            return 'substr($faker->text(' . $size . '), 0, ' . $size . ')';
+            $method = 'text';
+            if ($size < 5) {
+                $method = 'word';
+            }
+            return 'substr($faker->'.$method.'(' . $size . '), 0, ' . $size . ')';
         }
         return '$faker->sentence';
     }

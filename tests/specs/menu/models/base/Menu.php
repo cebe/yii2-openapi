@@ -29,6 +29,19 @@ abstract class Menu extends \yii\db\ActiveRecord
             'parent_id_integer' => [['parent_id'], 'integer'],
             'parent_id_exist' => [['parent_id'], 'exist', 'targetRelation' => 'Parent'],
             'name_string' => [['name'], 'string', 'min' => 3, 'max' => 100],
+            'args_default' => [['args'], 'default', 'value' => [
+                'foo',
+                'bar',
+                'baz',
+            ]],
+            'kwargs_default' => [['kwargs'], 'default', 'value' => [
+                [
+                    'foo' => 'bar',
+                ],
+                [
+                    'buzz' => 'fizz',
+                ],
+            ]],
             'safe' => [['args', 'kwargs'], 'safe'],
         ];
     }

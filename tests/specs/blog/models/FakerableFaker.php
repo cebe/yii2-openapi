@@ -42,7 +42,7 @@ class FakerableFaker extends BaseModelFaker
         $model->str_text = $faker->sentence;
         $model->str_varchar = substr($faker->text(100), 0, 100);
         $model->str_date = $faker->dateTimeThisCentury->format('Y-m-d');
-        $model->str_datetime = $faker->dateTimeThisYear('now', 'UTC')->format(DATE_ATOM);
+        $model->str_datetime = $faker->dateTimeThisYear('now', 'UTC')->format('Y-m-d H:i:s');
         $model->str_country = $faker->countryCode;
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
