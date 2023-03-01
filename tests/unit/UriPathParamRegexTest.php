@@ -17,18 +17,14 @@ class UriPathParamRegexTest extends DbTestCase
 {
     public function testIndex()
     {
-        // default DB is Mysql ------------------------------------------------
-        // $this->deleteTables();
         $testFile = Yii::getAlias("@specs/uri_path_param_regex/uri_path_param_regex.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 4);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/uri_path_param_regex/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 }

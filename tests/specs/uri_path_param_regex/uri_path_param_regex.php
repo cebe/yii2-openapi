@@ -7,7 +7,7 @@ return [
     'excludeModels' => [
         'Error',
     ],
-    'generateControllers' => true, // TODO make it false?
+    'generateControllers' => false,
     'generateMigrations' => false,
     'generateModelFaker' => false,
 ];

@@ -202,11 +202,26 @@ final class RouteData extends BaseObject
             }
 
             $type = $this->params[$paramName]['type'] ?? null;
+            $patternInSpec = $this->params[$paramName]['pattern'] ?? null;
+
+            $defaultIntRegex = '\d';
+            $defaultStrRegex = '[\w-]';
+
+            $intRegex = $defaultIntRegex;
+            $strRegex = $defaultStrRegex;
+
+            if ($patternInSpec !== null) {
+                $patternInSpec = ltrim($patternInSpec, '^');
+                $patternInSpec = rtrim($patternInSpec, '$');
+                $intRegex = $patternInSpec;
+                $strRegex = $patternInSpec;
+            }
+
             //check minimum/maximum for routes like <year:\d{4}> ?
             if ($type === 'integer') {
-                $patternParts[$p] = '<' . $paramName . ':\d+>';
+                $patternParts[$p] = '<' . $paramName . ':'.$intRegex.'+>';
             } elseif ($type === 'string') {
-                $patternParts[$p] = '<' . $paramName . ':[\w-]+>';
+                $patternParts[$p] = '<' . $paramName . ':'.$strRegex.'+>';
             } else {
                 $patternParts[$p] = '<' . $paramName . '>';
             }
