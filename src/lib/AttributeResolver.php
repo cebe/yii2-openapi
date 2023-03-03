@@ -93,7 +93,7 @@ class AttributeResolver
             /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
 
             if ($property->getName() === 'user') {
-                VarDumper::dump($property->getProperty());
+                // VarDumper::dump($property->getProperty());
             }
 
             $onUpdate = $onDelete = null;
