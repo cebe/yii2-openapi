@@ -46,6 +46,16 @@ class FakerStubResolver
         if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {
             return null;
         }
+
+        VarDumper::dump('Property: '.$this->attribute->propertyName);
+        VarDumper::dump('Column: '.$this->attribute->columnName);
+
+        // column name ends with `_id`
+        if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
+            VarDumper::dump('Yes');
+            return '$faker->randomElement(\app\models\User::find()->select("id")->column())'; // TODO class and class namespace
+        }
+
         $limits = $this->attribute->limits;
         switch ($this->attribute->phpType) {
             case 'bool':
