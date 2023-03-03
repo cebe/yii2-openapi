@@ -577,4 +577,10 @@ class PropertySchema
 
         return 'string';
     }
+
+    // TODO WIP resume from here
+    public function mergeWith(\cebe\openapi\SpecObjectInterface $base)
+    {
+
+    }
 }
