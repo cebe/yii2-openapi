@@ -52,7 +52,9 @@ installdocker:
 testdocker:
 	docker-compose run --rm php sh -c 'vendor/bin/phpunit'
 
-.PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker
+efs: clean_all up migrate # Everything From Scratch
+
+.PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker efs
 
 
 # Docs:

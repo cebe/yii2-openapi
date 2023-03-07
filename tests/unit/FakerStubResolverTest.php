@@ -125,7 +125,7 @@ class FakerStubResolverTest extends TestCase
             [
                 (new Attribute('str_datetime'))->setPhpType('string')->setDbType(YiiDbSchema::TYPE_DATETIME),
                 $schema->getProperty('str_datetime'),
-                '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)',
+                '$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'Y-m-d H:i:s\')',
             ],
         ];
     }

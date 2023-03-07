@@ -26,7 +26,7 @@ return [
             'flags' => (new Attribute('flags', ['phpType'=>'int', 'dbType'=>'integer']))->setDefault(0)->setFakerStub
             ('$faker->numberBetween(0, 1000000)'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'datetime']))
-                ->setDefault(new \yii\db\Expression('(CURRENT_TIMESTAMP)'))->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(DATE_ATOM)'),
+                ->setDefault(new \yii\db\Expression('(CURRENT_TIMESTAMP)'))->setFakerStub('$faker->dateTimeThisYear(\'now\', \'UTC\')->format(\'Y-m-d H:i:s\')'),
         ],
         'relations' => [],
         'indexes' => [

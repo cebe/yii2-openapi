@@ -19,6 +19,7 @@ components:
       required:
         - custom_id_col
         - name
+      # x-pk: custom_id_col
       properties:
         custom_id_col:
           type: integer

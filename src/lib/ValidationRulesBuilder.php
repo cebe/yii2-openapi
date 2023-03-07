@@ -10,6 +10,8 @@ namespace cebe\yii2openapi\lib;
 use cebe\yii2openapi\lib\items\Attribute;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ValidationRule;
+use yii\helpers\VarDumper;
+use yii\validators\DateValidator;
 use function count;
 use function implode;
 use function in_array;
@@ -89,18 +91,33 @@ class ValidationRulesBuilder
         if ($attribute->isReadOnly()) {
             return;
         }
-        if ($attribute->phpType === 'bool') {
+        if ($attribute->phpType === 'bool' || $attribute->phpType === 'boolean') {
             $this->rules[$attribute->columnName . '_boolean'] = new ValidationRule([$attribute->columnName], 'boolean');
+            $this->defaultRule($attribute);
             return;
         }
 
         if (in_array($attribute->dbType, ['time', 'date', 'datetime'], true)) {
             $key = $attribute->columnName . '_' . $attribute->dbType;
-            $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, []);
+            $params = [];
+            if ($attribute->dbType === 'date') {
+                $params['format'] = 'php:Y-m-d';
+            }
+            if ($attribute->dbType === 'datetime') {
+                $params['format'] = 'php:Y-m-d H:i:s';
+            }
+            if ($attribute->dbType === 'time') {
+                $params['format'] = 'php:H:i:s';
+            }
+
+            $this->rules[$key] = new ValidationRule([$attribute->columnName], $attribute->dbType, $params);
+            $this->defaultRule($attribute);
             return;
         }
-        if (in_array($attribute->phpType, ['int', 'double', 'float']) && !$attribute->isReference()) {
+
+        if (in_array($attribute->phpType, ['int', 'integer', 'double', 'float']) && !$attribute->isReference()) {
             $this->addNumericRule($attribute);
+            $this->defaultRule($attribute);
             return;
         }
         if ($attribute->phpType === 'string' && !$attribute->isReference()) {
@@ -110,8 +127,10 @@ class ValidationRulesBuilder
             $key = $attribute->columnName . '_in';
             $this->rules[$key] =
                 new ValidationRule([$attribute->columnName], 'in', ['range' => $attribute->enumValues]);
+            $this->defaultRule($attribute);
             return;
         }
+        $this->defaultRule($attribute);
         $this->addRulesByAttributeName($attribute);
     }
 
@@ -137,7 +156,7 @@ class ValidationRulesBuilder
     private function addExistRules(array $relations):void
     {
         foreach ($relations as $attribute) {
-            if ($attribute->phpType === 'int') {
+            if ($attribute->phpType === 'int' || $attribute->phpType === 'integer') {
                 $this->addNumericRule($attribute);
             } elseif ($attribute->phpType === 'string') {
                 $this->addStringRule($attribute);
@@ -167,6 +186,21 @@ class ValidationRulesBuilder
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
     }
 
+    private function defaultRule(Attribute $attribute):void
+    {
+        if ($attribute->defaultValue === null) {
+            return;
+        }
+        if ($attribute->defaultValue instanceof \yii\db\Expression) {
+            return;
+        }
+
+        $params = [];
+        $params['value'] = $attribute->defaultValue;
+        $key = $attribute->columnName . '_default';
+        $this->rules[$key] = new ValidationRule([$attribute->columnName], 'default', $params);
+    }
+
     private function addNumericRule(Attribute $attribute):void
     {
         $params = [];
@@ -176,7 +210,7 @@ class ValidationRulesBuilder
         if ($attribute->limits['max'] !== null) {
             $params['max'] = $attribute->limits['max'];
         }
-        $validator = $attribute->phpType === 'int' ? 'integer' : 'double';
+        $validator = ($attribute->phpType === 'int' || $attribute->phpType === 'integer') ? 'integer' : 'double';
         $key = $attribute->columnName . '_' . $validator;
         $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
@@ -206,7 +240,7 @@ class ValidationRulesBuilder
                 continue;
             }
 
-            if (in_array($attribute->phpType, ['int', 'string', 'bool', 'float', 'double'])) {
+            if (in_array($attribute->phpType, ['int', 'integer', 'string', 'bool', 'boolean', 'float', 'double'])) {
                 continue;
             }
 

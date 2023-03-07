@@ -26,6 +26,7 @@ abstract class Category extends \yii\db\ActiveRecord
             'title_unique' => [['title'], 'unique'],
             'title_string' => [['title'], 'string', 'max' => 255],
             'active_boolean' => [['active'], 'boolean'],
+            'active_default' => [['active'], 'default', 'value' => false],
         ];
     }
 
