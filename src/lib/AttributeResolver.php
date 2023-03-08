@@ -92,34 +92,34 @@ class AttributeResolver
         foreach ($this->schema->getProperties() as $property) {
             /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
 
-            if ($property->getName() === 'user') {
-                // VarDumper::dump($property->getProperty());
-            }
+            // if ($property->getName() === 'user') {
+            //     // VarDumper::dump($property->getProperty());
+            // }
 
-            $onUpdate = $onDelete = null;
-            if (!empty($property->getProperty()->allOf[1]) &&
-                !empty($property->getProperty()->allOf[1]->{'x-fk-on-update'})
-            ) {
-                // VarDumper::dump($property);
-                // VarDumper::dump($property->getProperty()->allOf[0]->resolve()->getSerializableData());
-                foreach($property->getProperty()->allOf as $key => $value) {
-                    // VarDumper::dump((array) $value->getSerializableData());
-                }
-                $onUpdate = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
-            }
-            if (!empty($property->getProperty()->allOf[2]) &&
-                !empty($property->getProperty()->allOf[2]->{'x-fk-on-delete'})
-            ) {
-                $onDelete = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
-            }
+            // $onUpdate = $onDelete = null;
+            // if (!empty($property->getProperty()->allOf[1]) &&
+            //     !empty($property->getProperty()->allOf[1]->{'x-fk-on-update'})
+            // ) {
+            //     // VarDumper::dump($property);
+            //     // VarDumper::dump($property->getProperty()->allOf[0]->resolve()->getSerializableData());
+            //     foreach($property->getProperty()->allOf as $key => $value) {
+            //         // VarDumper::dump((array) $value->getSerializableData());
+            //     }
+            //     $onUpdate = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
+            // }
+            // if (!empty($property->getProperty()->allOf[2]) &&
+            //     !empty($property->getProperty()->allOf[2]->{'x-fk-on-delete'})
+            // ) {
+            //     $onDelete = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
+            // }
 
-            if ($onUpdate !== null || $onDelete !== null) {
-                $newProperty = new PropertySchema($property->getProperty()->allOf[0], $property->getName(), $this->schema);
-                $newProperty->onUpdateFkConstraint = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
-                $newProperty->onDeleteFkConstraint = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
-                unset($property);
-                $property = clone $newProperty;
-            }
+            // if ($onUpdate !== null || $onDelete !== null) {
+            //     $newProperty = new PropertySchema($property->getProperty()->allOf[0], $property->getName(), $this->schema);
+            //     $newProperty->onUpdateFkConstraint = $property->getProperty()->allOf[1]->{'x-fk-on-update'};
+            //     $newProperty->onDeleteFkConstraint = $property->getProperty()->allOf[2]->{'x-fk-on-delete'};
+            //     unset($property);
+            //     $property = clone $newProperty;
+            // }
 
             $isRequired = $this->schema->isRequiredProperty($property->getName());
             if ($this->isJunctionSchema) {
