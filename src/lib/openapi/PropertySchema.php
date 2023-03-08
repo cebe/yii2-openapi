@@ -86,36 +86,35 @@ class PropertySchema
         $this->schema = $schema;
         $this->isPk = $name === $schema->getPkName();
 
-        // if ($property->getName() === 'user') {
-        //     // VarDumper::dump($property->getProperty());
-        // }
-
         $onUpdate = $onDelete = null;
         if (!empty($property->allOf[1]) &&
-            !empty($property->allOf[1]->{'x-fk-on-update'})
+                !empty($property->allOf[1]->{'x-fk-on-update'})
         ) {
-            // VarDumper::dump($property);
-            // VarDumper::dump($property->allOf[0]->resolve()->getSerializableData());
-            foreach($property->allOf as $key => $value) {
-                // VarDumper::dump((array) $value->getSerializableData());
-            }
             $onUpdate = $property->allOf[1]->{'x-fk-on-update'};
-            // VarDumper::dump($onUpdate);
         }
         if (!empty($property->allOf[2]) &&
-            !empty($property->allOf[2]->{'x-fk-on-delete'})
+                !empty($property->allOf[2]->{'x-fk-on-update'})
+        ) {
+            $onUpdate = $property->allOf[2]->{'x-fk-on-update'};
+        }
+
+        if (!empty($property->allOf[1]) &&
+                !empty($property->allOf[1]->{'x-fk-on-delete'})
+        ) {
+            $onDelete = $property->allOf[1]->{'x-fk-on-delete'};
+        }
+        if (!empty($property->allOf[2]) &&
+                !empty($property->allOf[2]->{'x-fk-on-delete'})
         ) {
             $onDelete = $property->allOf[2]->{'x-fk-on-delete'};
         }
 
-        if ($onUpdate !== null || $onDelete !== null) {
-            // $newProperty = new PropertySchema($property->allOf[0], 'user', $this->schema);
-            // $newProperty->onUpdateFkConstraint = $property->allOf[1]->{'x-fk-on-update'};
-            // $newProperty->onDeleteFkConstraint = $property->allOf[2]->{'x-fk-on-delete'};
-            // unset($property);
-            // $property = clone $newProperty;
-            $this->onUpdateFkConstraint = $property->allOf[1]->{'x-fk-on-update'};
-            $this->onDeleteFkConstraint = $property->allOf[2]->{'x-fk-on-delete'};
+        if (
+            ($onUpdate !== null || $onDelete !== null) &&
+            (isset($property->allOf[0]) && $property->allOf[0] instanceof Reference)
+        ) {
+            $this->onUpdateFkConstraint = $onUpdate;
+            $this->onDeleteFkConstraint = $onDelete;
             $this->property = $property->allOf[0];
             $property = $this->property;
         }
@@ -610,11 +609,5 @@ class PropertySchema
         }
 
         return 'string';
-    }
-
-    // TODO WIP resume from here
-    public function mergeWith(\cebe\openapi\SpecObjectInterface $base)
-    {
-
     }
 }

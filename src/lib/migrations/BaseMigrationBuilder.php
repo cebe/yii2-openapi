@@ -147,7 +147,7 @@ abstract class BaseMigrationBuilder
             $refCol = $relation->getForeignName();
             $refTable = $relation->getTableAlias();
             $fkName = $this->foreignKeyName($this->model->tableName, $fkCol, $relation->getTableName(), $refCol);
-            $this->migration->addUpCode($builder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol, $relation->onUpdateFkConstraint, $relation->onDeleteFkConstraint))
+            $this->migration->addUpCode($builder->addFk($fkName, $tableName, $fkCol, $refTable, $refCol, $relation->onDeleteFkConstraint, $relation->onUpdateFkConstraint))
                             ->addDownCode($builder->dropFk($fkName, $tableName));
             if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;
