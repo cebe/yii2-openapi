@@ -18,28 +18,7 @@ class XOnXFkConstraintTest extends DbTestCase
 {
     public function testSimple()
     {
-
-        // $openapi = Reader::readFromYamlFile(realpath('openapi.yaml'));
-        // $openapi = Reader::readFromYamlFile(Yii::getAlias("@specs/x_on_x_fk_constraint/x_on_x_fk_constraint.yaml"));
-        // echo PHP_EOL;echo PHP_EOL;
-        // foreach ($openapi->components->schemas as $schemaName => $aSchema) {
-        //     // VarDumper::dump($schemaName);
-        //     if ($schemaName === 'Post') {
-        //         VarDumper::dump(
-        //             $aSchema->properties['user']->allOf[1]
-        //             ->{'x-fk-on-update'}
-        //             //->getSerializableData()
-        //             //->getExtensions()
-        //             //->properties => []
-        //         );
-        //     }
-        // }
-        // return;
-
-
-
-        // default DB is Mysql ------------------------------------------------
-        // $this->deleteTables();
+        // default DB is Mysql ----------------------------------------
         $testFile = Yii::getAlias("@specs/x_on_x_fk_constraint/x_on_x_fk_constraint.php");
         $this->runGenerator($testFile, 'mysql');
         // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
@@ -50,6 +29,6 @@ class XOnXFkConstraintTest extends DbTestCase
         //     'recursive' => true,
         // ]);
         // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 4);
+        // $this->runActualMigrations('mysql', 2);
     }
 }

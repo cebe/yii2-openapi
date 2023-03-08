@@ -29,9 +29,12 @@ use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function is_int;
 use function strpos;
+use cebe\yii2openapi\lib\traits\ForeignKeyConstraints;
 
 class PropertySchema
 {
+    use ForeignKeyConstraints;
+
     public const REFERENCE_PATH = '/components/schemas/';
     public const REFERENCE_PATH_LEN = 20;
 
@@ -67,10 +70,6 @@ class PropertySchema
      * @var \cebe\yii2openapi\lib\openapi\ComponentSchema
      */
     private $schema;
-
-    // TODO docs
-    public $onUpdateFkConstraint;
-    public $onDeleteFkConstraint;
 
     /**
      * @param \cebe\openapi\SpecObjectInterface             $property
