@@ -205,6 +205,49 @@ created_at:
 
 Also see: https://dev.mysql.com/doc/refman/8.0/en/data-type-defaults.html
 
+### `x-fk-on-delete`
+
+Allow to set foreign key constraint in migrations for ON DELETE event of row in database table. Example:
+
+```yaml
+  components:
+    schemas:
+      User:
+        type: object
+        description: x on-x (update|delete) foreign key constraint
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+      Post:
+        type: object
+        description: x on-x (update|delete) foreign key constraint
+        properties:
+          id:
+            type: integer
+          title:
+            type: string
+          user:
+            allOf:
+              - $ref: '#/components/schemas/User'
+              - x-fk-on-update: CASCADE
+          user_2:
+            allOf:
+              - $ref: '#/components/schemas/User'
+              - x-fk-on-update: CASCADE
+              - x-fk-on-delete: SET NULL
+          user_3:
+            allOf:
+              - $ref: '#/components/schemas/User'
+              - x-fk-on-delete: SET NULL
+          user_4:
+            $ref: '#/components/schemas/User' # without any constraints
+```
+
+### `x-fk-on-update`
+
+Allow to set foreign key constraint in migrations for ON UPDATE event of row in database table. For example, see above section for `x-fk-on-delete`.
 
 ## Many-to-Many relation definition
 
