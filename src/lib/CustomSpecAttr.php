@@ -29,4 +29,11 @@ class CustomSpecAttr
      * @see https://github.com/cebe/yii2-openapi/blob/master/README.md#x-db-default-expression
      */
     public const DB_DEFAULT_EXPRESSION = 'x-db-default-expression';
+
+    /**
+     * Foreign key constraints. See README for usage docs
+     */
+    public const FK_ON_DELETE = 'x-fk-on-delete';
+    public const FK_ON_UPDATE = 'x-fk-on-update';
+
 }

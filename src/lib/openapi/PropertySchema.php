@@ -87,25 +87,25 @@ class PropertySchema
 
         $onUpdate = $onDelete = null;
         if (!empty($property->allOf[1]) &&
-                !empty($property->allOf[1]->{'x-fk-on-update'})
+                !empty($property->allOf[1]->{CustomSpecAttr::FK_ON_UPDATE})
         ) {
-            $onUpdate = $property->allOf[1]->{'x-fk-on-update'};
+            $onUpdate = $property->allOf[1]->{CustomSpecAttr::FK_ON_UPDATE};
         }
         if (!empty($property->allOf[2]) &&
-                !empty($property->allOf[2]->{'x-fk-on-update'})
+                !empty($property->allOf[2]->{CustomSpecAttr::FK_ON_UPDATE})
         ) {
-            $onUpdate = $property->allOf[2]->{'x-fk-on-update'};
+            $onUpdate = $property->allOf[2]->{CustomSpecAttr::FK_ON_UPDATE};
         }
 
         if (!empty($property->allOf[1]) &&
-                !empty($property->allOf[1]->{'x-fk-on-delete'})
+                !empty($property->allOf[1]->{CustomSpecAttr::FK_ON_DELETE})
         ) {
-            $onDelete = $property->allOf[1]->{'x-fk-on-delete'};
+            $onDelete = $property->allOf[1]->{CustomSpecAttr::FK_ON_DELETE};
         }
         if (!empty($property->allOf[2]) &&
-                !empty($property->allOf[2]->{'x-fk-on-delete'})
+                !empty($property->allOf[2]->{CustomSpecAttr::FK_ON_DELETE})
         ) {
-            $onDelete = $property->allOf[2]->{'x-fk-on-delete'};
+            $onDelete = $property->allOf[2]->{CustomSpecAttr::FK_ON_DELETE};
         }
 
         if (
