@@ -90,6 +90,8 @@ class AttributeResolver
     public function resolve():DbModel
     {
         foreach ($this->schema->getProperties() as $property) {
+            /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
+
             $isRequired = $this->schema->isRequiredProperty($property->getName());
             if ($this->isJunctionSchema) {
                 $this->resolveJunctionTableProperty($property, $isRequired);
@@ -248,6 +250,8 @@ class AttributeResolver
                 [$property->getName(), $relatedTableName, $relatedClassName]
             )
                            ->asHasOne([$fkProperty->getName() => $attribute->columnName]);
+            $relation->onUpdateFkConstraint = $property->onUpdateFkConstraint;
+            $relation->onDeleteFkConstraint = $property->onDeleteFkConstraint;
             if ($property->isRefPointerToSelf()) {
                 $relation->asSelfReference();
             }
