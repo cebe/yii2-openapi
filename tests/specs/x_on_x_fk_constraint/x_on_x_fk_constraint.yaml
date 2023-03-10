@@ -34,7 +34,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/User'
             - x-fk-on-update: CASCADE
-            # - x-fk-on-delete: SET NULL
         user_2:
           allOf:
             - $ref: '#/components/schemas/User'
@@ -43,7 +42,6 @@ components:
         user_3:
           allOf:
             - $ref: '#/components/schemas/User'
-            # - x-fk-on-update: CASCADE
             - x-fk-on-delete: SET NULL
         user_4:
           $ref: '#/components/schemas/User'

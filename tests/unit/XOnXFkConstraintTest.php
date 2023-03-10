@@ -21,14 +21,14 @@ class XOnXFkConstraintTest extends DbTestCase
         // default DB is Mysql ----------------------------------------
         $testFile = Yii::getAlias("@specs/x_on_x_fk_constraint/x_on_x_fk_constraint.php");
         $this->runGenerator($testFile, 'mysql');
-        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
-        //     'recursive' => true,
-        //     'except' => ['migrations_maria_db', 'migrations_pgsql_db']
-        // ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_db_type/fresh/mysql/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 2);
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+            'except' => ['migrations_maria_db', 'migrations_pgsql_db']
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/x_on_x_fk_constraint/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('mysql', 2);
     }
 }
