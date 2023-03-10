@@ -35,5 +35,4 @@ class CustomSpecAttr
      */
     public const FK_ON_DELETE = 'x-fk-on-delete';
     public const FK_ON_UPDATE = 'x-fk-on-update';
-
 }
