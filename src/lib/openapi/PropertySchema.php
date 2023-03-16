@@ -85,36 +85,26 @@ class PropertySchema
         $this->schema = $schema;
         $this->isPk = $name === $schema->getPkName();
 
-        $onUpdate = $onDelete = null;
-        if (!empty($property->allOf[1]) &&
-                !empty($property->allOf[1]->{CustomSpecAttr::FK_ON_UPDATE})
-        ) {
-            $onUpdate = $property->allOf[1]->{CustomSpecAttr::FK_ON_UPDATE};
-        }
-        if (!empty($property->allOf[2]) &&
-                !empty($property->allOf[2]->{CustomSpecAttr::FK_ON_UPDATE})
-        ) {
-            $onUpdate = $property->allOf[2]->{CustomSpecAttr::FK_ON_UPDATE};
-        }
+        $onUpdate = $onDelete = $reference = null;
 
-        if (!empty($property->allOf[1]) &&
-                !empty($property->allOf[1]->{CustomSpecAttr::FK_ON_DELETE})
-        ) {
-            $onDelete = $property->allOf[1]->{CustomSpecAttr::FK_ON_DELETE};
+        foreach ($property->allOf ?? [] as $element) {
+            if (!empty($element->{CustomSpecAttr::FK_ON_UPDATE})) {
+                $onUpdate = $element->{CustomSpecAttr::FK_ON_UPDATE};
+            }
+            if (!empty($element->{CustomSpecAttr::FK_ON_DELETE})) {
+                $onDelete = $element->{CustomSpecAttr::FK_ON_DELETE};
+            }
+            if ($element instanceof Reference) {
+                $reference = $element;
+            }
         }
-        if (!empty($property->allOf[2]) &&
-                !empty($property->allOf[2]->{CustomSpecAttr::FK_ON_DELETE})
-        ) {
-            $onDelete = $property->allOf[2]->{CustomSpecAttr::FK_ON_DELETE};
-        }
-
         if (
             ($onUpdate !== null || $onDelete !== null) &&
-            (isset($property->allOf[0]) && $property->allOf[0] instanceof Reference)
+            ($reference instanceof Reference)
         ) {
             $this->onUpdateFkConstraint = $onUpdate;
             $this->onDeleteFkConstraint = $onDelete;
-            $this->property = $property->allOf[0];
+            $this->property = $reference;
             $property = $this->property;
         }
 

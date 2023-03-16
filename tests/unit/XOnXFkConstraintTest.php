@@ -16,7 +16,7 @@ use function strpos;
 
 class XOnXFkConstraintTest extends DbTestCase
 {
-    public function testSimple()
+    public function testIndex()
     {
         // default DB is Mysql ----------------------------------------
         $testFile = Yii::getAlias("@specs/x_on_x_fk_constraint/x_on_x_fk_constraint.php");
