@@ -87,7 +87,7 @@ class PropertySchema
 
         $onUpdate = $onDelete = $reference = null;
 
-        foreach($property->allOf ?? [] as $element) {
+        foreach ($property->allOf ?? [] as $element) {
             if (!empty($element->{CustomSpecAttr::FK_ON_UPDATE})) {
                 $onUpdate = $element->{CustomSpecAttr::FK_ON_UPDATE};
             }
