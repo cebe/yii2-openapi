@@ -95,6 +95,67 @@ components:
           format: datetime
           x-db-type: datetime
           nullable: true
+        d123:
+          $ref: '#/components/schemas/D123'
+        a123:
+          $ref: '#/components/schemas/A123'
+
+    D123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    A123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        b123:
+          $ref: '#/components/schemas/B123'
+    B123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        c123:
+          $ref: '#/components/schemas/C123'
+    C123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    E123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        b123:
+          $ref: '#/components/schemas/B123'
 
 
 paths:

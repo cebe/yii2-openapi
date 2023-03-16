@@ -10,6 +10,13 @@ $modelClass = ($modelNamespace !== $namespace ? '\\'.trim($modelNamespace, '\\')
 ?>
 <?= '<?php' ?>
 
+<?php // \yii\helpers\VarDumper::dump($model->name) ?>
+<?php
+// if (isset($model->hasOneRelations['account'])) {
+//     \yii\helpers\VarDumper::dump($model->hasOneRelations['account']->getClassName());
+// }
+?>
+
 namespace <?= $namespace ?>;
 
 use Faker\UniqueGenerator;
@@ -62,4 +69,17 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
         }
         return $model;
     }
+
+<?php if ($model->hasOneRelations):?>
+    public static function dependentOn()
+    {
+        return [
+            // model class name
+<?php foreach($model->hasOneRelations as $key => $hasOneRelation): ?>
+            <?php echo \yii\helpers\VarDumper::export($model->hasOneRelations[$key]->getClassName()).','.PHP_EOL ?>
+<?php endforeach; ?>
+
+        ];
+    }
+<?php endif;?>
 }

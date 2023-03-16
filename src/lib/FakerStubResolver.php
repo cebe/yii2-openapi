@@ -47,12 +47,12 @@ class FakerStubResolver
             return null;
         }
 
-        VarDumper::dump('Property: '.$this->attribute->propertyName);
-        VarDumper::dump('Column: '.$this->attribute->columnName);
+        // VarDumper::dump('Property: '.$this->attribute->propertyName);
+        // VarDumper::dump('Column: '.$this->attribute->columnName);
 
         // column name ends with `_id`
         if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
-            VarDumper::dump('Yes');
+            // VarDumper::dump('Yes');
             return '$faker->randomElement(\app\models\User::find()->select("id")->column())'; // TODO class and class namespace
         }
 

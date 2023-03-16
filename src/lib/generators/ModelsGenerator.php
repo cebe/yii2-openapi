@@ -77,6 +77,7 @@ class ModelsGenerator
                                 'model' => $model,
                                 'modelNamespace' => $this->config->modelNamespace,
                                 'namespace' => $this->config->fakerNamespace,
+                                'abc' => 'the-abc' // TODO remove
                             ]
                         )
                     ));
