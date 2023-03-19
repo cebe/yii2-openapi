@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib;
 
+use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\CustomSpecAttr;
 use cebe\yii2openapi\lib\exceptions\InvalidDefinitionException;
 use cebe\yii2openapi\lib\items\Attribute;
@@ -66,13 +67,16 @@ class AttributeResolver
      */
     private $junctions;
 
-    /**@var bool */
+    /** @var bool */
     private $isJunctionSchema;
 
-    /**@var bool */
+    /** @var bool */
     private $hasMany2Many;
 
-    public function __construct(string $schemaName, ComponentSchema $schema, JunctionSchemas $junctions)
+    /** @var Config */
+    private $config;
+
+    public function __construct(string $schemaName, ComponentSchema $schema, JunctionSchemas $junctions, ?Config $config = null)
     {
         $this->schemaName = $schemaName;
         $this->schema = $schema;
@@ -80,6 +84,7 @@ class AttributeResolver
         $this->junctions = $junctions;
         $this->isJunctionSchema = $junctions->isJunctionSchema($schemaName);
         $this->hasMany2Many = $junctions->hasMany2Many($schemaName);
+        $this->config = $config;
     }
 
     /**
@@ -391,7 +396,7 @@ class AttributeResolver
      */
     protected function guessFakerStub(Attribute $attribute, PropertySchema $property):?string
     {
-        $resolver = Yii::createObject(['class' => FakerStubResolver::class], [$attribute, $property]);
+        $resolver = Yii::createObject(['class' => FakerStubResolver::class], [$attribute, $property, $this->config]);
         return $resolver->resolve();
     }
 

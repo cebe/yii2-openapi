@@ -26,6 +26,8 @@ class RelationsInFakerTest extends DbTestCase
             'only' => ['*Faker.php'],
             'except' => ['BaseModelFaker.php'],
         ]);
+
+        // ----
         $modelsDependencies = [];
         foreach($fakers as $fakerFile) {
             $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php');

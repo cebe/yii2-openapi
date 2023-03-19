@@ -32,10 +32,14 @@ class FakerStubResolver
      */
     private $property;
 
-    public function __construct(Attribute $attribute, PropertySchema $property)
+    /** @var Config */
+    private $config;
+
+    public function __construct(Attribute $attribute, PropertySchema $property, ?Config $config = null)
     {
         $this->attribute = $attribute;
         $this->property = $property;
+        $this->config = $config;
     }
 
     public function resolve():?string
@@ -47,13 +51,10 @@ class FakerStubResolver
             return null;
         }
 
-        // VarDumper::dump('Property: '.$this->attribute->propertyName);
-        // VarDumper::dump('Column: '.$this->attribute->columnName);
-
         // column name ends with `_id`
         if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
-            // VarDumper::dump('Yes');
-            return '$faker->randomElement(\app\models\User::find()->select("id")->column())'; // TODO class and class namespace
+                return '$faker->randomElement(\\'.$this->config->modelNamespace
+                    .'\\'.ucfirst($this->attribute->propertyName).'::find()->select("id")->column())';
         }
 
         $limits = $this->attribute->limits;

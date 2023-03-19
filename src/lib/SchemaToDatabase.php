@@ -89,7 +89,7 @@ class SchemaToDatabase
                 $schemaName = $junctions->trimPrefix($schemaName);
             }
             /**@var \cebe\yii2openapi\lib\AttributeResolver $resolver */
-            $resolver = Yii::createObject(AttributeResolver::class, [$schemaName, $schema, $junctions]);
+            $resolver = Yii::createObject(AttributeResolver::class, [$schemaName, $schema, $junctions, $this->config]);
             $models[$schemaName] = $resolver->resolve();
         }
         foreach ($models as  $model) {
