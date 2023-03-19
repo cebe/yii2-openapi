@@ -27,10 +27,27 @@ class RelationsInFakerTest extends DbTestCase
             'except' => ['BaseModelFaker.php'],
         ]);
 
+        $finalSortedModels = static::sortModels($fakers);
+
+        $this->assertSame($finalSortedModels, [
+            'Account',
+            'C123',
+            'D123',
+            'B123',
+            'E123',
+            'Domain',
+            'A123',
+            'Routing',
+        ]);
+    }
+
+    // TODO faker namespace
+    public static function sortModels(array $fakers)
+    {
         // ----
         $modelsDependencies = [];
         foreach($fakers as $fakerFile) {
-            $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php');
+            $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php'); // TODO
             $faker = new $className;
 
             $modelClassName = str_replace(
@@ -64,7 +81,7 @@ class RelationsInFakerTest extends DbTestCase
                     if ($modelsDependencies[$dependentOn] !== null) {
                         // move $dependentOn before $model in clone
 
-                        // moveModel
+                        // move model to sort/order
                         // in that function if it is already before (sorted) then avoid it
                         static::moveModel($sortedDependentModels, $dependentOn, $model);
                     }
@@ -73,7 +90,7 @@ class RelationsInFakerTest extends DbTestCase
         }
 
         $finalSortedModels = array_merge(array_keys($standalone), $sortedDependentModels);
-        $this->assertNull($finalSortedModels);
+        return $finalSortedModels;
     }
 
     public static function moveModel(&$sortedDependentModels, $dependentOn, $model)
