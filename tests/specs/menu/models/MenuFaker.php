@@ -31,6 +31,7 @@ class MenuFaker extends BaseModelFaker
         $model = new Menu();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = substr($faker->text(100), 0, 100);
+        $model->parent_id = $faker->randomElement(\app\models\Menu::find()->select("id")->column());
         $model->args = [];
         $model->kwargs = [];
         if (!is_callable($attributes)) {
@@ -39,5 +40,14 @@ class MenuFaker extends BaseModelFaker
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Menu',
+
+        ];
     }
 }

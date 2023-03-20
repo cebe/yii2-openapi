@@ -27,6 +27,9 @@ class RelationsInFakerTest extends DbTestCase
             'except' => ['BaseModelFaker.php'],
         ]);
 
+        // TODO check file contents are same,
+        // check migrations too
+
         $finalSortedModels = static::sortModels($fakers);
 
         $this->assertSame($finalSortedModels, [
@@ -45,7 +48,7 @@ class RelationsInFakerTest extends DbTestCase
     {
         $modelsDependencies = [];
         foreach($fakers as $fakerFile) {
-            $className = $fakerNamespace . StringHelper::basename($fakerFile, '.php'); // TODO
+            $className = $fakerNamespace . StringHelper::basename($fakerFile, '.php');
             $faker = new $className;
 
             $modelClassName = str_replace(

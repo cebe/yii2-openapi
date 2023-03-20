@@ -29,9 +29,10 @@ class PetFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Pet();
+        $model = new \app\mymodels\Pet();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
+        $model->store_id = $faker->randomElement(\app\mymodels\Store::find()->select("id")->column());
         $model->tag = $faker->randomElement(['one', 'two', 'three', 'four']);
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
@@ -39,5 +40,14 @@ class PetFaker extends BaseModelFaker
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Store',
+
+        ];
     }
 }

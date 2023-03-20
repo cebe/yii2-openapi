@@ -29,7 +29,7 @@ class NewcolumnFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Newcolumn();
+        $model = new \app\models\mariamodel\Newcolumn();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = substr($faker->text(255), 0, 255);
         $model->last_name = $faker->sentence;

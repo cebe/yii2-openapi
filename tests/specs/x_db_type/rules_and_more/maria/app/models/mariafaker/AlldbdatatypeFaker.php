@@ -29,7 +29,7 @@ class AlldbdatatypeFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Alldbdatatype();
+        $model = new \app\models\mariamodel\Alldbdatatype();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->string_col = substr($faker->text(255), 0, 255);
         $model->varchar_col = substr($faker->text(132), 0, 132);

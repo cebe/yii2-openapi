@@ -29,7 +29,7 @@ class StoreFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Store();
+        $model = new \app\mymodels\Store();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
         if (!is_callable($attributes)) {
