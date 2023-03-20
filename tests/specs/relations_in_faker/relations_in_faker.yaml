@@ -163,3 +163,37 @@ paths:
     get:
       responses: []
       description: none
+
+
+
+# Dependencies:
+# 'E123' => [
+#     0 => 'B123'
+# ]
+# 'Account' => null
+# 'C123' => null
+# 'Domain' => [
+#     0 => 'Account'
+# ]
+# 'B123' => [
+#     0 => 'C123'
+# ]
+# 'Routing' => [
+#     0 => 'Domain'
+#     1 => 'D123'
+#     2 => 'A123'
+# ]
+# 'D123' => null
+# 'A123' => [
+#     0 => 'B123'
+# ]
+
+# Sorted:
+# 'Account',
+# 'C123',
+# 'D123',
+# 'B123',
+# 'E123',
+# 'Domain',
+# 'A123',
+# 'Routing',

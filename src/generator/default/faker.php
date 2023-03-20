@@ -43,7 +43,7 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new <?= $model->getClassName() ?>();
+        $model = new <?= $modelClass ?>();
 <?php foreach ($model->attributes as $attribute):
         if (!$attribute->fakerStub /*|| $attribute->isReference()*/) {
             continue;

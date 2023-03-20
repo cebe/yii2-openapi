@@ -10,4 +10,6 @@ return [
     'generateControllers' => false,
     'generateMigrations' => true,
     'generateModelFaker' => true,
+    'modelNamespace' => 'app\\models',
+    'fakerNamespace' => 'app\\models\\fakers',
 ];

@@ -22,7 +22,7 @@ class RelationsInFakerTest extends DbTestCase
         $testFile = Yii::getAlias("@specs/relations_in_faker/relations_in_faker.php");
         $this->runGenerator($testFile, 'mysql');
 
-        $fakers = FileHelper::findFiles(\Yii::getAlias('@app/models'), [
+        $fakers = FileHelper::findFiles(\Yii::getAlias('@app/models/fakers'), [
             'only' => ['*Faker.php'],
             'except' => ['BaseModelFaker.php'],
         ]);
@@ -41,13 +41,11 @@ class RelationsInFakerTest extends DbTestCase
         ]);
     }
 
-    // TODO faker namespace
-    public static function sortModels(array $fakers)
+    public static function sortModels(array $fakers, string $fakerNamespace = 'app\\models\\fakers\\')
     {
-        // ----
         $modelsDependencies = [];
         foreach($fakers as $fakerFile) {
-            $className = 'app\\models\\' . StringHelper::basename($fakerFile, '.php'); // TODO
+            $className = $fakerNamespace . StringHelper::basename($fakerFile, '.php'); // TODO
             $faker = new $className;
 
             $modelClassName = str_replace(
@@ -74,12 +72,11 @@ class RelationsInFakerTest extends DbTestCase
         $justDepenentModels = array_keys($dependent);
         $sortedDependentModels = $justDepenentModels;
 
-
         foreach ($justDepenentModels as $model) {
             if ($modelsDependencies[$model] !== null) {
                 foreach ($modelsDependencies[$model] as $dependentOn) {
                     if ($modelsDependencies[$dependentOn] !== null) {
-                        // move $dependentOn before $model in clone
+                        // move $dependentOn before $model
 
                         // move model to sort/order
                         // in that function if it is already before (sorted) then avoid it
