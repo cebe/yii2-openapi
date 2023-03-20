@@ -20,15 +20,14 @@ class RelationsInFakerTest extends DbTestCase
     public function testIndex()
     {
         $testFile = Yii::getAlias("@specs/relations_in_faker/relations_in_faker.php");
+        $testFileConfig = require $testFile;
+
         $this->runGenerator($testFile, 'mysql');
 
         $fakers = FileHelper::findFiles(\Yii::getAlias('@app/models/fakers'), [
             'only' => ['*Faker.php'],
             'except' => ['BaseModelFaker.php'],
         ]);
-
-        // TODO check file contents are same,
-        // check migrations too
 
         $finalSortedModels = static::sortModels($fakers);
 
@@ -42,6 +41,17 @@ class RelationsInFakerTest extends DbTestCase
             'A123',
             'Routing',
         ]);
+
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/relations_in_faker/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runUpMigrations('mysql', 8);
+        Yii::$app->db->schema->refresh();
+        $this->runDownMigrations('mysql', 8);
     }
 
     public static function sortModels(array $fakers, string $fakerNamespace = 'app\\models\\fakers\\')

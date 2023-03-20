@@ -4,6 +4,7 @@ namespace tests;
 
 use cebe\yii2openapi\generator\ApiGenerator;
 use Yii;
+use tests\unit\RelationsInFakerTest;
 use yii\di\Container;
 use yii\db\mysql\Schema as MySqlSchema;
 use yii\db\pgsql\Schema as PgSqlSchema;
@@ -111,18 +112,30 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         $this->runDownMigrations($db, $number);
     }
 
-    protected function runFaker()
+    protected function runFaker(?string $fakerNamespace = null)
     {
         $fakers = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
             'only' => ['*Faker.php'],
             'except' => ['BaseModelFaker.php'],
         ]);
-        foreach($fakers as $fakerFile) {
+
+        if ($fakerNamespace) {
+            $fakerNamespace .= '\\';
+        }
+
+        $sortedFakersModels = RelationsInFakerTest::sortModels($fakers, $fakerNamespace);
+
+        foreach($sortedFakersModels as $justModelName) {
             $className = 'app\\models\\' .
                 (ApiGenerator::isPostgres() ? "pgsqlfaker\\" : '') .
                 (ApiGenerator::isMariaDb() ? "mariafaker\\" : '') .
-                StringHelper::basename($fakerFile, '.php');
+                StringHelper::basename($justModelName, '.php');
+
+            if (!empty($fakerNamespace)) {
+                $className = $fakerNamespace .'\\'. StringHelper::basename($justModelName, '.php').'Faker';
+            }
+
             $faker = new $className;
             for($i = 0; $i < 10; $i++) {
                 $model = $faker->generateModel();
