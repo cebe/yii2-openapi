@@ -68,7 +68,7 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
     {
         return [
             // just model class names
-<?php foreach($model->hasOneRelations as $key => $hasOneRelation): ?>
+<?php foreach ($model->hasOneRelations as $key => $hasOneRelation): ?>
             <?php echo \yii\helpers\VarDumper::export($model->hasOneRelations[$key]->getClassName()).','.PHP_EOL ?>
 <?php endforeach; ?>
 
