@@ -38,6 +38,10 @@ class GeneratorTest extends DbTestCase
         $this->mockApplication();
         // $this->mockApplication($this->mockDbSchemaAsEmpty());
 
+        // if ($testFile !== '/app/tests/specs/petstore.php') {
+        //     return;
+        // }
+
         if ($testFile === '/app/tests/specs/postgres_custom.php' ||
             $testFile === '/app/tests/specs/menu.php'
         ) { // TODO docs + add separate tests for this + refactor tests
@@ -95,6 +99,7 @@ class GeneratorTest extends DbTestCase
             $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
             $this->assertFileExists($expectedFile);
             $this->assertFileExists($actualFile);
+            // exec('cp '.$actualFile.' '.$expectedFile);
             $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
         }
 

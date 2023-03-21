@@ -29,7 +29,7 @@ class AlldbdatatypeFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Alldbdatatype();
+        $model = new \app\models\pgsqlmodel\Alldbdatatype();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->string_col = $faker->sentence;
         $model->varchar_col = $faker->sentence;

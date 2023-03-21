@@ -29,7 +29,7 @@ class NewcolumnFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Newcolumn();
+        $model = new \app\models\pgsqlmodel\Newcolumn();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
         $model->first_name = $faker->sentence;

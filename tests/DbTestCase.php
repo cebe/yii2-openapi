@@ -101,7 +101,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
             self::assertFileExists($file);
             self::assertFileExists($expectedFilePath);
 
-            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath");
+            $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath \n\n cp $file $expectedFilePath \n\n ");
         }
     }
 

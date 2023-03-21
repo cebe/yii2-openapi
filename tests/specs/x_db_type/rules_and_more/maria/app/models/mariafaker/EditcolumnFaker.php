@@ -29,7 +29,7 @@ class EditcolumnFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Editcolumn();
+        $model = new \app\models\mariamodel\Editcolumn();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = substr($faker->text(254), 0, 254);
         $model->tag = $faker->sentence;

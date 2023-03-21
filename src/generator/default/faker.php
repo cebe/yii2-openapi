@@ -43,9 +43,9 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new <?= $model->getClassName() ?>();
+        $model = new <?= $modelClass ?>();
 <?php foreach ($model->attributes as $attribute):
-        if (!$attribute->fakerStub || $attribute->isReference()) {
+        if (!$attribute->fakerStub /*|| $attribute->isReference()*/) {
             continue;
         }
         ?>
@@ -62,4 +62,17 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
         }
         return $model;
     }
+<?php if ($model->hasOneRelations):?>
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+<?php foreach ($model->hasOneRelations as $key => $hasOneRelation): ?>
+            <?php echo \yii\helpers\VarDumper::export($model->hasOneRelations[$key]->getClassName()).','.PHP_EOL ?>
+<?php endforeach; ?>
+
+        ];
+    }
+<?php endif;?>
 }

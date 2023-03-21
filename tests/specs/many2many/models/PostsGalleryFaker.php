@@ -29,6 +29,8 @@ class PostsGalleryFaker extends BaseModelFaker
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
         $model = new PostsGallery();
+        $model->image_id = $faker->randomElement(\app\models\Photo::find()->select("id")->column());
+        $model->article_id = $faker->randomElement(\app\models\Post::find()->select("id")->column());
         $model->is_cover = $faker->boolean;
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
@@ -36,5 +38,15 @@ class PostsGalleryFaker extends BaseModelFaker
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Photo',
+            'Post',
+
+        ];
     }
 }

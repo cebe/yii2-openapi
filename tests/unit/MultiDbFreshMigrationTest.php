@@ -96,7 +96,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
             self::assertFileExists($expectedFile);
             self::assertFileExists($actualFile);
-            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
+            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile\n\n cp $actualFile $expectedFile \n\n ");
         }
     }
 
