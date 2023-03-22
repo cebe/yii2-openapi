@@ -10,9 +10,12 @@ namespace cebe\yii2openapi\lib\items;
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
 use function reset;
+use cebe\yii2openapi\lib\traits\ForeignKeyConstraints;
 
 class AttributeRelation
 {
+    use ForeignKeyConstraints;
+
     public const HAS_ONE = 'hasOne';
     public const HAS_MANY = 'hasMany';
 

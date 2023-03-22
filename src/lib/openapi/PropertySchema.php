@@ -29,9 +29,12 @@ use yii\helpers\StringHelper;
 use yii\helpers\VarDumper;
 use function is_int;
 use function strpos;
+use cebe\yii2openapi\lib\traits\ForeignKeyConstraints;
 
 class PropertySchema
 {
+    use ForeignKeyConstraints;
+
     public const REFERENCE_PATH = '/components/schemas/';
     public const REFERENCE_PATH_LEN = 20;
 
@@ -40,22 +43,22 @@ class PropertySchema
      */
     private $property;
 
-    /**@var string* */
+    /** @var string* */
     private $name;
 
-    /**@var bool $isReference * */
+    /** @var bool $isReference * */
     private $isReference = false;
 
-    /**@var bool $isItemsReference * */
+    /** @var bool $isItemsReference * */
     private $isItemsReference = false;
 
-    /**@var bool $isNonDbReference * */
+    /** @var bool $isNonDbReference * */
     private $isNonDbReference = false;
 
-    /**@var string $refPointer * */
+    /** @var string $refPointer */
     private $refPointer;
 
-    /**@var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema * */
+    /** @var \cebe\yii2openapi\lib\openapi\ComponentSchema $refSchema */
     private $refSchema;
 
     /**
@@ -81,6 +84,29 @@ class PropertySchema
         $this->property = $property;
         $this->schema = $schema;
         $this->isPk = $name === $schema->getPkName();
+
+        $onUpdate = $onDelete = $reference = null;
+
+        foreach ($property->allOf ?? [] as $element) {
+            if (!empty($element->{CustomSpecAttr::FK_ON_UPDATE})) {
+                $onUpdate = $element->{CustomSpecAttr::FK_ON_UPDATE};
+            }
+            if (!empty($element->{CustomSpecAttr::FK_ON_DELETE})) {
+                $onDelete = $element->{CustomSpecAttr::FK_ON_DELETE};
+            }
+            if ($element instanceof Reference) {
+                $reference = $element;
+            }
+        }
+        if (
+            ($onUpdate !== null || $onDelete !== null) &&
+            ($reference instanceof Reference)
+        ) {
+            $this->onUpdateFkConstraint = $onUpdate;
+            $this->onDeleteFkConstraint = $onDelete;
+            $this->property = $reference;
+            $property = $this->property;
+        }
 
         if ($property instanceof Reference) {
             $this->initReference();

@@ -29,7 +29,7 @@ class PristineFaker extends BaseModelFaker
     {
         $faker = $this->faker;
         $uniqueFaker = $this->uniqueFaker;
-        $model = new Pristine();
+        $model = new \app\models\pgsqlmodel\Pristine();
         $model->custom_id_col = $faker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
         $model->tag = $faker->sentence;

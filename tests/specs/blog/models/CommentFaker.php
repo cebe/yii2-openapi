@@ -30,6 +30,8 @@ class CommentFaker extends BaseModelFaker
         $uniqueFaker = $this->uniqueFaker;
         $model = new Comment();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
+        $model->post_id = $faker->randomElement(\app\models\Post::find()->select("id")->column());
+        $model->author_id = $faker->randomElement(\app\models\User::find()->select("id")->column());
         $model->message = [];
         $model->meta_data = [];
         $model->created_at = $faker->unixTime;
@@ -39,5 +41,15 @@ class CommentFaker extends BaseModelFaker
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Post',
+            'User',
+
+        ];
     }
 }

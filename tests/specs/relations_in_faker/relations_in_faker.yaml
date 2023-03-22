@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: 'Proxy-Service'
+  description: ""
+  version: 1.0.0
+  contact:
+    name: 'Carsten Brandt'
+    email: cb@cebe.cloud
+servers:
+  - url: 'http://localhost:8937'
+    description: 'Local Dev API'
+security:
+  - BasicAuth: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Account:
+      description: user account
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          description: account name
+          type: string
+          maxLength: 40
+          x-faker: 'substr($faker->userName(), 0, 40)'
+
+    Domain:
+      description: domain
+      type: object
+      required:
+        - id
+        - name
+        - account
+        - created_at
+      properties:
+        id:
+          type: integer
+        name:
+          description: domain or sub-domain name, in DNS syntax, IDN are converted
+          type: string
+          maxLength: 128
+          x-faker: '$faker->domainName'
+        account:
+          $ref: '#/components/schemas/Account'
+
+        routings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Routing'
+
+        created_at:
+          readOnly: true
+          type: string
+          format: datetime
+          x-db-type: datetime
+          nullable: false
+
+    Routing:
+      description: rounting specification
+      type: object
+      required:
+        - id
+        - domain
+      properties:
+        id:
+          type: integer
+        domain:
+          $ref: '#/components/schemas/Domain'
+        path:
+          type: string
+          maxLength: 255
+          x-faker: '$faker->randomElement(["/", "/", "/", "/", "/api", "/tools", "/assets/web"])'
+
+        ssl:
+          type: boolean
+        redirect_to_ssl:
+          type: boolean
+
+        service:
+          type: string
+          maxLength: 255
+          x-faker: '"http://tador.cebe.net/" . $faker->domainName'
+
+        created_at:
+          readOnly: true
+          type: string
+          format: datetime
+          x-db-type: datetime
+          nullable: true
+        d123:
+          $ref: '#/components/schemas/D123'
+        a123:
+          $ref: '#/components/schemas/A123'
+
+    D123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    A123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        b123:
+          $ref: '#/components/schemas/B123'
+    B123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        c123:
+          $ref: '#/components/schemas/C123'
+    C123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    E123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        b123:
+          $ref: '#/components/schemas/B123'
+
+
+paths:
+  /:
+    get:
+      responses: []
+      description: none
+
+
+
+# Dependencies:
+# 'E123' => [
+#     0 => 'B123'
+# ]
+# 'Account' => null
+# 'C123' => null
+# 'Domain' => [
+#     0 => 'Account'
+# ]
+# 'B123' => [
+#     0 => 'C123'
+# ]
+# 'Routing' => [
+#     0 => 'Domain'
+#     1 => 'D123'
+#     2 => 'A123'
+# ]
+# 'D123' => null
+# 'A123' => [
+#     0 => 'B123'
+# ]
+
+# Sorted:
+# 'Account',
+# 'C123',
+# 'D123',
+# 'B123',
+# 'E123',
+# 'Domain',
+# 'A123',
+# 'Routing',

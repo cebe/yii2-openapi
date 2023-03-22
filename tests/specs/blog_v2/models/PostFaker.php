@@ -33,13 +33,25 @@ class PostFaker extends BaseModelFaker
         $model->title = substr($faker->sentence, 0, 255);
         $model->slug = substr($uniqueFaker->slug, 0, 200);
         $model->lang = $faker->randomElement(['ru','eng']);
+        $model->category_id = $faker->randomElement(\app\models\Category::find()->select("id")->column());
         $model->active = $faker->boolean;
         $model->created_at = $faker->dateTimeThisCentury->format('Y-m-d');
+        $model->created_by_id = $faker->randomElement(\app\models\User::find()->select("id")->column());
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Category',
+            'User',
+
+        ];
     }
 }

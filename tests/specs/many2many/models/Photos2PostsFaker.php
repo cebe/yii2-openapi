@@ -30,11 +30,23 @@ class Photos2PostsFaker extends BaseModelFaker
         $uniqueFaker = $this->uniqueFaker;
         $model = new Photos2Posts();
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
+        $model->photo_id = $faker->randomElement(\app\models\Photo::find()->select("id")->column());
+        $model->post_id = $faker->randomElement(\app\models\Post::find()->select("id")->column());
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {
             $model = $attributes($model, $faker, $uniqueFaker);
         }
         return $model;
+    }
+
+    public static function dependentOn()
+    {
+        return [
+            // just model class names
+            'Photo',
+            'Post',
+
+        ];
     }
 }

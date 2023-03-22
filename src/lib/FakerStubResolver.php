@@ -32,10 +32,14 @@ class FakerStubResolver
      */
     private $property;
 
-    public function __construct(Attribute $attribute, PropertySchema $property)
+    /** @var Config */
+    private $config;
+
+    public function __construct(Attribute $attribute, PropertySchema $property, ?Config $config = null)
     {
         $this->attribute = $attribute;
         $this->property = $property;
+        $this->config = $config;
     }
 
     public function resolve():?string
@@ -46,6 +50,14 @@ class FakerStubResolver
         if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {
             return null;
         }
+
+        // column name ends with `_id`
+        if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
+            return '$faker->randomElement(\\'.$this->config->modelNamespace
+                    . ($this->config->modelNamespace ? '\\' : '')
+                    . ucfirst($this->attribute->reference).'::find()->select("id")->column())';
+        }
+
         $limits = $this->attribute->limits;
         switch ($this->attribute->phpType) {
             case 'bool':
