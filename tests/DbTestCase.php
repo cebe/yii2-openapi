@@ -113,6 +113,8 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
 
     protected function runFaker()
     {
+        // $this->assertSame(1, 1);
+        // return;
         $fakers = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
             'only' => ['*Faker.php'],
@@ -137,6 +139,8 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
 
     protected function runUpMigrations(string $db = 'mysql', int $number = 2): void
     {
+        // $this->assertSame(1, 1);
+        // return;
         // up
         exec('cd tests; ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
         $last = count($upOutput) - 1;
@@ -150,6 +154,8 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
 
     protected function runDownMigrations(string $db = 'mysql', int $number = 2): void
     {
+        // $this->assertSame(1, 1);
+        // return;
         // down
         exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
         $last = count($downOutput) - 1;

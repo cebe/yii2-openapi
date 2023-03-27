@@ -323,12 +323,15 @@ abstract class BaseMigrationBuilder
     {
         $tableAlias = $this->model->getTableAlias();
         $existedRelations = [];
+        // VarDumper::dump($this->tableSchema->foreignKeys);
         foreach ($this->tableSchema->foreignKeys as $fkName => $relation) {
             $refTable = $this->unPrefixTableName(array_shift($relation));
             $refCol = array_keys($relation)[0];
             $fkCol = $relation[$refCol];
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
+
+        // VarDumper::dump($this->model->getHasOneRelations());
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
@@ -345,6 +348,7 @@ abstract class BaseMigrationBuilder
                 $this->migration->dependencies[] = $refTable;
             }
         }
+        // VarDumper::dump($existedRelations);
         foreach ($existedRelations as $fkName => $relation) {
             ['fkCol' => $fkCol, 'refCol' => $refCol, 'refTable' => $refTable] = $relation;
             $this->migration
