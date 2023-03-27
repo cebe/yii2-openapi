@@ -50,6 +50,9 @@ class Attribute extends BaseObject
      */
     public $columnName;
 
+    // TODO docs
+    public $foreignKeyColumnName;
+
     /**
      * should be one of \yii\db\Schema types or complete db column definition
      * @var string
@@ -197,6 +200,14 @@ class Attribute extends BaseObject
         return $this;
     }
 
+    public function setForeignKeyColumnName(?string $name):Attribute
+    {
+        if ($name) {
+            $this->foreignKeyColumnName = $name;
+        }
+        return $this;
+    }
+
     /**
      * @param int|float|null $min
      * @param int|float|null $max
@@ -231,7 +242,9 @@ class Attribute extends BaseObject
     public function asReference(string $relatedClass):Attribute
     {
         $this->reference = $relatedClass;
-        $this->columnName = $this->propertyName . '_id';
+        $this->columnName = $this->foreignKeyColumnName ?
+            $this->foreignKeyColumnName :
+            $this->propertyName . '_id';
         return $this;
     }
 

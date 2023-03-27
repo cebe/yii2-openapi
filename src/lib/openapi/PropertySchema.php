@@ -39,6 +39,15 @@ class PropertySchema
     public const REFERENCE_PATH_LEN = 20;
 
     /**
+     * @var string
+     * Contains foreign key column name
+     * @example 'redelivery_of'
+     * See usage docs in README for more info
+     * // TODO make name consistent somewhere it is fkColName and somewhere it is foreignKeyColumnName
+     */
+    public $fkColName;
+
+    /**
      * @var \cebe\openapi\SpecObjectInterface
      */
     private $property;
@@ -85,9 +94,10 @@ class PropertySchema
         $this->schema = $schema;
         $this->isPk = $name === $schema->getPkName();
 
-        $onUpdate = $onDelete = $reference = null;
+        $onUpdate = $onDelete = $reference = $fkColName = null;
 
         foreach ($property->allOf ?? [] as $element) {
+            // x-fk-on-delete | x-fk-on-update
             if (!empty($element->{CustomSpecAttr::FK_ON_UPDATE})) {
                 $onUpdate = $element->{CustomSpecAttr::FK_ON_UPDATE};
             }
@@ -97,13 +107,26 @@ class PropertySchema
             if ($element instanceof Reference) {
                 $reference = $element;
             }
+
+            // x-fk-column-name
+            if (!empty($element->{CustomSpecAttr::FK_COLUMN_NAME})) {
+                $fkColName = $element->{CustomSpecAttr::FK_COLUMN_NAME};
+            }
         }
+
         if (
             ($onUpdate !== null || $onDelete !== null) &&
             ($reference instanceof Reference)
         ) {
             $this->onUpdateFkConstraint = $onUpdate;
             $this->onDeleteFkConstraint = $onDelete;
+            $this->property = $reference;
+            $property = $this->property;
+        } elseif (
+            ($fkColName !== null) &&
+            ($reference instanceof Reference)
+        ) {
+            $this->fkColName = $fkColName;
             $this->property = $reference;
             $property = $this->property;
         }

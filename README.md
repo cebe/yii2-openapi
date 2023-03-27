@@ -249,6 +249,30 @@ Allow to set foreign key constraint in migrations for ON DELETE event of row in 
 
 Allow to set foreign key constraint in migrations for ON UPDATE event of row in database table. For example, see above section for `x-fk-on-delete`.
 
+### `x-fk-column-name`
+
+Provide custom column name in case of relationship column. Example:
+
+```yaml
+  components:
+    schemas:
+      Webhook:
+        type: object
+        description: example for x-fk-column-name
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          user:
+            $ref: '../openapi.yaml#/components/schemas/User' # this will automatically create `user_id` column
+          redelivery_of:
+            allOf:
+              - $ref: '../openapi.yaml#/components/schemas/Delivery'
+              # this will automatically create `redelivery_of_id` column, but to avoid that use below extension
+              - x-fk-column-name: redelivery_of # this will create `redelivery_of` column instead of `redelivery_of_id`
+```
+
 ## Many-to-Many relation definition
 
 There are two ways for define many-to-many relations:
