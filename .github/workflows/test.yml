@@ -24,7 +24,7 @@ jobs:
 
     # TODO use cache
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set PHP Version
         run: echo "PHP_VERSION=${{ matrix.php-versions }}" > .env
@@ -49,6 +49,7 @@ jobs:
         run: make UID=0 migrate
 
       - name: Check style
+        if: "!contains(matrix.php-versions, '8.')"
         run: make check-style-from-host
 
       - name: Run tests

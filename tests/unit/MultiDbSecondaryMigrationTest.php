@@ -99,17 +99,6 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         }
     }
 
-    protected function compareFiles(array $expected, string $testFile)
-    {
-        foreach ($expected as $file) {
-            $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
-            $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
-            self::assertFileExists($expectedFile);
-            self::assertFileExists($actualFile);
-            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
-        }
-    }
-
     protected function findActualFiles():array
     {
         $actualFiles =  array_map(function($file) {

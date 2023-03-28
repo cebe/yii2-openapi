@@ -31,6 +31,7 @@
 		"cebe/indent": "*",
 		"friendsofphp/php-cs-fixer": "~2.16",
 		"phpunit/phpunit": "^8.0",
+		"symfony/polyfill-php80": "^1.16",
 		"yiisoft/yii2-gii": ">=2.1.0"
 	},
 	"autoload": {

@@ -94,14 +94,7 @@ class GeneratorTest extends DbTestCase
         sort($actualFiles);
         $this->assertEquals($expectedFiles, $actualFiles);
 
-        foreach ($expectedFiles as $file) {
-            $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
-            $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
-            $this->assertFileExists($expectedFile);
-            $this->assertFileExists($actualFile);
-            // exec('cp '.$actualFile.' '.$expectedFile);
-            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
-        }
+        $this->compareFiles($actualFiles, $testFile);
 
         if ($testFile === '/app/tests/specs/postgres_custom.php' ||
             $testFile === '/app/tests/specs/menu.php'
