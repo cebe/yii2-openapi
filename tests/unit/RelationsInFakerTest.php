@@ -111,8 +111,9 @@ class RelationsInFakerTest extends DbTestCase
                 }
             }
         }
-
-        $finalSortedModels = array_merge(array_keys($standalone), $sortedDependentModels);
+        $standalone = array_keys($standalone);
+        sort($standalone);
+        $finalSortedModels = array_merge($standalone, $sortedDependentModels);
         return $finalSortedModels;
     }
 
