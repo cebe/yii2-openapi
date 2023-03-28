@@ -26,10 +26,11 @@ components:
           type: string
     Delivery:
       x-table: deliveries
-      x-pk: uid
+      required:
+        - id
       properties:
-        uid:
-           type: string
+        id:
+           type: integer
         title:
            type: string
     Webhook:

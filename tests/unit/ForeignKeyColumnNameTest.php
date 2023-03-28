@@ -28,6 +28,6 @@ class ForeignKeyColumnNameTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 3); // TODO
+        $this->runActualMigrations('mysql', 3);
     }
 }

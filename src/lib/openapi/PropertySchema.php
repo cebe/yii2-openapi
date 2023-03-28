@@ -43,7 +43,6 @@ class PropertySchema
      * Contains foreign key column name
      * @example 'redelivery_of'
      * See usage docs in README for more info
-     * // TODO make name consistent somewhere it is fkColName and somewhere it is foreignKeyColumnName
      */
     public $fkColName;
 
