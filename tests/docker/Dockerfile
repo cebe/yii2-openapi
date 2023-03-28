@@ -33,7 +33,7 @@ RUN apt-get update && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
         # https://xdebug.org/docs/compat \
-        && if [ "$PHP_VERSION" = "8.2" ] ; then pecl install xdebug else pecl install xdebug-3.1.5 fi \
+        && if [ "$PHP_VERSION" = "8.2" ] ; then pecl install xdebug ; else pecl install xdebug-3.1.5 ; fi \
         && docker-php-ext-enable xdebug \
         && docker-php-ext-install \
                 zip \
