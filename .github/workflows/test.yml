@@ -1,9 +1,9 @@
 name: yii2-openapi
 on:
   push:
-    branches: [ master, wip]
+    branches: [ master ]
   pull_request:
-    branches: [ master, wip ]
+    branches: [ master ]
     paths-ignore:
       - 'docs/**'
       - '*.md'

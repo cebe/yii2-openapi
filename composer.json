@@ -30,7 +30,7 @@
 	"require-dev": {
 		"cebe/indent": "*",
 		"friendsofphp/php-cs-fixer": "~2.16",
-		"phpunit/phpunit": "^6.5|^8.0|^9.0",
+		"phpunit/phpunit": "^8.0",
 		"yiisoft/yii2-gii": ">=2.1.0"
 	},
 	"autoload": {

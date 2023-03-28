@@ -35,7 +35,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         Yii::$container = new Container();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (getenv('IN_DOCKER') !== 'docker') {
             $this->markTestSkipped('For docker env only');
@@ -45,7 +45,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         parent::setUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (getenv('IN_DOCKER') === 'docker') {

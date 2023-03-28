@@ -67,7 +67,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $this->compareFiles($expectedFiles, $testFile);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (getenv('IN_DOCKER') !== 'docker') {
             $this->markTestSkipped('For docker env only');
@@ -77,7 +77,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         parent::setUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (getenv('IN_DOCKER') === 'docker') {
