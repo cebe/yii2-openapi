@@ -6,7 +6,7 @@ services:
             dockerfile: tests/docker/Dockerfile
             context: .
             args:
-              - PHP_VERSION=${PHP_VERSION:-7.4}
+              - BUILD_PHP_VERSION=${PHP_VERSION:-7.4}
         extra_hosts: # https://stackoverflow.com/a/67158212/1106908
             - "host.docker.internal:host-gateway"
         volumes:

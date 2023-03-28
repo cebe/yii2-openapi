@@ -1,6 +1,8 @@
-ARG PHP_VERSION
+ARG BUILD_PHP_VERSION
 #FROM php:7.1-cli
-FROM php:$PHP_VERSION-cli
+FROM php:$BUILD_PHP_VERSION-cli
+# ARG is lost after FROM, so we need to specify it again https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+ARG BUILD_PHP_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -33,7 +35,7 @@ RUN apt-get update && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
         # https://xdebug.org/docs/compat \
-        && if [ "$PHP_VERSION" = "8.2" ] ; then pecl install xdebug ; else pecl install xdebug-3.1.5 ; fi \
+        && if [ "$BUILD_PHP_VERSION" = "8.2" ] ; then pecl install xdebug ; else pecl install xdebug-3.1.5 ; fi \
         && docker-php-ext-enable xdebug \
         && docker-php-ext-install \
                 zip \
