@@ -51,6 +51,14 @@ class Attribute extends BaseObject
     public $columnName;
 
     /**
+     * @var string
+     * Contains foreign key column name
+     * @example 'redelivery_of'
+     * See usage docs in README for more info
+     */
+    public $fkColName;
+
+    /**
      * should be one of \yii\db\Schema types or complete db column definition
      * @var string
      */
@@ -197,6 +205,14 @@ class Attribute extends BaseObject
         return $this;
     }
 
+    public function setForeignKeyColumnName(?string $name):Attribute
+    {
+        if ($name) {
+            $this->fkColName = $name;
+        }
+        return $this;
+    }
+
     /**
      * @param int|float|null $min
      * @param int|float|null $max
@@ -231,7 +247,9 @@ class Attribute extends BaseObject
     public function asReference(string $relatedClass):Attribute
     {
         $this->reference = $relatedClass;
-        $this->columnName = $this->propertyName . '_id';
+        $this->columnName = $this->fkColName ?
+            $this->fkColName :
+            $this->propertyName . '_id';
         return $this;
     }
 

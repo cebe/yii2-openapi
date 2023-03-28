@@ -141,7 +141,8 @@ class AttributeResolver
                       ->setIsPrimary($property->isPrimaryKey())
                       ->asReference($junkAttribute['relatedClassName'])
                       ->setPhpType($junkAttribute['phpType'])
-                      ->setDbType($junkAttribute['dbType']);
+                      ->setDbType($junkAttribute['dbType'])
+                      ->setForeignKeyColumnName($property->fkColName);
             $relation = Yii::createObject(AttributeRelation::class, [
                 $property->getName(),
                 $junkAttribute['relatedTableName'],
@@ -214,7 +215,8 @@ class AttributeResolver
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
                   ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
-                  ->setIsPrimary($property->isPrimaryKey());
+                  ->setIsPrimary($property->isPrimaryKey())
+                  ->setForeignKeyColumnName($property->fkColName);
         if ($property->isReference()) {
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
