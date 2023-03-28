@@ -66,7 +66,6 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
 
 
-
         // $this->runDownMigrations('mysql', 3);
         // Yii::$app->db->schema->refresh();
         // $this->runUpMigrations('mysql', 3);
@@ -78,13 +77,15 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         //     ->queryAll();
         // $this->assertTrue($res);
 
-        // $db = 'mysql';
+        $db = 'mysql';
 
         // exec('cd tests; ./yii migrate-'.$db.'/down all --interactive=0 '.$number, $downOutput, $downExitCode);
         // VarDumper::dump($downOutput);
 
         // exec('cd tests; ./yii migrate-'.$db.' --interactive=0 ', $upOutput, $upExitCode);
         // VarDumper::dump($upOutput);
+        // Yii::$app->db->createCommand('DROP DATABASE testdb')->execute();
+        // exec('cd tests; ./yii migrate-'.$db.' --interactive=0 ', $upOutput, $upExitCode);
         // return;
 
         $testFile = Yii::getAlias('@specs/blog_v2.php');

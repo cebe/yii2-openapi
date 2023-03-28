@@ -15,6 +15,8 @@ class m100000_000000_mysql extends Migration
 
     public function up()
     {
+        // $this->execute('DROP DATABASE testdb');
+        // $this->execute('CREATE DATABASE testdb');
         $this->dropTableIfExists('{{%v2_fakerable}}');
         $this->dropTableIfExists('{{%v2_comments}}');
         $this->dropTableIfExists('{{%v2_posts}}');
@@ -130,6 +132,7 @@ class m100000_000000_mysql extends Migration
         $this->dropTable('{{%v2_users}}');
         $this->dropTable('{{%v2_categories}}');
         $this->dropTable('{{%default_sizes}}');
+        // $this->execute('DROP DATABASE testdb');
     }
 
     private function dropTableIfExists(string $table)
