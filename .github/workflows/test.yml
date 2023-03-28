@@ -46,10 +46,10 @@ jobs:
         run: docker-compose exec php php -v && make installdocker
 
       - name: Migrate
-        run: make migrate
+        run: make UID=0 migrate
 
       - name: Check style
         run: make check-style-from-host
 
       - name: Run tests
-        run: make testdocker
+        run: make UID=0 testdocker
