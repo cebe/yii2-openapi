@@ -20,11 +20,14 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['7.1', '7.2', '7.3', '7.4']
+        php-versions: ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2']
 
     # TODO use cache
     steps:
       - uses: actions/checkout@v2
+
+      - name: Set PHP Version
+        run: echo "PHP_VERSION=${{ matrix.php-versions }}" > .env
 
       # Run every tests inside Docker container
       - name: Docker Compose Setup
@@ -40,7 +43,7 @@ jobs:
         run: make up
 
       - name: Install Docker and composer dependencies
-        run: make installdocker
+        run: docker-compose exec php php -v && make installdocker
 
       - name: Migrate
         run: make migrate

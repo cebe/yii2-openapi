@@ -29,6 +29,9 @@ clean:
 	sudo rm -rf tests/tmp/app/*
 	sudo rm -rf tests/tmp/docker_app/*
 
+down:
+	docker-compose down --remove-orphans
+
 up:
 	docker-compose up -d
 	echo "Waiting for mariadb to start up..."
@@ -54,7 +57,7 @@ testdocker:
 
 efs: clean_all up migrate # Everything From Scratch
 
-.PHONY: all check-style fix-style install test clean clean_all up cli installdocker migrate testdocker efs
+.PHONY: all check-style fix-style install test clean clean_all up down cli installdocker migrate testdocker efs
 
 
 # Docs:
