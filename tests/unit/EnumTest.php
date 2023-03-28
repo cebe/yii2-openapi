@@ -31,6 +31,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 3);
+        $this->deleteTables();
 
         $this->changeDbToMariadb();
         $this->deleteTables();
@@ -45,6 +46,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 3);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $this->deleteTables();
@@ -59,6 +61,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 3);
+        $this->deleteTables();
     }
 
     public function testAddNewColumn() // and drop enum column
@@ -77,6 +80,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 3);
+        $this->deleteTables();
 
         // Mariadb
         $this->changeDbToMariadb();
@@ -93,6 +97,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 3);
+        $this->deleteTables();
 
         // Pgsql
         $this->changeDbToPgsql();
@@ -109,6 +114,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 3);
+        $this->deleteTables();
     }
 
     public function testChangeToAndFromEnum() // edit enum to string and vice versa
@@ -126,6 +132,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 3);
+        $this->deleteTables();
 
         // Mariadb
         $this->changeDbToMariadb();
@@ -142,7 +149,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 3);
-
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $this->deleteTables();
@@ -158,6 +165,7 @@ class EnumTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 3);
+        $this->deleteTables();
     }
 
     // TODO ENH enum change is more work than just changing the eunm values. And for PgSQL it is even more
