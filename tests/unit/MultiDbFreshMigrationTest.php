@@ -175,17 +175,16 @@ class MultiDbFreshMigrationTest extends DbTestCase
         Yii::$app->set('db', Yii::$app->mysql);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
 
-        $version = Yii::$app->db->createCommand('SELECT VERSION();')->queryScalar();
         $dbSchema = Yii::$app->db->schema;
         $columnSchema = new ColumnSchema([
             'type' => 'integer',
-            'dbType' => \version_compare($version, '8.0.17', '>') ? 'int unsigned' : 'int(11) unsigned',
+            'dbType' => 'int unsigned',
             'phpType' => 'integer',
             'allowNull' => true,
             'autoIncrement' => false,
             'enumValues' => null,
-            'size' => \version_compare($version, '8.0.17', '>') ? null : 11,
-            'precision' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'size' => null,
+            'precision' => null,
             'scale' => null,
             'defaultValue' => 1,
         ]);
