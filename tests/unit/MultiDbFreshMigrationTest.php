@@ -175,6 +175,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         Yii::$app->set('db', Yii::$app->mysql);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
 
+        $version = PHP_VERSION;
         $dbSchema = Yii::$app->db->schema;
         $columnSchema = new ColumnSchema([
             'type' => 'integer',
