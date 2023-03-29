@@ -32,14 +32,25 @@ class RelationsInFakerTest extends DbTestCase
         $finalSortedModels = static::sortModels($fakers);
 
         $this->assertSame($finalSortedModels, [
+            // 'Account',
+            // 'C123',
+            // 'D123',
+            // 'B123',
+            // 'E123',
+            // 'Domain',
+            // 'A123',
+            // 'Routing',
+
+            // 2nd order - sort() case
             'Account',
             'C123',
             'D123',
             'B123',
-            'E123',
-            'Domain',
             'A123',
+            'Domain',
+            'E123',
             'Routing',
+
         ]);
 
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
@@ -74,6 +85,7 @@ class RelationsInFakerTest extends DbTestCase
             }
         }
 
+        // this models are not dependent on any models
         $standalone = array_filter($modelsDependencies, function ($elm) {
             return $elm === null;
         });
@@ -84,6 +96,7 @@ class RelationsInFakerTest extends DbTestCase
 
         $justDepenentModels = array_keys($dependent);
         $sortedDependentModels = $justDepenentModels;
+        sort($sortedDependentModels);
 
         foreach ($justDepenentModels as $model) {
             if ($modelsDependencies[$model] !== null) {
@@ -98,8 +111,9 @@ class RelationsInFakerTest extends DbTestCase
                 }
             }
         }
-
-        $finalSortedModels = array_merge(array_keys($standalone), $sortedDependentModels);
+        $standalone = array_keys($standalone);
+        sort($standalone);
+        $finalSortedModels = array_merge($standalone, $sortedDependentModels);
         return $finalSortedModels;
     }
 

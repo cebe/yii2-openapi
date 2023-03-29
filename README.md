@@ -472,48 +472,7 @@ Generated files:
 
 # Development
 
-To contribute or play around, steps to set up this project locally are:
-
-```bash
-# in your CLI
-git clone https://github.com/cebe/yii2-openapi.git
-cd yii2-openapi
-make clean_all
-make up
-make cli
-composer install
-make migrate
-
-# to check everything is setup up correctly ensure all tests passes
-./vendor/bin/phpunit
-
-# create new branch from master and Happy contributing!
-```
-
-These commands are available to develop and check the tests. It is available inside the Docker container. To enter into bash shell of container, run `make cli` .
-
-```bash
-cd tests
-./yii migrate-mysql/up
-./yii migrate-mysql/down 4
-
-./yii migrate-maria/up
-./yii migrate-maria/down 4
-
-./yii migrate-pgsql/up
-./yii migrate-pgsql/down 4
-```
-
-To apply multiple migration with one command:
-
-```bash
-./yii migrate-mysql/up --interactive=0 && \
-./yii migrate-mysql/down --interactive=0 4 && \
-./yii migrate-maria/up --interactive=0 && \
-./yii migrate-maria/down --interactive=0 4 && \
-./yii migrate-pgsql/up --interactive=0 && \
-./yii migrate-pgsql/down --interactive=0 4
-```
+To contribute or play around, steps to set up this project up locally are in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 
 # Support

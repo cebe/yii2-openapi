@@ -13,16 +13,6 @@ use function array_diff;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    public static function assertEqualsCanonicalizing($expected, $actual, string $message = '')
-    {
-        if ((int)Version::id()[0] >= 8) {
-            parent::assertEqualsCanonicalizing($expected, $actual, $message);
-        } else {
-            self::assertTrue(empty(array_diff($expected, $actual)) && empty(array_diff($actual, $expected)));
-        }
-
-    }
-
     protected function prepareTempDir()
     {
         FileHelper::removeDirectory(__DIR__ . '/tmp/app');
