@@ -60,7 +60,7 @@ components:
           readOnly: true
           type: string
           format: datetime
-          x-db-type: datetime
+          x-db-type: timestamp
           nullable: false
 
     Routing:
@@ -93,7 +93,7 @@ components:
           readOnly: true
           type: string
           format: datetime
-          x-db-type: datetime
+          x-db-type: timestamp
           nullable: true
         d123:
           $ref: '#/components/schemas/D123'
