@@ -73,7 +73,7 @@ class RelationsInFakerTest extends DbTestCase
             }
         }
 
-        // this models are not dependent on any models
+        // these models are not dependent on any models
         $standalone = array_filter($modelsDependencies, function ($elm) {
             return $elm === null;
         });

@@ -14,7 +14,6 @@ use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
-use yii\helpers\VarDumper;
 use yii\db\Connection;
 use yii\db\Expression;
 
@@ -323,7 +322,6 @@ abstract class BaseMigrationBuilder
     {
         $tableAlias = $this->model->getTableAlias();
         $existedRelations = [];
-        // VarDumper::dump($this->tableSchema->foreignKeys);
         foreach ($this->tableSchema->foreignKeys as $fkName => $relation) {
             $refTable = $this->unPrefixTableName(array_shift($relation));
             $refCol = array_keys($relation)[0];
@@ -331,7 +329,6 @@ abstract class BaseMigrationBuilder
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
 
-        // VarDumper::dump($this->model->getHasOneRelations());
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
@@ -348,7 +345,6 @@ abstract class BaseMigrationBuilder
                 $this->migration->dependencies[] = $refTable;
             }
         }
-        // VarDumper::dump($existedRelations);
         foreach ($existedRelations as $fkName => $relation) {
             ['fkCol' => $fkCol, 'refCol' => $refCol, 'refTable' => $refTable] = $relation;
             $this->migration

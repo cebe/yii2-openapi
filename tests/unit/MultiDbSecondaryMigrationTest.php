@@ -56,37 +56,9 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
 
     public function testMysql()
     {
-        // $this->runUpMigrations('mysql', 3);
-        // return;
-
         $dbName = 'mysql';
         Yii::$app->set('db', Yii::$app->mysql);
-        // Yii::$app->db->schema->refresh();
-        // Yii::$app->db->schema->refreshTableSchema('{{%v2_comments}}');
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
-
-
-        // $this->runDownMigrations('mysql', 3);
-        // Yii::$app->db->schema->refresh();
-        // $this->runUpMigrations('mysql', 3);
-        // $rows = (new \yii\db\Query())
-        //     ->select('*')
-        //     ->from('{{%migration}}')
-        //     ->all();
-        // $res = Yii::$app->db->createCommand('show create table {{%v2_comments}}')
-        //     ->queryAll();
-        // $this->assertTrue($res);
-
-        $db = 'mysql';
-
-        // exec('cd tests; ./yii migrate-'.$db.'/down all --interactive=0 '.$number, $downOutput, $downExitCode);
-        // VarDumper::dump($downOutput);
-
-        // exec('cd tests; ./yii migrate-'.$db.' --interactive=0 ', $upOutput, $upExitCode);
-        // VarDumper::dump($upOutput);
-        // Yii::$app->db->createCommand('DROP DATABASE testdb')->execute();
-        // exec('cd tests; ./yii migrate-'.$db.' --interactive=0 ', $upOutput, $upExitCode);
-        // return;
 
         $testFile = Yii::getAlias('@specs/blog_v2.php');
         $this->runGenerator($testFile, $dbName);
