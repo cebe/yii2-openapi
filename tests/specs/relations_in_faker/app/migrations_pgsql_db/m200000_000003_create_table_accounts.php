@@ -5,7 +5,7 @@
  */
 class m200000_000003_create_table_accounts extends \yii\db\Migration
 {
-    public function up()
+    public function safeUp()
     {
         $this->createTable('{{%accounts}}', [
             'id' => $this->primaryKey(),
@@ -13,7 +13,7 @@ class m200000_000003_create_table_accounts extends \yii\db\Migration
         ]);
     }
 
-    public function down()
+    public function safeDown()
     {
         $this->dropTable('{{%accounts}}');
     }

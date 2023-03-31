@@ -5,7 +5,7 @@
  */
 class m200000_000007_create_table_routings extends \yii\db\Migration
 {
-    public function up()
+    public function safeUp()
     {
         $this->createTable('{{%routings}}', [
             'id' => $this->primaryKey(),
@@ -14,7 +14,7 @@ class m200000_000007_create_table_routings extends \yii\db\Migration
             'ssl' => $this->boolean()->null()->defaultValue(null),
             'redirect_to_ssl' => $this->boolean()->null()->defaultValue(null),
             'service' => $this->string(255)->null()->defaultValue(null),
-            0 => 'created_at datetime NULL DEFAULT NULL',
+            0 => '"created_at" timestamp NULL DEFAULT NULL',
             'd123_id' => $this->integer()->null()->defaultValue(null),
             'a123_id' => $this->integer()->null()->defaultValue(null),
         ]);
@@ -23,7 +23,7 @@ class m200000_000007_create_table_routings extends \yii\db\Migration
         $this->addForeignKey('fk_routings_a123_id_a123s_id', '{{%routings}}', 'a123_id', '{{%a123s}}', 'id');
     }
 
-    public function down()
+    public function safeDown()
     {
         $this->dropForeignKey('fk_routings_a123_id_a123s_id', '{{%routings}}');
         $this->dropForeignKey('fk_routings_d123_id_d123s_id', '{{%routings}}');

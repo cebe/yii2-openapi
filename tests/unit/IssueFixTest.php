@@ -25,6 +25,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
     }
 
     private function deleteTablesForNoSyntaxError107()
@@ -54,6 +55,14 @@ class IssueFixTest extends DbTestCase
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_mysql_db');
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_maria_db');
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_pgsql_db');
+        $this->deleteTables();
+    }
+
+    private function deleteTables()
+    {
+        $this->deleteTablesForFloatIssue();
+        $this->deleteTablesForNoSyntaxError107();
+        $this->deleteTableForQuoteInAlterColumn();
     }
 
     private function deleteTablesForFloatIssue()
@@ -82,6 +91,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $testFile = Yii::getAlias("@specs/issue_fix/camel_case_127/camel_case_127.php");
@@ -95,6 +105,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     public function testQuoteInAlterColumn()
@@ -112,6 +123,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function deleteTableForQuoteInAlterColumn()

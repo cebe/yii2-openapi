@@ -31,6 +31,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 4);
+        $this->deleteTables();
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -46,6 +47,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 4);
+        $this->deleteTables();
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -61,6 +63,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 4);
+        $this->deleteTables();
     }
 
     public function testXDbTypeSecondaryWithNewColumn() // v2
@@ -79,6 +82,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 4);
+        $this->deleteTables();
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -96,6 +100,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 4);
+        $this->deleteTables();
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -113,6 +118,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 4);
+        $this->deleteTables();
     }
 
     public function testXDbTypeSecondaryWithEditColumn() // v3
@@ -131,6 +137,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 4);
+        $this->deleteTables();
 
         // same yaml file is used for MySQL and MariaDB ----------------------
         $this->changeDbToMariadb();
@@ -148,6 +155,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 4);
+        $this->deleteTables();
 
         // PgSQL ------------------------------------------------
         $this->changeDbToPgsql();
@@ -165,6 +173,7 @@ class XDbTypeTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 4);
+        $this->deleteTables();
     }
 
     private function deleteTables()
@@ -221,6 +230,7 @@ class XDbTypeTest extends DbTestCase
         $this->runFaker();
         $this->runDownMigrations('mysql', 4);
         FileHelper::removeDirectory(Yii::getAlias('@app').'/models');
+        $this->deleteTables();
 
         // MariaDB
         $this->changeDbToMariadb();
@@ -241,6 +251,7 @@ class XDbTypeTest extends DbTestCase
         $this->runFaker();
         $this->runDownMigrations('maria', 4);
         FileHelper::removeDirectory(Yii::getAlias('@app').'/models');
+        $this->deleteTables();
 
         // for PgSQL
         $this->changeDbToPgsql();
@@ -260,7 +271,8 @@ class XDbTypeTest extends DbTestCase
         Yii::$app->db->schema->refresh();
         $this->runFaker();
         $this->runDownMigrations('pgsql', 4);
-
+        FileHelper::removeDirectory(Yii::getAlias('@app').'/models');
+        $this->deleteTables();
     }
 
     // private function removeStaleMigrationsRecords()

@@ -14,7 +14,6 @@ use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
-use yii\helpers\VarDumper;
 use yii\db\Connection;
 use yii\db\Expression;
 
@@ -329,6 +328,7 @@ abstract class BaseMigrationBuilder
             $fkCol = $relation[$refCol];
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
+
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();

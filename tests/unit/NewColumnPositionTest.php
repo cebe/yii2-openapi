@@ -29,6 +29,7 @@ class NewColumnPositionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 10);
+        $this->deleteTables();
 
         $this->changeDbToMariadb();
         $this->deleteTables();
@@ -44,6 +45,7 @@ class NewColumnPositionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 10);
+        $this->deleteTables();
     }
 
     private function createTables()
