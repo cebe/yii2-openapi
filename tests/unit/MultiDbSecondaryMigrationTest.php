@@ -68,7 +68,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $this->compareFiles($expectedFiles, $testFile);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (getenv('IN_DOCKER') !== 'docker') {
             $this->markTestSkipped('For docker env only');
@@ -78,7 +78,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         parent::setUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (getenv('IN_DOCKER') === 'docker') {
@@ -97,17 +97,6 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $codeFiles = $generator->generate();
         foreach ($codeFiles as $file) {
             $file->save();
-        }
-    }
-
-    protected function compareFiles(array $expected, string $testFile)
-    {
-        foreach ($expected as $file) {
-            $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
-            $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
-            self::assertFileExists($expectedFile);
-            self::assertFileExists($actualFile);
-            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile");
         }
     }
 

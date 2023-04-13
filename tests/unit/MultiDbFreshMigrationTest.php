@@ -58,7 +58,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $this->compareFiles($expectedFiles, $testFile);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (getenv('IN_DOCKER') !== 'docker') {
             $this->markTestSkipped('For docker env only');
@@ -68,7 +68,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         parent::setUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (getenv('IN_DOCKER') === 'docker') {
@@ -86,17 +86,6 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $codeFiles = $generator->generate();
         foreach ($codeFiles as $file) {
             $file->save();
-        }
-    }
-
-    protected function compareFiles(array $expected, string $testFile)
-    {
-        foreach ($expected as $file) {
-            $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
-            $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
-            self::assertFileExists($expectedFile);
-            self::assertFileExists($actualFile);
-            $this->assertFileEquals($expectedFile, $actualFile, "Failed asserting that file contents of\n$actualFile\nare equal to file contents of\n$expectedFile\n\n cp $actualFile $expectedFile \n\n ");
         }
     }
 
@@ -196,8 +185,8 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $dbSchema, 'tableName', $columnSchema, false, false
         );
 
-        $this->assertContains('AFTER username', $column->getCode());
-        $this->assertNotContains('AFTER username', $columnWithoutPreviousCol->getCode());
+        $this->assertStringContainsString('AFTER username', $column->getCode());
+        $this->assertStringNotContainsString('AFTER username', $columnWithoutPreviousCol->getCode());
 
         // test `after` for fluent part in function call `after()`
         unset($column, $columnWithoutPreviousCol);
@@ -209,7 +198,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $dbSchema, 'tableName', $columnSchema, true, false
         );
 
-        $this->assertContains("->after('username')", $column->getCode());
-        $this->assertNotContains("->after('username')", $columnWithoutPreviousCol->getCode());
+        $this->assertStringContainsString("->after('username')", $column->getCode());
+        $this->assertStringNotContainsString("->after('username')", $columnWithoutPreviousCol->getCode());
     }
 }
