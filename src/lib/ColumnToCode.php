@@ -156,14 +156,14 @@ class ColumnToCode
             return '$this->' . $this->fluentParts['type'];
         }
         if ($this->isBuiltinType) {
-            $parts = [
+            $parts = array_filter([
                 $this->fluentParts['type'],
                 $this->fluentParts['nullable'],
                 $this->fluentParts['default'],
                 $this->fluentParts['position']
-            ];
+            ]);
             array_unshift($parts, '$this');
-            return implode('->', array_filter(array_map('trim', $parts), 'trim'));
+            return implode('->', array_filter(array_map('trim', $parts)));
         }
         if ($this->rawParts['default'] === null) {
             $default = '';
@@ -508,7 +508,7 @@ class ColumnToCode
             if ($this->position === BaseMigrationBuilder::POS_FIRST) {
                 $this->fluentParts['position'] = 'first()';
                 $this->rawParts['position'] = BaseMigrationBuilder::POS_FIRST;
-            } elseif (strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
+            } elseif ($this->position !== null && strpos($this->position, BaseMigrationBuilder::POS_AFTER.' ') !== false) {
                 $previousColumn = str_replace(BaseMigrationBuilder::POS_AFTER.' ', '', $this->position);
                 $this->fluentParts['position'] = 'after(\''.$previousColumn.'\')';
                 $this->rawParts['position'] = BaseMigrationBuilder::POS_AFTER.' '.$previousColumn;
