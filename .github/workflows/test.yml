@@ -1,9 +1,9 @@
 name: yii2-openapi
 on:
   push:
-    branches: [ master, wip]
+    branches: [ master ]
   pull_request:
-    branches: [ master, wip ]
+    branches: [ master ]
     paths-ignore:
       - 'docs/**'
       - '*.md'
@@ -18,13 +18,16 @@ jobs:
       DB_PASSWORD: dbpass
       DB_CHARSET: utf8
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        php-versions: ['7.1', '7.2', '7.3', '7.4']
+        php-versions: ['7.2', '7.3', '7.4', '8.0', '8.1'] # TODO add '8.2' https://github.com/cebe/yii2-openapi/issues/142
 
     # TODO use cache
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+
+      - name: Set PHP Version
+        run: echo "PHP_VERSION=${{ matrix.php-versions }}" > .env
 
       # Run every tests inside Docker container
       - name: Docker Compose Setup
@@ -40,13 +43,14 @@ jobs:
         run: make up
 
       - name: Install Docker and composer dependencies
-        run: make installdocker
+        run: docker-compose exec php php -v && make installdocker
 
       - name: Migrate
-        run: make migrate
+        run: make UID=0 migrate
 
       - name: Check style
+        if: "!contains(matrix.php-versions, '8.')"
         run: make check-style-from-host
 
       - name: Run tests
-        run: make testdocker
+        run: make UID=0 testdocker

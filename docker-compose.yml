@@ -1,9 +1,14 @@
 version: "3.5"
 services:
     php:
+        image: yii2-openapi-php:${PHP_VERSION:-7.4}
         build:
             dockerfile: tests/docker/Dockerfile
             context: .
+            args:
+              - BUILD_PHP_VERSION=${PHP_VERSION:-7.4}
+        extra_hosts: # https://stackoverflow.com/a/67158212/1106908
+            - "host.docker.internal:host-gateway"
         volumes:
             - ./tests/tmp/.composer:/root/.composer:rw
             - .:/app

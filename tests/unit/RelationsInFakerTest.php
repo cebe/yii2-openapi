@@ -33,6 +33,16 @@ class RelationsInFakerTest extends DbTestCase
         $finalSortedModels = static::sortModels($fakers);
 
         $this->assertSame($finalSortedModels, [
+            // 'Account',
+            // 'C123',
+            // 'D123',
+            // 'B123',
+            // 'E123',
+            // 'Domain',
+            // 'A123',
+            // 'Routing',
+
+            // 2nd order - sort() case
             'Account',
             'C123',
             'D123',
@@ -41,6 +51,7 @@ class RelationsInFakerTest extends DbTestCase
             'Domain',
             'E123',
             'Routing',
+
         ]);
 
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [

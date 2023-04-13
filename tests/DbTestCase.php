@@ -35,7 +35,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         Yii::$container = new Container();
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         if (getenv('IN_DOCKER') !== 'docker') {
             $this->markTestSkipped('For docker env only');
@@ -45,7 +45,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         parent::setUp();
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         if (getenv('IN_DOCKER') === 'docker') {
@@ -90,6 +90,22 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
         self::assertInstanceOf(PgSqlSchema::class, Yii::$app->db->schema);
     }
 
+    /**
+     * Compare actual files to a base of expected files
+     * @param array $actual array of files to compare to expected files.
+     * @param string $testFile config file, which defines the directory, e.g. /tests/blog.php -> /tests/blog
+     * @return void
+     */
+    protected function compareFiles(array $actual, string $testFile)
+    {
+        foreach ($actual as $file) {
+            $expectedFile = str_replace('@app', substr($testFile, 0, -4), $file);
+            $actualFile = str_replace('@app', Yii::getAlias('@app'), $file);
+            // exec('cp '.$actualFile.' '.$expectedFile);
+            $this->checkFiles([$actualFile], [$expectedFile]);
+        }
+    }
+
     protected function checkFiles(array $actual, array $expected)
     {
         self::assertEquals(
@@ -100,6 +116,16 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
             $expectedFilePath = $expected[$index];
             self::assertFileExists($file);
             self::assertFileExists($expectedFilePath);
+            $packages = require(__DIR__ . '/../vendor/composer/installed.php');
+            if (str_starts_with($packages['versions']['laminas/laminas-code']['version'], '4')) {
+                // Laminas Code adds 2 newlines between { } in version 3, but does not in version 4
+                file_put_contents($file,
+                    preg_replace('~(class .*)\n{\n}~i', "$1\n{\n\n\n}",
+                    preg_replace('~(class .*?)\n{\n*( *public function.*)}\n}\n\n$~is', "$1\n{\n\n$2}\n\n\n}\n\n",
+                        file_get_contents($file)
+                    ))
+                );
+            }
 
             $this->assertFileEquals($expectedFilePath, $file, "Failed asserting that file contents of\n$file\nare equal to file contents of\n$expectedFilePath \n\n cp $file $expectedFilePath \n\n ");
         }
@@ -138,7 +164,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
     protected function runUpMigrations(string $db = 'mysql', int $number = 2): void
     {
         // up
-        exec('cd tests; ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
+        exec('cd tests; php -dxdebug.mode=develop ./yii migrate-'.$db.' --interactive=0', $upOutput, $upExitCode);
         $last = count($upOutput) - 1;
         $lastThird = count($upOutput) - 3;
         $this->assertSame($upExitCode, 0);
@@ -151,7 +177,7 @@ class DbTestCase extends \PHPUnit\Framework\TestCase
     protected function runDownMigrations(string $db = 'mysql', int $number = 2): void
     {
         // down
-        exec('cd tests; ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
+        exec('cd tests; php -dxdebug.mode=develop ./yii migrate-'.$db.'/down --interactive=0 '.$number, $downOutput, $downExitCode);
         $last = count($downOutput) - 1;
         $lastThird = count($downOutput) - 3;
         $this->assertSame($downExitCode, 0);
