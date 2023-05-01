@@ -22,14 +22,35 @@ class SchemaToDatabaseTest extends TestCase
         //VarDumper::dump($result->indexByJunctionRef());
         //VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
-        self::assertEqualsCanonicalizing(
-            ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
-            array_keys($result->indexByJunctionSchema())
+
+        // support for PHPUnit 8
+        // self::assertEqualsCanonicalizing(
+        //     ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
+        //     array_keys($result->indexByJunctionSchema())
+        // );
+        $juncs = ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'];
+        sort($juncs);
+        $indexedJuncs = array_keys($result->indexByJunctionSchema());
+        sort($indexedJuncs);
+        self::assertEquals(
+            $juncs,
+            $indexedJuncs
         );
-        self::assertEqualsCanonicalizing(
-            ['Post', 'Photo'],
-            array_keys($result->indexByClassSchema())
+
+        // support for PHPUnit 8
+        // self::assertEqualsCanonicalizing(
+        //     ['Post', 'Photo'],
+        //     array_keys($result->indexByClassSchema())
+        // );
+        $model = ['Post', 'Photo'];
+        sort($model);
+        $indexedModel = array_keys($result->indexByClassSchema());
+        sort($indexedModel);
+        self::assertEquals(
+            $model,
+            $indexedModel
         );
+
         self::assertEquals('junction_PostAttaches', $result->addPrefix('PostAttaches'));
         self::assertEquals('PostAttaches', $result->trimPrefix('junction_PostAttaches'));
         self::assertTrue($result->isJunctionSchema('PostsAttaches'));

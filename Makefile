@@ -44,18 +44,18 @@ up:
 	docker-compose exec -T mysql timeout 60s sh -c "while ! (mysql --execute \"ALTER USER 'dbuser'@'%' IDENTIFIED WITH mysql_native_password BY 'dbpass';\" > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
 
 cli:
-	docker-compose exec --user=$(UID) php bash
+	docker-compose exec --user=$(id -u) php bash
 
 migrate:
-	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/app"'
-	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
-	docker-compose run --user=$(UID) --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
+	docker-compose run --user=$(id -u) --rm php sh -c 'mkdir -p "tests/tmp/app"'
+	docker-compose run --user=$(id -u) --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
+	docker-compose run --user=$(id -u) --rm php sh -c 'cd /app/tests && ./yii migrate --interactive=0'
 
 installdocker:
-	docker-compose run --user=$(UID) --rm php composer install && chmod +x tests/yii
+	docker-compose run --user=$(id -u) --rm php composer install && chmod +x tests/yii
 
 testdocker:
-	docker-compose run --user=$(UID) --rm php sh -c 'vendor/bin/phpunit --repeat 3'
+	docker-compose run --user=$(id -u) --rm php sh -c 'vendor/bin/phpunit --repeat 3'
 
 efs: clean_all up migrate # Everything From Scratch
 

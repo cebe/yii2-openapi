@@ -185,8 +185,11 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $dbSchema, 'tableName', $columnSchema, false, false
         );
 
-        $this->assertStringContainsString('AFTER username', $column->getCode());
-        $this->assertStringNotContainsString('AFTER username', $columnWithoutPreviousCol->getCode());
+        // support for PHPUnit 8
+        $this->assertSame(strpos($column->getCode(), 'AFTER username'), 28);
+        // $this->assertStringContainsString('AFTER username', $column->getCode());
+        // $this->assertStringNotContainsString('AFTER username', $columnWithoutPreviousCol->getCode());
+        $this->assertFalse(strpos($columnWithoutPreviousCol->getCode(), 'AFTER username'));
 
         // test `after` for fluent part in function call `after()`
         unset($column, $columnWithoutPreviousCol);
@@ -198,7 +201,12 @@ class MultiDbFreshMigrationTest extends DbTestCase
             $dbSchema, 'tableName', $columnSchema, true, false
         );
 
-        $this->assertStringContainsString("->after('username')", $column->getCode());
-        $this->assertStringNotContainsString("->after('username')", $columnWithoutPreviousCol->getCode());
+        // support for PHPUnit 8
+        // $this->assertStringContainsString("->after('username')", $column->getCode());
+        $this->assertSame(strpos($column->getCode(), "->after('username')"), 41);
+
+        // support for PHPUnit 8
+        // $this->assertStringNotContainsString("->after('username')", $columnWithoutPreviousCol->getCode());
+        $this->assertFalse(strpos($columnWithoutPreviousCol->getCode(), "->after('username')"));
     }
 }
