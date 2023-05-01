@@ -73,13 +73,13 @@ return [
                 ->asReference('Category')
                 ->setRequired()
                 ->setDescription('Category of posts')
-                ->setFakerStub('$faker->randomElement(\Category::find()->select("id")->column())'),
+                ->setFakerStub('$faker->randomElement(\app\models\Category::find()->select("id")->column())'),
             'created_at' => (new Attribute('created_at', ['phpType' => 'string', 'dbType' => 'date']))
                ->setFakerStub('$faker->dateTimeThisCentury->format(\'Y-m-d\')'),
             'created_by' => (new Attribute('created_by', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->asReference('User')
                 ->setDescription('The User')
-                ->setFakerStub('$faker->randomElement(\User::find()->select("id")->column())'),
+                ->setFakerStub('$faker->randomElement(\app\models\User::find()->select("id")->column())'),
         ],
         'relations' => [
             'category' => new AttributeRelation('category',
@@ -110,12 +110,12 @@ return [
                 ->setSize(128)
                 ->asReference('Post')
                 ->setDescription('A blog post (uid used as pk for test purposes)')
-                ->setFakerStub('$faker->randomElement(\Post::find()->select("id")->column())'),
+                ->setFakerStub('$faker->randomElement(\app\models\Post::find()->select("id")->column())'),
             'author' => (new Attribute('author', ['phpType' => 'int', 'dbType' => 'integer']))
                 ->setRequired()
                 ->asReference('User')
                 ->setDescription('The User')
-                ->setFakerStub('$faker->randomElement(\User::find()->select("id")->column())'),
+                ->setFakerStub('$faker->randomElement(\app\models\User::find()->select("id")->column())'),
             'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setRequired()->setDefault([])->setFakerStub('[]'),
             'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))

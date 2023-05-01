@@ -53,8 +53,13 @@ class FakerStubResolver
 
         // column name ends with `_id`
         if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
-            return '$faker->randomElement(\\'.$this->config->modelNamespace
-                    . ($this->config->modelNamespace ? '\\' : '')
+            $config = $this->config;
+            if (!$config) {
+                $config = new Config;
+            }
+            $mn = $config->modelNamespace;
+            return '$faker->randomElement(\\'.$mn
+                    . ($mn ? '\\' : '')
                     . ucfirst($this->attribute->reference).'::find()->select("id")->column())';
         }
 
