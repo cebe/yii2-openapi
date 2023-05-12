@@ -84,5 +84,20 @@ with Zend OPcache v7.4.27, Copyright (c), by Zend Technologies
 with Xdebug v2.9.6, Copyright (c) 2002-2020, by Derick Rethans
 ```
 
+Issues and solutions
+--------------------
 
+#### Issue when switching PHP version as mentioned above
 
+```
+root@f65bb59c3289:/app# ./vendor/bin/phpunit
+
+Fatal error: Composer detected issues in your platform: Your Composer dependencies require a PHP version ">= 8.1.0". You are running 7.4.33. in /app/vendor/composer/platform_check.php on line 24
+```
+
+#### Solution
+
+```bash
+sudo rm -rf vendor
+composer update
+```

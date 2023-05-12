@@ -63,6 +63,7 @@ class IssueFixTest extends DbTestCase
         $this->deleteTablesForFloatIssue();
         $this->deleteTablesForNoSyntaxError107();
         $this->deleteTableForQuoteInAlterColumn();
+        $this->deleteTableForTimestampIssue143();
     }
 
     private function deleteTablesForFloatIssue()
@@ -70,11 +71,25 @@ class IssueFixTest extends DbTestCase
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
     }
 
+    private function deleteTableForTimestampIssue143()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%timestamp143s}}')->execute();
+    }
+
     private function createTableForFloatIssue()
     {
         Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
             'id' => 'pk',
             'vat_percent' => 'float default 0',
+        ])->execute();
+    }
+
+    private function createTableForTimestampIssue143()
+    {
+        Yii::$app->db->createCommand()->createTable('{{%timestamp143s}}', [
+            'id' => 'pk',
+            'created_at timestamp null default null',
+            'updated_at timestamp null default null',
         ])->execute();
     }
 
@@ -174,4 +189,23 @@ class IssueFixTest extends DbTestCase
     //         'colourName' => 'varchar(255)',
     //     ])->execute();
     // }
+
+    // fix https://github.com/cebe/yii2-openapi/issues/143
+    // timestamp_143
+    public function testTimestampIssue143()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/timestamp_143/mysql/timestamp_143.php");
+        $this->deleteTableForTimestampIssue143();
+        $this->createTableForTimestampIssue143();
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/timestamp_143/mysql/app"), [
+            'recursive' => true,
+        ]);
+        // $this->checkFiles($actualFiles, $expectedFiles);
+        // $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
+    }
 }
