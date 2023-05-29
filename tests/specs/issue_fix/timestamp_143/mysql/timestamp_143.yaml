@@ -32,11 +32,9 @@ components:
           format: date-time
           example: '2020-03-14T21:42:17Z'
           readOnly: true
-          nullable: true
 
         updated_at:
           type: string
           format: date-time
           example: '2020-03-14T21:42:17Z'
           readOnly: true
-          nullable: true
