@@ -201,11 +201,9 @@ class IssueFixTest extends DbTestCase
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
         ]);
-        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/timestamp_143/mysql/app"), [
-            'recursive' => true,
-        ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('mysql', 1);
+
+        // check no files are generated
+        $this->assertEquals(count($actualFiles), 0);
         $this->deleteTables();
     }
 }
