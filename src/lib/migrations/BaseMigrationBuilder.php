@@ -556,4 +556,16 @@ abstract class BaseMigrationBuilder
 
         return null;
     }
+
+    public function modifyDesiredFromDbInContextOfDesired(ColumnSchema $desired, ColumnSchema $desiredFromDb): void
+    {
+        if (property_exists($desired, 'xDbType') && is_string($desired->xDbType) && !empty($desired->xDbType)) {
+            return;
+        }
+
+        if ($desired->type === 'timestamp' && $desired->dbType === 'datetime') {
+            $desiredFromDb->type = 'timestamp';
+            $desiredFromDb->dbType = 'timestamp';
+        }
+    }
 }

@@ -44,6 +44,15 @@ To apply multiple migration with one command:
 ./yii migrate-pgsql/down --interactive=0 4
 ```
 
+PHPUnit run only one test by regex
+----------------------------------
+
+If a PHPUnit test file have 2 test method with names like `testEdit()` and `testEditExpression()` then by running `./vendor/bin/phpunit --filter XDbDefaultExpressionTest::testEdit` both tests will run. In order to run only one test `testEdit()`, run below command:
+
+```bash
+./vendor/bin/phpunit --filter '/XDbDefaultExpressionTest::testEdit$/'
+```
+
 
 Switching PHP versions
 ----------------------

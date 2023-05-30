@@ -156,16 +156,4 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
             $desired->size = $current->size;
         }
     }
-
-    public function modifyDesiredFromDbInContextOfDesired(ColumnSchema $desired, ColumnSchema $desiredFromDb): void
-    {
-        // TODO refactor if condition
-        if (property_exists($desired, 'xDbType') && is_string($desired->xDbType) && !empty($desired->xDbType)) {
-        } else {
-            if ($desired->type === 'timestamp' && $desired->dbType === 'datetime') {
-                $desiredFromDb->type = 'timestamp';
-                $desiredFromDb->dbType = 'timestamp';
-            }
-        }
-    }
 }
