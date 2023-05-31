@@ -1,0 +1,40 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Fix https://github.com/cebe/yii2-openapi/issues/143 - If data type is not changed then still migrations are generated for timestamp in MySQL #143
+
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Timestamp143:
+      type: object
+      description: A table to fix \#143
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          example: 1337
+
+        # other fields...
+
+        created_at:
+          type: string
+          format: date-time
+          example: '2020-03-14T21:42:17Z'
+          readOnly: true
+
+        updated_at:
+          type: string
+          format: date-time
+          example: '2020-03-14T21:42:17Z'
+          readOnly: true
