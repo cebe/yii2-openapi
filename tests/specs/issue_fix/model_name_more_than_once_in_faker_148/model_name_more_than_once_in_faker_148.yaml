@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: 'model_name_more_than_once_in_faker_148'
+  description: ""
+  version: 1.0.0
+  contact:
+    name: 'Carsten Brandt'
+    email: cb@cebe.cloud
+servers:
+  - url: 'http://localhost:8937'
+    description: 'Local Dev API'
+security:
+  - BasicAuth: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Account:
+      description: user account
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          description: account name
+          type: string
+          maxLength: 40
+          x-faker: 'substr($faker->userName(), 0, 40)'
+    E123:
+      description: desc
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        account:
+          $ref: '#/components/schemas/Account'
+        account_2:
+          $ref: '#/components/schemas/Account'
+        account_3:
+          $ref: '#/components/schemas/Account'
+
+
+paths:
+  /:
+    get:
+      responses: []
+      description: none
