@@ -49,6 +49,7 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
         $desiredFromDb = $this->tmpSaveNewCol($tableAlias, $desired);
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
+        $this->modifyDesiredFromDbInContextOfDesired($desired, $desiredFromDb);
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
                     , 'dbType', 'phpType'

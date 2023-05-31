@@ -110,7 +110,7 @@ class ColumnToCode
      * Its possible values are:
      *      `'FIRST'`
      *      `'AFTER <columnName>'` e.g. AFTER first_name
-     *      `null` means append new column at the end
+     *      `null` (default) means append new column at the end
      */
     private $position;
 
