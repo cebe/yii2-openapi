@@ -508,3 +508,43 @@ Professional support, consulting as well as software development services are av
 https://www.cebe.cc/en/contact
 
 Development of this library is sponsored by [cebe.:cloud: "Your Professional Deployment Platform"](https://cebe.cloud).
+
+
+## Use PR of your own fork of this library in your project to check new changes
+
+Say you have a fork of this library at https://github.com/SOHELAHMED7/yii2-openapi
+
+You implemented new changes or fixed bugs and created PR on GitHub. It is not yet merged in upstream master branch.
+
+You wanted to check this new changes in your own project which is using this lib cebe/yii2-openapi.
+
+You can accomplish it by:
+
+
+Add below to composer.json of your project file
+
+
+```json
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        },
+        {
+            "type": "vcs",
+            "url": "http://github.com/SOHELAHMED7/yii2-openapi"
+        }
+    ]
+```
+
+Then lets say you have PR https://github.com/SOHELAHMED7/yii2-openapi/pull/24.
+
+And branch name is `143-if-data-type-is-not-changed-then-still-migrations-are-generated-for-timestamp-in-mysql`.
+
+Run below command:
+
+```bash
+composer require cebe/yii2-openapi:dev-143-if-data-type-is-not-changed-then-still-migrations-are-generated-for-timestamp-in-mysql
+```
+
+Ensure to use upstream package name `cebe/yii2-openapi` instead of your fork (`sohelahmed7/yii2-openapi`) in composer command. And prefix branch name by `dev-`
