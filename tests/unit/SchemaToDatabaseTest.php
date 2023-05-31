@@ -23,7 +23,7 @@ class SchemaToDatabaseTest extends TestCase
         //VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
 
-        // support for PHPUnit 8
+        // https://github.com/cebe/yii2-openapi/pull/141/files#diff-d2ab9925cad7eac58e0ff4cc0d251a937ecf49e4b6bf57f8b95aab76648a9d34R33
         // self::assertEqualsCanonicalizing(
         //     ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
         //     array_keys($result->indexByJunctionSchema())
@@ -37,7 +37,7 @@ class SchemaToDatabaseTest extends TestCase
             $indexedJuncs
         );
 
-        // support for PHPUnit 8
+        // https://github.com/cebe/yii2-openapi/pull/141/files#diff-d2ab9925cad7eac58e0ff4cc0d251a937ecf49e4b6bf57f8b95aab76648a9d34R33
         // self::assertEqualsCanonicalizing(
         //     ['Post', 'Photo'],
         //     array_keys($result->indexByClassSchema())
