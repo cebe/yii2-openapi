@@ -69,7 +69,6 @@ class ModelsGenerator
                     )
                 ));
                 if ($this->config->generateModelFaker) {
-
                     $deps = []; # list of all models that this model is dependent on
                     foreach ($model->hasOneRelations as $key => $hasOneRelation) {
                         $deps[] = $model->hasOneRelations[$key]->getClassName();
