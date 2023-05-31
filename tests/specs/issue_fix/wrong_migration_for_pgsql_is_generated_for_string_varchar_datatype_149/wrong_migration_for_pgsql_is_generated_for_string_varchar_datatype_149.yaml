@@ -1,0 +1,28 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Fix https://github.com/cebe/yii2-openapi/issues/149 wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Fruit:
+      type: object
+      description: A table to fix \#149
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          example: desc
+          maxLength: 150

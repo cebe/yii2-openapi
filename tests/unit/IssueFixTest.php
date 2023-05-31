@@ -221,4 +221,36 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
     }
+
+    // https://github.com/cebe/yii2-openapi/issues/149
+    // wrongMigrationForPgsqlForStringVarcharDatatype
+    // wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype
+    public function testWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149.php");
+        $this->runGenerator($testFile, 'pgsql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+
+        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/app"), [
+        //     'recursive' => true,
+        // ]);
+        // $this->checkFiles($actualFiles, $expectedFiles);
+        // $this->runActualMigrations('pgsql', 1);
+        // $this->deleteTables();
+    }
+
+    private function createTableForWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
+            'id' => 'pk',
+            'vat_percent' => 'string 8', // TODO WIP resume from here
+        ])->execute();
+    }
+
+    private function deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
+    }
 }
