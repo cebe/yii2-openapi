@@ -206,4 +206,19 @@ class IssueFixTest extends DbTestCase
         $this->assertEquals(count($actualFiles), 0);
         $this->deleteTables();
     }
+
+    // https://github.com/cebe/yii2-openapi/issues/148
+    public function testModelNameMoreThanOnceInFakerIssue148()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/model_name_more_than_once_in_faker_148/model_name_more_than_once_in_faker_148.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/model_name_more_than_once_in_faker_148/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+    }
 }

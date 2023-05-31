@@ -3,6 +3,7 @@
  * @var \cebe\yii2openapi\lib\items\DbModel $model
  * @var string $namespace
  * @var string $modelNamespace
+ * @var array $deps list of all models that this model is dependent on
  **/
 
 $modelClass = ($modelNamespace !== $namespace ? '\\'.trim($modelNamespace, '\\').'\\' : '').$model->getClassName();
@@ -68,8 +69,8 @@ class <?= $model->getClassName() ?>Faker extends BaseModelFaker
     {
         return [
             // just model class names
-<?php foreach ($model->hasOneRelations as $key => $hasOneRelation): ?>
-            <?php echo \yii\helpers\VarDumper::export($model->hasOneRelations[$key]->getClassName()).','.PHP_EOL ?>
+<?php foreach ($deps as $dep): ?>
+            <?php echo \yii\helpers\VarDumper::export($dep).','.PHP_EOL ?>
 <?php endforeach; ?>
 
         ];
