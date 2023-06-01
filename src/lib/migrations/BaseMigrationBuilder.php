@@ -568,4 +568,12 @@ abstract class BaseMigrationBuilder
             $desiredFromDb->dbType = 'timestamp';
         }
     }
+
+    public function modifyDesiredInContextOfDesiredFromDb(ColumnSchema $desired, ColumnSchema $desiredFromDb): void
+    {
+        if (property_exists($desired, 'xDbType') && is_string($desired->xDbType) && !empty($desired->xDbType)) {
+            return;
+        }
+        $desired->dbType = $desiredFromDb->dbType;
+    }
 }

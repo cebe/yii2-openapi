@@ -64,6 +64,7 @@ class IssueFixTest extends DbTestCase
         $this->deleteTablesForNoSyntaxError107();
         $this->deleteTableForQuoteInAlterColumn();
         $this->deleteTableForTimestampIssue143();
+        $this->deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149();
     }
 
     private function deleteTablesForFloatIssue()
@@ -227,25 +228,28 @@ class IssueFixTest extends DbTestCase
     // wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype
     public function testWrongMigrationForPgsqlForStringVarcharDatatype149()
     {
+        $this->changeDbToPgsql();
+        $this->deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149();
+        $this->createTableForWrongMigrationForPgsqlForStringVarcharDatatype149();
         $testFile = Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149.php");
         $this->runGenerator($testFile, 'pgsql');
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
         ]);
 
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
-        // $this->runActualMigrations('pgsql', 1);
-        // $this->deleteTables();
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function createTableForWrongMigrationForPgsqlForStringVarcharDatatype149()
     {
         Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
             'id' => 'pk',
-            'vat_percent' => 'string 8', // TODO WIP resume from here
+            'name' => 'string(150)', #  not null
         ])->execute();
     }
 

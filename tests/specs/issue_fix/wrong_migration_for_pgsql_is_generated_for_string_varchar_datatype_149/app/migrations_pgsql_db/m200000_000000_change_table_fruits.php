@@ -5,15 +5,15 @@
  */
 class m200000_000000_change_table_fruits extends \yii\db\Migration
 {
-    public function up()
+    public function safeUp()
     {
-        $this->db->createCommand('ALTER TABLE {{%fruits}} ADD COLUMN test_emails json NOT NULL')->execute();
-        $this->alterColumn('{{%fruits}}', 'name', $this->text()->notNull());
+        $this->alterColumn('{{%fruits}}', 'name', $this->string(151)->notNull());
+        $this->alterColumn('{{%fruits}}', 'name', "SET NOT NULL");
     }
 
-    public function down()
+    public function safeDown()
     {
-        $this->alterColumn('{{%fruits}}', 'name', $this->string(255)->null()->defaultValue(null));
-        $this->dropColumn('{{%fruits}}', 'test_emails');
+        $this->alterColumn('{{%fruits}}', 'name', $this->string(150)->null());
+        $this->alterColumn('{{%fruits}}', 'name', "DROP NOT NULL");
     }
 }

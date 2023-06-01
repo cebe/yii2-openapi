@@ -25,4 +25,4 @@ components:
         name:
           type: string
           example: desc
-          maxLength: 150
+          maxLength: 151

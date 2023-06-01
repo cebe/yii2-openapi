@@ -47,6 +47,9 @@ final class MysqlMigrationBuilder extends BaseMigrationBuilder
 
         // Why this is needed? Often manually created ColumnSchem instance have dbType 'varchar' with size 255 and ColumnSchema fetched from db have 'varchar(255)'. So varchar !== varchar(255). such normal mistake was leading to errors. So desired column is saved in temporary table and it is fetched from that temp. table and then compared with current ColumnSchema
         $desiredFromDb = $this->tmpSaveNewCol($tableAlias, $desired);
+
+        $this->modifyDesiredInContextOfDesiredFromDb($desired, $desiredFromDb);
+
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
         $this->modifyDesiredFromDbInContextOfDesired($desired, $desiredFromDb);
