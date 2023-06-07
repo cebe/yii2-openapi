@@ -372,7 +372,8 @@ class ApiGenerator extends Generator
      */
     public function autoCompleteData()
     {
-        return (new PathAutoCompletion())->complete();
+        $config = $this->makeConfig();
+        return (new PathAutoCompletion($config))->complete();
     }
 
     /**
