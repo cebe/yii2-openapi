@@ -13,9 +13,11 @@ class PathAutoCompletionTest extends TestCase
     {
         Yii::setAlias('@vendor', __DIR__.'/items');
         $this->prepareTempDir();
-        Yii::setAlias('@app', __DIR__.'/../specs');
         Yii::setAlias('@runtime', __DIR__.'/../tmp/app');
 
+        $this->mockRealApplication(); // to register cache component
+        Yii::setAlias('@app', __DIR__.'/../specs');
+        Yii::setAlias('@webroot', __DIR__.'@app/web');
 
         $completion = (new PathAutoCompletion())->complete();
         self::assertNotEmpty($completion);
