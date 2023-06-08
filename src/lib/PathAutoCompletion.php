@@ -17,7 +17,10 @@ use yii\helpers\FileHelper;
 
 class PathAutoCompletion
 {
-    private ?Config $_config = null;
+    /**
+     * @var ?Config
+     */
+    private $_config;
 
     public function __construct(?Config $config = null)
     {
