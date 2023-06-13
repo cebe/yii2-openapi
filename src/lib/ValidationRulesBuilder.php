@@ -218,6 +218,7 @@ class ValidationRulesBuilder
     private function prepareTypeScope():void
     {
         foreach ($this->model->attributes as $attribute) {
+            /** @var $attribute \cebe\yii2openapi\lib\items\Attribute */
             if ($attribute->isReadOnly()) {
                 continue;
             }

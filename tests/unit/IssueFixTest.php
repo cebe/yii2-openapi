@@ -257,4 +257,23 @@ class IssueFixTest extends DbTestCase
     {
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
     }
+
+    // https://github.com/cebe/yii2-openapi/issues/153
+    // nullable false should put attribute in required section in model validation rules
+    public function testNullableFalseInRequired()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/153_nullable_false_in_required/153_nullable_false_in_required.php");
+        // $this->deleteTablesForNoSyntaxError107();
+        // $this->createTableForNoSyntaxError107();
+        $this->runGenerator($testFile, 'mysql');
+        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+        //     'recursive' => true,
+        // ]);
+        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/no_syntax_error_107/mysql/app"), [
+        //     'recursive' => true,
+        // ]);
+        // $this->checkFiles($actualFiles, $expectedFiles);
+        // $this->runActualMigrations('mysql', 1);
+        // $this->deleteTables();
+    }
 }
