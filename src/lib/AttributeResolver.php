@@ -215,8 +215,7 @@ class AttributeResolver
         PropertySchema $property,
         bool $isRequired,
         $nullableValue = 'ARG_ABSENT'
-    ):void
-    {
+    ):void {
         if ($nullableValue === 'ARG_ABSENT') {
             $nullableValue = $property->getProperty()->getSerializableData()->nullable ?? null;
         }
