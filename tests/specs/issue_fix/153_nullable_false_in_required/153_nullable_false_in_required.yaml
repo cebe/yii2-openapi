@@ -1,0 +1,29 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: 153_nullable_false_in_required \#153
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    Pristine:
+      type: object
+      description: 153_nullable_false_in_required
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        billing_factor:
+          description: integer between 0 and 100, default value 100
+          type: integer
+          default: 100
+          nullable: false
+          x-faker: '$faker->numberBetween(0, 100)'

@@ -62,7 +62,7 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
     {
         return [
             'trim' => [['string_col', 'varchar_col', 'text_col', 'varchar_4_col', 'char_4_col', 'char_5_col', 'char_6_col', 'char_7_col', 'char_8_col', 'date_col', 'time_col', 'datetime_col', 'timestamp_col', 'year_col', 'text_def'], 'trim'],
-            'required' => [['char_6_col'], 'required'],
+            'required' => [['char_6_col', 'char_7_col'], 'required'],
             'string_col_string' => [['string_col'], 'string', 'max' => 255],
             'varchar_col_string' => [['varchar_col'], 'string', 'max' => 132],
             'text_col_string' => [['text_col'], 'string'],

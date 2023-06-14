@@ -212,6 +212,9 @@ class FakerStubResolver
 
     private function fakeForArray():string
     {
+        if ($this->attribute->required) {
+            return '["a" => "b"]';
+        }
         return '[]';
     }
 }

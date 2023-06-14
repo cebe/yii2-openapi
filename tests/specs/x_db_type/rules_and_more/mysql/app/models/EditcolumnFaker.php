@@ -37,7 +37,7 @@ class EditcolumnFaker extends BaseModelFaker
         $model->dec_col = $faker->randomFloat();
         $model->str_col_def = substr($faker->word(3), 0, 3);
         $model->json_col = $faker->sentence;
-        $model->json_col_2 = [];
+        $model->json_col_2 = ["a" => "b"];
         $model->numeric_col = $faker->randomFloat();
         $model->json_col_def_n = [];
         $model->json_col_def_n_2 = [];

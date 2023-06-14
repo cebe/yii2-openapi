@@ -112,7 +112,7 @@ abstract class Alldbdatatype extends \yii\db\ActiveRecord
     {
         return [
             'trim' => [['string_col', 'varchar_col', 'text_col', 'varchar_4_col', 'varchar_5_col', 'char_4_col', 'char_5_col', 'char_6_col', 'char_7_col', 'char_8_col', 'date_col', 'time_col', 'time_col_2', 'time_col_3', 'time_col_4', 'timetz_col', 'timetz_col_2', 'timestamp_col', 'timestamp_col_2', 'timestamp_col_3', 'timestamp_col_4', 'timestamptz_col', 'timestamptz_col_2', 'date2', 'timestamp_col_z', 'box_col', 'character_col', 'character_n', 'character_varying', 'character_varying_n', 'text_def', 'cidr_col', 'circle_col', 'date_col_z', 'inet_col', 'interval_col', 'interval_col_2', 'interval_col_3', 'line_col', 'lseg_col', 'macaddr_col', 'money_col', 'path_col', 'point_col', 'polygon_col', 'tsquery_col', 'tsvector_col', 'txid_snapshot_col', 'uuid_col', 'xml_col'], 'trim'],
-            'required' => [['char_6_col'], 'required'],
+            'required' => [['char_6_col', 'char_7_col', 'smallserial_col', 'serial2_col', 'bigserial_col', 'bigserial_col_2', 'serial_col', 'serial4_col'], 'required'],
             'string_col_string' => [['string_col'], 'string'],
             'varchar_col_string' => [['varchar_col'], 'string'],
             'text_col_string' => [['text_col'], 'string'],

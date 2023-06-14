@@ -39,10 +39,10 @@ class ComponentSchema
      */
     private $pkName;
 
-    /**@var array* */
+    /** @var array* */
     private $requiredProps;
 
-    /**@var array* */
+    /** @var array* */
     private $indexes;
 
     /**
