@@ -117,7 +117,7 @@ return [
                 ->setDescription('The User')
                 ->setFakerStub('$faker->randomElement(\User::find()->select("id")->column())'),
             'message' => (new Attribute('message', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
-                ->setRequired()->setDefault([])->setFakerStub('[]'),
+                ->setRequired()->setDefault([])->setFakerStub('["a" => "b"]'),
             'meta_data' => (new Attribute('meta_data', ['phpType' => 'array', 'dbType' => 'json', 'xDbType' => 'json']))
                 ->setDefault([])->setFakerStub('[]'),
             'created_at' => (new Attribute('created_at',['phpType' => 'int', 'dbType' => 'integer']))

@@ -31,6 +31,7 @@ abstract class Editcolumn extends \yii\db\ActiveRecord
     {
         return [
             'trim' => [['name', 'tag', 'first_name', 'string_col', 'str_col_def', 'json_col'], 'trim'],
+            'required' => [['name', 'str_col_def', 'json_col', 'json_col_2'], 'required'],
             'name_string' => [['name'], 'string', 'max' => 254],
             'name_default' => [['name'], 'default', 'value' => 'Horse-2'],
             'tag_string' => [['tag'], 'string'],

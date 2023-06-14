@@ -98,12 +98,17 @@ class AttributeResolver
             /** @var $property \cebe\yii2openapi\lib\openapi\PropertySchema */
 
             $isRequired = $this->schema->isRequiredProperty($property->getName());
+            $nullableValue = $property->getProperty()->getSerializableData()->nullable ?? null;
+            if ($nullableValue === false) { // see docs in README regarding NOT NULL, required and nullable
+                $isRequired = true;
+            }
+
             if ($this->isJunctionSchema) {
                 $this->resolveJunctionTableProperty($property, $isRequired);
             } elseif ($this->hasMany2Many) {
                 $this->resolveHasMany2ManyTableProperty($property, $isRequired);
             } else {
-                $this->resolveProperty($property, $isRequired);
+                $this->resolveProperty($property, $isRequired, $nullableValue);
             }
         }
         return Yii::createObject(DbModel::class, [
@@ -202,11 +207,19 @@ class AttributeResolver
     /**
      * @param \cebe\yii2openapi\lib\openapi\PropertySchema $property
      * @param bool                                         $isRequired
+     * @param bool|null|string                             $nullableValue if string then its value will be only constant `ARG_ABSENT`. Default `null` is avoided because it can be in passed value in method call
      * @throws \cebe\yii2openapi\lib\exceptions\InvalidDefinitionException
      * @throws \yii\base\InvalidConfigException
      */
-    protected function resolveProperty(PropertySchema $property, bool $isRequired):void
+    protected function resolveProperty(
+        PropertySchema $property,
+        bool $isRequired,
+        $nullableValue = 'ARG_ABSENT'
+    ):void
     {
+        if ($nullableValue === 'ARG_ABSENT') {
+            $nullableValue = $property->getProperty()->getSerializableData()->nullable ?? null;
+        }
         $attribute = Yii::createObject(Attribute::class, [$property->getName()]);
         $attribute->setRequired($isRequired)
                   ->setDescription($property->getAttr('description', ''))
@@ -214,7 +227,7 @@ class AttributeResolver
                   ->setDefault($property->guessDefault())
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
-                  ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
+                  ->setNullable($nullableValue)
                   ->setIsPrimary($property->isPrimaryKey())
                   ->setForeignKeyColumnName($property->fkColName);
         if ($property->isReference()) {

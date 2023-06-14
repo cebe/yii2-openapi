@@ -32,7 +32,7 @@ class CommentFaker extends BaseModelFaker
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->post_id = $faker->randomElement(\app\models\Post::find()->select("id")->column());
         $model->author_id = $faker->randomElement(\app\models\User::find()->select("id")->column());
-        $model->message = [];
+        $model->message = ["a" => "b"];
         $model->meta_data = [];
         $model->created_at = $faker->unixTime;
         if (!is_callable($attributes)) {
