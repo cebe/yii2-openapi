@@ -285,7 +285,7 @@ final class RouteData extends BaseObject
         if (!isset($matches)) {
             throw new InvalidCallException('Unrecognized path pattern');
         }
-        $this->controller = Inflector::camel2id(Inflector::singularize($matches['controller'] ?? ''));
+        $this->controller = Inflector::camel2id($matches['controller']);
         switch ($this->type) {
             case self::TYPE_RESOURCE:
                 $this->action = '';
@@ -299,13 +299,13 @@ final class RouteData extends BaseObject
                 $this->action = Inflector::camel2id($matches['action']) . '-' . Inflector::camel2id($matches['method']);
                 break;
             case self::TYPE_COLLECTION_FOR:
-                $this->action = '-for-' . Inflector::camel2id(Inflector::singularize($matches['for']));
+                $this->action = '-for-' . Inflector::camel2id($matches['for']);
                 $this->parentParam = $matches['parentParam'];
                 break;
             case self::TYPE_RESOURCE_FOR:
                 $this->parentParam = $matches['parentParam'];
                 $this->idParam = $matches['idParam'];
-                $this->action = '-for-' . Inflector::camel2id(Inflector::singularize($matches['for']));
+                $this->action = '-for-' . Inflector::camel2id($matches['for']);
                 break;
             case self::TYPE_RELATIONSHIP:
                 $this->idParam = $matches['idParam'];
