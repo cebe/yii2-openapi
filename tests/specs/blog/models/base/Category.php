@@ -22,7 +22,7 @@ abstract class Category extends \yii\db\ActiveRecord
     {
         return [
             'trim' => [['title'], 'trim'],
-            'required' => [['title'], 'required'],
+            'required' => [['title', 'active'], 'required'],
             'title_unique' => [['title'], 'unique'],
             'title_string' => [['title'], 'string', 'max' => 255],
             'active_boolean' => [['active'], 'boolean'],

@@ -59,6 +59,7 @@ class MultiDbSecondaryMigrationTest extends DbTestCase
         $dbName = 'mysql';
         Yii::$app->set('db', Yii::$app->mysql);
         $this->assertInstanceOf(MySqlSchema::class, Yii::$app->db->schema);
+
         $testFile = Yii::getAlias('@specs/blog_v2.php');
         $this->runGenerator($testFile, $dbName);
         $expectedFiles = $this->findExpectedFiles($testFile, $dbName);

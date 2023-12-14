@@ -80,6 +80,9 @@ $config = [
             'charset' => 'utf8',
             'tablePrefix'=>'itt_',
         ],
+        'cache' => [
+            'class' => 'yii\caching\FileCache',
+        ],
     ],
 ];
 

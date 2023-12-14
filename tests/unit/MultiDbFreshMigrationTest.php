@@ -155,6 +155,7 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $this->assertSame($name_2, 'FIRST');
         $name_3 = $builder->findPosition(new ColumnSchema(['name' => 'email_3']));
         $this->assertNull($name_3);
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%users_after}}')->execute();
     }
 
     public function testAfterKeyword()
@@ -166,13 +167,13 @@ class MultiDbFreshMigrationTest extends DbTestCase
         $dbSchema = Yii::$app->db->schema;
         $columnSchema = new ColumnSchema([
             'type' => 'integer',
-            'dbType' => \version_compare($version, '8.0.17', '>') ? 'int unsigned' : 'int(11) unsigned',
+            'dbType' => 'int unsigned',
             'phpType' => 'integer',
             'allowNull' => true,
             'autoIncrement' => false,
             'enumValues' => null,
-            'size' => \version_compare($version, '8.0.17', '>') ? null : 11,
-            'precision' => \version_compare($version, '8.0.17', '>') ? null : 11,
+            'size' => null,
+            'precision' => null,
             'scale' => null,
             'defaultValue' => 1,
         ]);

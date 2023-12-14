@@ -3,13 +3,13 @@
 /**
  * Table for User
  */
-class m200000_000000_create_table_users extends \yii\db\Migration
+class m200000_000001_create_table_users extends \yii\db\Migration
 {
     public function up()
     {
         $this->createTable('{{%users}}', [
             'id' => $this->primaryKey(),
-            'name' => $this->text()->null(),
+            'name' => $this->text()->notNull(),
         ]);
     }
 

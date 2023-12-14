@@ -35,4 +35,9 @@ class CustomSpecAttr
      */
     public const FK_ON_DELETE = 'x-fk-on-delete';
     public const FK_ON_UPDATE = 'x-fk-on-update';
+
+    /**
+     * Foreign key column name. See README for usage docs
+     */
+    public const FK_COLUMN_NAME = 'x-fk-column-name';
 }

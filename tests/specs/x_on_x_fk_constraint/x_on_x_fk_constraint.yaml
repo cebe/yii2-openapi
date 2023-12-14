@@ -13,7 +13,7 @@ paths:
 
 components:
   schemas:
-    User:
+    Userx:
       type: object
       description: x on-x (update|delete) foreign key constraint
       properties:
@@ -21,7 +21,7 @@ components:
           type: integer
         name:
           type: string
-    Post:
+    Postx:
       type: object
       description: x on-x (update|delete) foreign key constraint
       properties:
@@ -30,18 +30,18 @@ components:
         title:
           type: string
         user:
-          # $ref: '#/components/schemas/User'
+          # $ref: '#/components/schemas/Userx'
           allOf:
-            - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/Userx'
             - x-fk-on-update: CASCADE
         user_2:
           allOf:
-            - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/Userx'
             - x-fk-on-update: CASCADE
             - x-fk-on-delete: SET NULL
         user_3:
           allOf:
-            - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/Userx'
             - x-fk-on-delete: SET NULL
         user_4:
-          $ref: '#/components/schemas/User'
+          $ref: '#/components/schemas/Userx'

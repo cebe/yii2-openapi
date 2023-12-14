@@ -47,7 +47,7 @@ class ValidatorRulesBuilderTest extends TestCase
                 'contact_email',
                 'required_with_def',
             ], 'trim'),
-            'required' => new ValidationRule(['title', 'category_id'], 'required'),
+            'required' => new ValidationRule(['title', 'category_id', 'required_with_def'], 'required'),
             'category_id_integer' => new ValidationRule(['category_id'], 'integer'),
             'category_id_exist' => new ValidationRule(['category_id'], 'exist', ['targetRelation' => 'Category']),
             'title_active_unique' => new ValidationRule(['title', 'active'], 'unique', [

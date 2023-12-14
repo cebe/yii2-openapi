@@ -13,10 +13,10 @@ class m200000_000005_change_table_v2_comments extends \yii\db\Migration
         $this->dropColumn('{{%v2_comments}}', 'author_id');
         $this->alterColumn('{{%v2_comments}}', 'message', 'text NOT NULL USING "message"::text');
         $this->alterColumn('{{%v2_comments}}', 'message', "DROP DEFAULT");
-        $this->alterColumn('{{%v2_comments}}', 'meta_data', 'string(300) NULL USING "meta_data"::string');
+        $this->alterColumn('{{%v2_comments}}', 'meta_data', 'varchar(300) NULL USING "meta_data"::varchar');
         $this->alterColumn('{{%v2_comments}}', 'meta_data', "DROP NOT NULL");
         $this->alterColumn('{{%v2_comments}}', 'meta_data', "SET DEFAULT ''");
-        $this->alterColumn('{{%v2_comments}}', 'created_at', 'datetime NOT NULL USING "created_at"::datetime');
+        $this->alterColumn('{{%v2_comments}}', 'created_at', 'timestamp NOT NULL USING "created_at"::timestamp');
         $this->addForeignKey('fk_v2_comments_post_id_v2_posts_id', '{{%v2_comments}}', 'post_id', '{{%v2_posts}}', 'id');
         $this->addForeignKey('fk_v2_comments_user_id_v2_users_id', '{{%v2_comments}}', 'user_id', '{{%v2_users}}', 'id');
     }

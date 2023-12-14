@@ -53,6 +53,7 @@ class ChangeColumnNameTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+        $this->deleteTables();
     }
 
     private function createTableForTest()

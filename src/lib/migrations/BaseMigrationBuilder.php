@@ -14,7 +14,6 @@ use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
 use Yii;
 use yii\db\ColumnSchema;
-use yii\helpers\VarDumper;
 use yii\db\Connection;
 use yii\db\Expression;
 
@@ -329,6 +328,7 @@ abstract class BaseMigrationBuilder
             $fkCol = $relation[$refCol];
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
+
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
@@ -555,5 +555,25 @@ abstract class BaseMigrationBuilder
         }
 
         return null;
+    }
+
+    public function modifyDesiredFromDbInContextOfDesired(ColumnSchema $desired, ColumnSchema $desiredFromDb): void
+    {
+        if (property_exists($desired, 'xDbType') && is_string($desired->xDbType) && !empty($desired->xDbType)) {
+            return;
+        }
+
+        if ($desired->type === 'timestamp' && $desired->dbType === 'datetime') {
+            $desiredFromDb->type = 'timestamp';
+            $desiredFromDb->dbType = 'timestamp';
+        }
+    }
+
+    public function modifyDesiredInContextOfDesiredFromDb(ColumnSchema $desired, ColumnSchema $desiredFromDb): void
+    {
+        if (property_exists($desired, 'xDbType') && is_string($desired->xDbType) && !empty($desired->xDbType)) {
+            return;
+        }
+        $desired->dbType = $desiredFromDb->dbType;
     }
 }

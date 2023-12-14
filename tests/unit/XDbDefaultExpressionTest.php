@@ -30,6 +30,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
 
         // see https://mariadb.com/kb/en/timestamp/#examples
         // Only the first timestamp is automatically inserted and updated, other will have value default '0000-00-00 00:00:00'
@@ -46,6 +47,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 1);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $this->deleteTables();
@@ -60,6 +62,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function deleteTables()
@@ -83,6 +86,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
 
         $this->changeDbToMariadb();
         $this->deleteTables();
@@ -98,6 +102,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 1);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $this->deleteTables();
@@ -113,6 +118,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function createTablesForEdit()
@@ -147,6 +153,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
 
         $this->changeDbToMariadb();
         $this->deleteTables();
@@ -162,6 +169,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('maria', 1);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $this->deleteTables();
@@ -177,6 +185,7 @@ class XDbDefaultExpressionTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function createTablesForEditExpression()

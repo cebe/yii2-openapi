@@ -19,10 +19,11 @@ class RelationsInFakerTest extends DbTestCase
 {
     public function testIndex()
     {
+        $this->changeDbToPgsql();
         $testFile = Yii::getAlias("@specs/relations_in_faker/relations_in_faker.php");
         $testFileConfig = require $testFile;
 
-        $this->runGenerator($testFile, 'mysql');
+        $this->runGenerator($testFile, 'pgsql');
 
         $fakers = FileHelper::findFiles(\Yii::getAlias('@app/models/fakers'), [
             'only' => ['*Faker.php'],
@@ -60,9 +61,7 @@ class RelationsInFakerTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
-        $this->runUpMigrations('mysql', 8);
-        Yii::$app->db->schema->refresh();
-        $this->runDownMigrations('mysql', 8);
+        $this->runActualMigrations('pgsql', 8);
     }
 
     public static function sortModels(array $fakers, string $fakerNamespace = 'app\\models\\fakers\\')
@@ -85,7 +84,7 @@ class RelationsInFakerTest extends DbTestCase
             }
         }
 
-        // this models are not dependent on any models
+        // these models are not dependent on any models
         $standalone = array_filter($modelsDependencies, function ($elm) {
             return $elm === null;
         });

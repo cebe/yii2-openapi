@@ -55,7 +55,7 @@ installdocker:
 	docker-compose run --user=$(UID) --rm php composer install && chmod +x tests/yii
 
 testdocker:
-	docker-compose run --user=$(UID) --rm php sh -c 'vendor/bin/phpunit'
+	docker-compose run --user=$(UID) --rm php sh -c 'vendor/bin/phpunit --repeat 3'
 
 efs: clean_all up migrate # Everything From Scratch
 

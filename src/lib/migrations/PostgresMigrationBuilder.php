@@ -118,8 +118,12 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
 
         // for docs, please see MysqlMigrationBuilder file
         $desiredFromDb = $this->tmpSaveNewCol($tableAlias, $desired);
+
+        $this->modifyDesiredInContextOfDesiredFromDb($desired, $desiredFromDb);
+
         $this->modifyDesired($desiredFromDb);
         $this->modifyDesiredInContextOfCurrent($current, $desiredFromDb);
+        $this->modifyDesiredFromDbInContextOfDesired($desired, $desiredFromDb);
 
         foreach (['type', 'size', 'allowNull', 'defaultValue', 'enumValues'
                     , 'dbType', 'phpType'

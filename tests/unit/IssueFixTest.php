@@ -25,6 +25,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
     }
 
     private function deleteTablesForNoSyntaxError107()
@@ -54,6 +55,16 @@ class IssueFixTest extends DbTestCase
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_mysql_db');
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_maria_db');
         FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_pgsql_db');
+        $this->deleteTables();
+    }
+
+    private function deleteTables()
+    {
+        $this->deleteTablesForFloatIssue();
+        $this->deleteTablesForNoSyntaxError107();
+        $this->deleteTableForQuoteInAlterColumn();
+        $this->deleteTableForTimestampIssue143();
+        $this->deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149();
     }
 
     private function deleteTablesForFloatIssue()
@@ -61,11 +72,25 @@ class IssueFixTest extends DbTestCase
         Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
     }
 
+    private function deleteTableForTimestampIssue143()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%timestamp143s}}')->execute();
+    }
+
     private function createTableForFloatIssue()
     {
         Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
             'id' => 'pk',
             'vat_percent' => 'float default 0',
+        ])->execute();
+    }
+
+    private function createTableForTimestampIssue143()
+    {
+        Yii::$app->db->createCommand()->createTable('{{%timestamp143s}}', [
+            'id' => 'pk',
+            'created_at timestamp null default null',
+            'updated_at timestamp null default null',
         ])->execute();
     }
 
@@ -82,6 +107,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('mysql', 1);
+        $this->deleteTables();
 
         $this->changeDbToPgsql();
         $testFile = Yii::getAlias("@specs/issue_fix/camel_case_127/camel_case_127.php");
@@ -95,6 +121,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     public function testQuoteInAlterColumn()
@@ -112,6 +139,7 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
         $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
     }
 
     private function deleteTableForQuoteInAlterColumn()
@@ -162,4 +190,86 @@ class IssueFixTest extends DbTestCase
     //         'colourName' => 'varchar(255)',
     //     ])->execute();
     // }
+
+    // fix https://github.com/cebe/yii2-openapi/issues/143
+    // timestamp_143
+    public function testTimestampIssue143()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/timestamp_143/mysql/timestamp_143.php");
+        $this->deleteTableForTimestampIssue143();
+        $this->createTableForTimestampIssue143();
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+
+        // check no files are generated
+        $this->assertEquals(count($actualFiles), 0);
+        $this->deleteTables();
+    }
+
+    // https://github.com/cebe/yii2-openapi/issues/148
+    public function testModelNameMoreThanOnceInFakerIssue148()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/model_name_more_than_once_in_faker_148/model_name_more_than_once_in_faker_148.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/model_name_more_than_once_in_faker_148/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+    }
+
+    // https://github.com/cebe/yii2-openapi/issues/149
+    // wrongMigrationForPgsqlForStringVarcharDatatype
+    // wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype
+    public function testWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        $this->changeDbToPgsql();
+        $this->deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149();
+        $this->createTableForWrongMigrationForPgsqlForStringVarcharDatatype149();
+        $testFile = Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149.php");
+        $this->runGenerator($testFile, 'pgsql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/wrong_migration_for_pgsql_is_generated_for_string_varchar_datatype_149/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+        $this->runActualMigrations('pgsql', 1);
+        $this->deleteTables();
+    }
+
+    private function createTableForWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        Yii::$app->db->createCommand()->createTable('{{%fruits}}', [
+            'id' => 'pk',
+            'name' => 'string(150)', #  not null
+        ])->execute();
+    }
+
+    private function deleteTablesForWrongMigrationForPgsqlForStringVarcharDatatype149()
+    {
+        Yii::$app->db->createCommand('DROP TABLE IF EXISTS {{%fruits}}')->execute();
+    }
+
+    // https://github.com/cebe/yii2-openapi/issues/153
+    // nullable false should put attribute in required section in model validation rules
+    public function testNullableFalseInRequired()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/153_nullable_false_in_required/153_nullable_false_in_required.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/153_nullable_false_in_required/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
+    }
 }
