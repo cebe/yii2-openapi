@@ -22,14 +22,35 @@ class SchemaToDatabaseTest extends TestCase
         //VarDumper::dump($result->indexByJunctionRef());
         //VarDumper::dump($result->indexByJunctionSchema());
         self::assertInstanceOf(JunctionSchemas::class, $result);
-        self::assertEqualsCanonicalizing(
-            ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
-            array_keys($result->indexByJunctionSchema())
+
+        // https://github.com/cebe/yii2-openapi/pull/141/files#diff-d2ab9925cad7eac58e0ff4cc0d251a937ecf49e4b6bf57f8b95aab76648a9d34R33
+        // self::assertEqualsCanonicalizing(
+        //     ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'],
+        //     array_keys($result->indexByJunctionSchema())
+        // );
+        $juncs = ['junction_Photos2Posts', 'junction_PostsGallery', 'junction_PostsAttaches'];
+        sort($juncs);
+        $indexedJuncs = array_keys($result->indexByJunctionSchema());
+        sort($indexedJuncs);
+        self::assertEquals(
+            $juncs,
+            $indexedJuncs
         );
-        self::assertEqualsCanonicalizing(
-            ['Post', 'Photo'],
-            array_keys($result->indexByClassSchema())
+
+        // https://github.com/cebe/yii2-openapi/pull/141/files#diff-d2ab9925cad7eac58e0ff4cc0d251a937ecf49e4b6bf57f8b95aab76648a9d34R33
+        // self::assertEqualsCanonicalizing(
+        //     ['Post', 'Photo'],
+        //     array_keys($result->indexByClassSchema())
+        // );
+        $model = ['Post', 'Photo'];
+        sort($model);
+        $indexedModel = array_keys($result->indexByClassSchema());
+        sort($indexedModel);
+        self::assertEquals(
+            $model,
+            $indexedModel
         );
+
         self::assertEquals('junction_PostAttaches', $result->addPrefix('PostAttaches'));
         self::assertEquals('PostAttaches', $result->trimPrefix('junction_PostAttaches'));
         self::assertTrue($result->isJunctionSchema('PostsAttaches'));
