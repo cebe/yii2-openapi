@@ -209,11 +209,8 @@ class XDbTypeTest extends DbTestCase
 
     public function testValidationRules()
     {
-        $this->deleteTables();
-
         // remove
         // $this->removeStaleMigrationsRecords();
-
         $this->deleteTables();
         $testFile = Yii::getAlias("@specs/x_db_type/rules_and_more/x_db_type_mysql.php");
         $this->runGenerator($testFile, 'mysql');

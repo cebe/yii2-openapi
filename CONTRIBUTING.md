@@ -10,10 +10,12 @@ cd yii2-openapi
 make clean_all
 make up
 make installdocker
+sudo chmod -R 777 tests/tmp/ # https://github.com/cebe/yii2-openapi/issues/156
 make migrate
 
 # to check everything is setup up correctly ensure all tests passes
 make cli
+# in Docker container
 ./vendor/bin/phpunit
 
 # create new branch from master and Happy contributing!

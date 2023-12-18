@@ -299,7 +299,7 @@ class ColumnToCode
 
     public static function enumToString(array $enum):string
     {
-        $items = implode(", ", array_map('self::wrapQuotes', $enum));
+        $items = implode(", ", array_map(self::class.'::wrapQuotes', $enum));
         return self::escapeQuotes($items);
     }
 
