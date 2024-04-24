@@ -272,4 +272,17 @@ class IssueFixTest extends DbTestCase
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
     }
+
+    public function test162BugDollarrefWithXFaker()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/162_bug_dollarref_with_x_faker/162_bug_dollarref_with_x_faker.php");
+        $this->runGenerator($testFile, 'mysql');
+        $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+            'recursive' => true,
+        ]);
+        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/153_nullable_false_in_required/app"), [
+        //     'recursive' => true,
+        // ]);
+        // $this->checkFiles($actualFiles, $expectedFiles);
+    }
 }
