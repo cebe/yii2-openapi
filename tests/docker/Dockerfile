@@ -72,6 +72,11 @@ RUN echo "xdebug.idekey=PHP_STORM" >> $XDEBUGINI_PATH && \
     echo "xdebug.start_with_request=yes" >> $XDEBUGINI_PATH && \
     echo "xdebug.discover_client_host=1" >> $XDEBUGINI_PATH && \
     echo "xdebug.client_port=9003" >> $XDEBUGINI_PATH  && \
-    echo "xdebug.client_host=host.docker.internal" >> $XDEBUGINI_PATH
+    echo "xdebug.client_host=host.docker.internal" >> $XDEBUGINI_PATH && \
+    echo "xdebug.log_level=0" >> $XDEBUGINI_PATH
+    # to get rid of lot of message `Xdebug: [Step Debug] Could not connect to debugging client. Tried: host.docker.internal:9003 (fallback through xdebug.client_host/xdebug.client_port).` in CLI during testing, above setting (log_level=0) is applied. Remove it when xdebug is used
+    # reference: https://community.localwp.com/t/xdebug-step-debug-could-not-connect-to-debugging-client-flooding-logs/34550/4
+    # scope to apply better solutions (https://stackoverflow.com/questions/64878376/xdebug-step-debug-could-not-connect-to-debugging-client)
+
 
 WORKDIR /app
