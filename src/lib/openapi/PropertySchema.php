@@ -106,12 +106,9 @@ class PropertySchema
                 $onDelete = $element->{CustomSpecAttr::FK_ON_DELETE};
             }
 
-            if ($element->{CustomSpecAttr::FAKER} !== null) {
+            if (isset($element->{CustomSpecAttr::FAKER})) {
                 $xFaker = $element->{CustomSpecAttr::FAKER};
             }
-            // if (property_exists($element, CustomSpecAttr::FAKER)) {
-            //     $xFaker = $element->{CustomSpecAttr::FAKER};
-            // }
 
             if ($element instanceof Reference) {
                 $reference = $element;

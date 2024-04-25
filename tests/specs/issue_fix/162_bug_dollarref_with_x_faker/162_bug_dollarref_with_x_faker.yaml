@@ -51,4 +51,5 @@ components:
           allOf:
             - $ref: '#/components/schemas/Invoice'
             - x-faker: false
+            # - nullable: true
 

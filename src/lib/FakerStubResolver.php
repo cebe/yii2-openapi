@@ -44,9 +44,6 @@ class FakerStubResolver
 
     public function resolve():?string
     {
-        // if ($this->property->getName() === 'invoice') {
-        //     var_dump($this->property->xFaker); die();
-        // }
         if ($this->property->xFaker === false) {
             $this->attribute->setFakerStub(null);
             return null;
@@ -54,14 +51,7 @@ class FakerStubResolver
         if ($this->property->hasAttr(CustomSpecAttr::FAKER)) {
             return $this->property->getAttr(CustomSpecAttr::FAKER);
         }
-        // if ($this->property->hasAttr(CustomSpecAttr::FAKER) || $this->property->xFaker) {
-        //     $fakerValueInYml = $this->property->getAttr(CustomSpecAttr::FAKER) || $this->property->xFaker;
-        //     if ($fakerValueInYml === false) {
-        //         $this->attribute->setFakerStub(null);
-        //         return null;
-        //     }
-        //     return $fakerValueInYml;
-        // }
+
         if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {
             return null;
         }
