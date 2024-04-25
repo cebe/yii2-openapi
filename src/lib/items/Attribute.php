@@ -71,8 +71,6 @@ class Attribute extends BaseObject
      */
     public $xDbType;
 
-    // public $xFaker;
-
     /**
      * nullable
      * bool | null
@@ -155,12 +153,6 @@ class Attribute extends BaseObject
         $this->xDbType = $xDbType;
         return $this;
     }
-
-    // public function setXFaker($xFaker):Attribute
-    // {
-    //     $this->xFaker = $xFaker;
-    //     return $this;
-    // }
 
     public function setXDbDefaultExpression($xDbDefaultExpression): Attribute
     {

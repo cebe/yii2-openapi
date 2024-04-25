@@ -225,7 +225,6 @@ class AttributeResolver
                   ->setReadOnly($property->isReadonly())
                   ->setDefault($property->guessDefault())
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
-                  // ->setXFaker($property->getAttr(CustomSpecAttr::FAKER))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
                   ->setNullable($nullableValue)
                   ->setIsPrimary($property->isPrimaryKey())
