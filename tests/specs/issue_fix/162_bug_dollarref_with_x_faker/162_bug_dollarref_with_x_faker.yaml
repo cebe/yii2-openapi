@@ -1,0 +1,58 @@
+openapi: 3.0.3
+# Edit this schema and start your project
+# This is sample schema
+# To generate code which is based on this schema
+# run commands mentioned Development section in README.md file
+info:
+  title: 'Proxy-Service'
+  description: ""
+  version: 1.0.0
+  contact:
+    name: '...'
+    email: you@example.com
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+servers:
+  - url: 'http://localhost:9937'
+    description: 'Local Dev API'
+security:
+  - BasicAuth: []
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+
+    Invoice:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+
+    Order:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        name2:
+          type: string
+          x-faker: false
+        invoice:
+          allOf:
+            - $ref: '#/components/schemas/Invoice'
+            - x-faker: false
+            # - nullable: true
+

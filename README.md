@@ -104,6 +104,40 @@ You may specify custom PHP code for generating fake data for a property:
           x-faker: "$faker->randomElements(['one', 'two', 'three', 'four'])"
 ```
 
+To avoid generating faker code for particular model attribute, use value `false`:
+
+```yaml
+    Post:
+      properties:
+        age:
+          type: integer
+          x-faker: false
+```
+
+Using in reference with `allOf`:
+
+```yaml
+    Invoice:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+
+    Order:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+        invoice:
+          allOf:
+            - $ref: '#/components/schemas/Invoice'
+            - x-faker: false
+```
+
 ### `x-table`
 
 Specify the table name for a Schema that defines a model which is stored in the database.
