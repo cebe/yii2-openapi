@@ -47,6 +47,13 @@ class PropertySchema
     public $fkColName;
 
     /**
+     * @var null|bool|string
+     * If `false`, no faker will be generated in faker model
+     * See more about usage in README.md file present in root directory of the project
+     */
+    public $xFaker;
+
+    /**
      * @var \cebe\openapi\SpecObjectInterface
      */
     private $property;
@@ -93,7 +100,7 @@ class PropertySchema
         $this->schema = $schema;
         $this->isPk = $name === $schema->getPkName();
 
-        $onUpdate = $onDelete = $reference = $fkColName = null;
+        $onUpdate = $onDelete = $xFaker = $reference = $fkColName = null;
 
         foreach ($property->allOf ?? [] as $element) {
             // x-fk-on-delete | x-fk-on-update
@@ -103,6 +110,11 @@ class PropertySchema
             if (!empty($element->{CustomSpecAttr::FK_ON_DELETE})) {
                 $onDelete = $element->{CustomSpecAttr::FK_ON_DELETE};
             }
+
+            if (isset($element->{CustomSpecAttr::FAKER})) {
+                $xFaker = $element->{CustomSpecAttr::FAKER};
+            }
+
             if ($element instanceof Reference) {
                 $reference = $element;
             }
@@ -126,6 +138,10 @@ class PropertySchema
             ($reference instanceof Reference)
         ) {
             $this->fkColName = $fkColName;
+            $this->property = $reference;
+            $property = $this->property;
+        } elseif ($xFaker !== null && $reference instanceof Reference) {
+            $this->xFaker = $xFaker;
             $this->property = $reference;
             $property = $this->property;
         }
