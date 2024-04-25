@@ -1,0 +1,97 @@
+openapi: 3.0.3
+# Edit this schema and start your project
+# This is sample schema
+# To generate code which is based on this schema
+# run commands mentioned Development section in README.md file
+info:
+  title: 'Proxy-Service'
+  description: ""
+  version: 1.0.0
+  contact:
+    name: '...'
+    email: you@example.com
+servers:
+  - url: 'http://localhost:9937'
+    description: 'Local Dev API'
+
+components:
+  schemas:
+    Contact:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+  responses:
+    Contact:
+      description: 'Returns one contact by ID.'
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/Contact'
+    Contacts:
+      description: 'Returns contacts.'
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Contact'
+
+
+
+paths:
+  '/account/{accountId}/contacts':
+    parameters:
+      - name: accountId
+        in: path
+        description: ID of Account.
+        required: true
+        schema:
+          type: integer
+
+    get:
+      operationId: listAccountContacts
+      summary: List all Account's contacts
+      description: Returns all contacts for a account.
+      responses:
+        '200':
+          $ref: '#/components/responses/Contacts'
+        '403':
+          description: Response if the currently authenticated user has no access to this Account.
+      tags:
+        - Contacts
+
+  '/account/{accountId}/contacts/{contactId}':
+    parameters:
+      - name: accountId
+        in: path
+        description: ID of Account.
+        required: true
+        schema:
+          type: integer
+      - name: contactId
+        in: path
+        description: ID of Contact.
+        required: true
+        schema:
+          type: integer
+
+    get:
+      operationId: getAccountContact
+      summary: List a Account's contact
+      description: Returns a contacts for a account specified by ID.
+      responses:
+        '200':
+          $ref: '#/components/responses/Contact'
+        '403':
+          description: Response if the currently authenticated user has no access to this Account.
+      tags:
+        - Contacts

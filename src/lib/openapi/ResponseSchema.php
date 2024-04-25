@@ -35,7 +35,8 @@ class ResponseSchema
 
     protected static function isArraySchemaWithRefItems($schema): bool
     {
-        return $schema->type === 'array' && isset($schema->items) && $schema->items instanceof Reference;
+        return isset($schema->items) && $schema->items instanceof Reference &&
+            (isset($schema->type) &&  $schema->type === 'array');
     }
 
     protected static function hasAttributesReference($schema):bool
