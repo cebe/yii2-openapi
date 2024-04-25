@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'openApiPath' => '@specs/issue_fix/162_bug_dollarref_with_x_faker/162_bug_dollarref_with_x_faker.yaml',
+    'openApiPath' => '@specs/issue_fix/163_generator_crash_when_using_reference_inside_an_object/index.yaml',
     'generateUrls' => true,
     'generateModels' => true,
     'excludeModels' => [
