@@ -49,7 +49,11 @@ class FakerStubResolver
             return null;
         }
         if ($this->property->hasAttr(CustomSpecAttr::FAKER)) {
-            return $this->property->getAttr(CustomSpecAttr::FAKER);
+            $fakerVal = $this->property->getAttr(CustomSpecAttr::FAKER);
+            if ($fakerVal === false) {
+                return null;
+            }
+            return $fakerVal;
         }
 
         if ($this->attribute->isReadOnly() && $this->attribute->isVirtual()) {

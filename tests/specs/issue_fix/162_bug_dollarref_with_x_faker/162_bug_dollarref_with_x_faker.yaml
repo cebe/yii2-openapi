@@ -45,9 +45,12 @@ components:
       properties:
         id:
           type: integer
+        name:
+          type: string
+        name2:
+          type: string
+          x-faker: false
         invoice:
-          # type: integer
-          # x-faker: 5
           allOf:
             - $ref: '#/components/schemas/Invoice'
             - x-faker: false

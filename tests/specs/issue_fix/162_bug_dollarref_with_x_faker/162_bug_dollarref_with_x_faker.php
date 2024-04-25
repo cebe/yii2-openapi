@@ -8,6 +8,6 @@ return [
         'Error',
     ],
     'generateControllers' => false,
-    'generateMigrations' => true,
-    'generateModelFaker' => true,
+    'generateMigrations' => false,
+    'generateModelFaker' => true, // `generateModels` must be `true` in orde to use `generateModelFaker` as `true`
 ];

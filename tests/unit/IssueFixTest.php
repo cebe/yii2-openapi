@@ -280,9 +280,9 @@ class IssueFixTest extends DbTestCase
         $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
             'recursive' => true,
         ]);
-        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/153_nullable_false_in_required/app"), [
-        //     'recursive' => true,
-        // ]);
-        // $this->checkFiles($actualFiles, $expectedFiles);
+        $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/162_bug_dollarref_with_x_faker/app"), [
+            'recursive' => true,
+        ]);
+        $this->checkFiles($actualFiles, $expectedFiles);
     }
 }
