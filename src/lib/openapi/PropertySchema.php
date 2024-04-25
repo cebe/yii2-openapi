@@ -46,6 +46,11 @@ class PropertySchema
      */
     public $fkColName;
 
+    /**
+     * @var null|bool|string
+     * If `false`, no faker will be generated in faker model
+     * See more about usage in README.md file present in root directory of the project
+     */
     public $xFaker;
 
     /**
