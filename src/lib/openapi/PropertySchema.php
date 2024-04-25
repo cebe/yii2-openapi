@@ -140,7 +140,7 @@ class PropertySchema
             $this->fkColName = $fkColName;
             $this->property = $reference;
             $property = $this->property;
-        } elseif($xFaker !== null && $reference instanceof Reference) {
+        } elseif ($xFaker !== null && $reference instanceof Reference) {
             $this->xFaker = $xFaker;
             $this->property = $reference;
             $property = $this->property;
