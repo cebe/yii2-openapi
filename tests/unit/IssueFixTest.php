@@ -2,8 +2,9 @@
 
 namespace tests\unit;
 
-use Yii;
 use tests\DbTestCase;
+use Yii;
+use yii\base\InvalidArgumentException;
 use yii\helpers\FileHelper;
 
 // This class contains tests for various issues present at GitHub
@@ -49,12 +50,12 @@ class IssueFixTest extends DbTestCase
         $this->createTableForFloatIssue();
         $testFile = Yii::getAlias("@specs/issue_fix/float_issue/float_issue.php");
         $this->runGenerator($testFile, 'pgsql');
-        $this->expectException(\yii\base\InvalidArgumentException::class);
-        FileHelper::findDirectories(Yii::getAlias('@app').'/migration');
-        FileHelper::findDirectories(Yii::getAlias('@app').'/migrations');
-        FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_mysql_db');
-        FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_maria_db');
-        FileHelper::findDirectories(Yii::getAlias('@app').'/migrations_pgsql_db');
+        $this->expectException(InvalidArgumentException::class);
+        FileHelper::findDirectories(Yii::getAlias('@app') . '/migration');
+        FileHelper::findDirectories(Yii::getAlias('@app') . '/migrations');
+        FileHelper::findDirectories(Yii::getAlias('@app') . '/migrations_mysql_db');
+        FileHelper::findDirectories(Yii::getAlias('@app') . '/migrations_maria_db');
+        FileHelper::findDirectories(Yii::getAlias('@app') . '/migrations_pgsql_db');
         $this->deleteTables();
     }
 
@@ -284,5 +285,19 @@ class IssueFixTest extends DbTestCase
             'recursive' => true,
         ]);
         $this->checkFiles($actualFiles, $expectedFiles);
+    }
+
+    // 163_generator_crash_when_using_reference_inside_an_object
+    public function test163GeneratorCrashWhenUsingReferenceInsideAnObject()
+    {
+        $testFile = Yii::getAlias("@specs/issue_fix/163_generator_crash_when_using_reference_inside_an_object/index.php");
+        $this->runGenerator($testFile, 'mysql');
+        // $actualFiles = FileHelper::findFiles(Yii::getAlias('@app'), [
+        //     'recursive' => true,
+        // ]);
+        // $expectedFiles = FileHelper::findFiles(Yii::getAlias("@specs/issue_fix/163_generator_crash_when_using_reference_inside_an_object/app"), [
+        //     'recursive' => true,
+        // ]);
+        // $this->checkFiles($actualFiles, $expectedFiles);
     }
 }
