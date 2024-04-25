@@ -51,6 +51,7 @@ class FakerStubResolver
         if ($this->property->hasAttr(CustomSpecAttr::FAKER)) {
             $fakerVal = $this->property->getAttr(CustomSpecAttr::FAKER);
             if ($fakerVal === false) {
+                $this->attribute->setFakerStub(null);
                 return null;
             }
             return $fakerVal;
