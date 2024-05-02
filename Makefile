@@ -30,6 +30,7 @@ clean_all:
 	sudo rm -rf tests/tmp/docker_app/*
 	sudo rm -rf tests/tmp/maria/*
 	sudo rm -rf tests/tmp/cache/*
+	sudo rm -rf tests/tmp/postgres/*
 
 clean:
 	sudo rm -rf tests/tmp/app/*
