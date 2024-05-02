@@ -1,1 +1,4 @@
-/tmp
+/tmp/cache
+/tmp/docker_app
+/tmp/maria
+# !/tmp/mysql/.gitignore
