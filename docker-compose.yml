@@ -31,7 +31,7 @@ services:
         ports:
             - '13306:3306'
         volumes:
-            - ./tests/tmp/mysql:/var/lib/mysql:rw
+            - mysql:/var/lib/mysql:rw
         environment:
             TZ: UTC
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
