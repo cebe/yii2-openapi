@@ -25,12 +25,7 @@ test:
 
 clean_all:
 	docker-compose down
-	# sudo rm -rf tests/tmp/*
-	sudo rm -rf tests/tmp/app/*
-	sudo rm -rf tests/tmp/docker_app/*
-	sudo rm -rf tests/tmp/maria/*
-	sudo rm -rf tests/tmp/cache/*
-	sudo rm -rf tests/tmp/postgres/*
+	sudo rm -rf tests/tmp/*
 
 clean:
 	sudo rm -rf tests/tmp/app/*
