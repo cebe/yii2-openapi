@@ -27,9 +27,10 @@ services:
             - maria
         tty: true
     mysql:
-        image: mysql:8.0.37
+        image: mysql:8.4
         ports:
             - '13306:3306'
+        command: mysqld --mysql-native-password=ON
         volumes:
             - ./tests/tmp/mysql:/var/lib/mysql:rw
         environment:
