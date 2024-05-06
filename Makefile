@@ -46,6 +46,9 @@ up:
 cli:
 	docker-compose exec --user=$(UID) php bash
 
+cli_mysql:
+	docker-compose exec --user=$(UID) mysql bash
+
 migrate:
 	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/app"'
 	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
