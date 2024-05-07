@@ -18,7 +18,7 @@ class m200000_000001_create_table_users extends \yii\db\Migration
         ]);
         $this->createIndex('users_username_key', '{{%users}}', 'username', true);
         $this->createIndex('users_email_key', '{{%users}}', 'email', true);
-        $this->createIndex('users_role_flags_index', '{{%users}}', 'role,flags', false);
+        $this->createIndex('users_role_flags_index', '{{%users}}', ["role", "flags"], false);
     }
 
     public function down()

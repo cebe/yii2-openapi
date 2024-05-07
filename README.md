@@ -285,7 +285,7 @@ Allow to set foreign key constraint in migrations for ON UPDATE event of row in 
 
 ### `x-fk-column-name`
 
-Provide custom database table column name in case of relationship column. This will not reflect in models, faker etc. Example:
+Provide custom database table column name in case of relationship column. This will not reflect in models relations, faker etc. Example:
 
 ```yaml
   components:
