@@ -443,8 +443,13 @@ class AttributeResolver
                 }
             }
             foreach ($props as $prop) {
+                // for more info see test tests/specs/fk_col_name/fk_col_name.yaml
+                // File: ForeignKeyColumnNameTest::testIndexForColumnWithCustomName
+                // first check direct column names
                 if (!isset($this->attributes[$prop])) {
+                    // then check x-fk-column-name
                     if (!in_array($prop, array_keys($xFkColumnNames))) {
+                        // then check relations/reference e.g. `user`/`user_id`
                         $refPropName = (substr($prop, -3) === '_id') ? rtrim($prop, '_id') : null;
                         if ($refPropName && !isset($this->attributes[$refPropName])) {
                             throw new InvalidDefinitionException('Invalid index definition - property ' . $prop
