@@ -16,7 +16,7 @@ class m200000_000004_change_table_v2_users extends \yii\db\Migration
         $this->alterColumn('{{%v2_users}}', 'created_at', "DROP DEFAULT");
         $this->dropIndex('v2_users_username_key', '{{%v2_users}}');
         $this->createIndex('v2_users_login_key', '{{%v2_users}}', 'login', true);
-        $this->createIndex('v2_users_role_flags_hash_index', '{{%v2_users}}', 'role,flags', 'hash');
+        $this->createIndex('v2_users_role_flags_hash_index', '{{%v2_users}}', ["role", "flags"], 'hash');
     }
 
     public function safeDown()

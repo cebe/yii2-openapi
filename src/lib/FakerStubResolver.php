@@ -62,7 +62,7 @@ class FakerStubResolver
         }
 
         // column name ends with `_id`
-        if (substr($this->attribute->columnName, -strlen('_id'))==='_id') {
+        if (substr($this->attribute->columnName, -3) === '_id' || !empty($this->attribute->fkColName)) {
             $config = $this->config;
             if (!$config) {
                 $config = new Config;

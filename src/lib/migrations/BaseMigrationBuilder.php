@@ -141,6 +141,14 @@ abstract class BaseMigrationBuilder
             $this->migration->addUpCode($builder->addPrimaryKey($tableName, $this->model->junctionCols))
                             ->addDownCode($builder->dropPrimaryKey($tableName, $this->model->junctionCols));
         }
+
+        foreach ($this->model->indexes as $index) {
+            $upCode = $index->isUnique ? $builder->addUniqueIndex($tableName, $index->name, $index->columns)
+                : $builder->addIndex($tableName, $index->name, $index->columns, $index->type);
+            $this->migration->addUpCode($upCode)
+                            ->addDownCode($builder->dropIndex($tableName, $index->name));
+        }
+
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
@@ -151,13 +159,6 @@ abstract class BaseMigrationBuilder
             if ($relation->getTableName() !== $this->model->tableName) {
                 $this->migration->dependencies[] = $refTable;
             }
-        }
-
-        foreach ($this->model->indexes as $index) {
-            $upCode = $index->isUnique ? $builder->addUniqueIndex($tableName, $index->name, $index->columns)
-                : $builder->addIndex($tableName, $index->name, $index->columns, $index->type);
-            $this->migration->addUpCode($upCode)
-                            ->addDownCode($builder->dropIndex($tableName, $index->name));
         }
 
         return $this->migration;
@@ -211,13 +212,13 @@ abstract class BaseMigrationBuilder
             }
             $this->buildColumnChanges($current, $desired, $changedAttributes);
         }
+        if (!$relation) {
+            $this->buildIndexChanges();
+        }
         if ($relation) {
             $this->buildRelationsForJunction($relation);
         } else {
             $this->buildRelations();
-        }
-        if (!$relation) {
-            $this->buildIndexChanges();
         }
         return $this->migration;
     }
