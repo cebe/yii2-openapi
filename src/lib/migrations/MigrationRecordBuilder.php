@@ -231,7 +231,10 @@ final class MigrationRecordBuilder
 
     public function addUniqueIndex(string $tableAlias, string $indexName, array $columns):string
     {
-        return sprintf(self::ADD_UNIQUE, $indexName, $tableAlias,
+        return sprintf(
+            self::ADD_UNIQUE,
+            $indexName,
+            $tableAlias,
             count($columns) === 1 ? "'{$columns[0]}'" : '["'.implode('", "', $columns).'"]'
         );
     }
@@ -239,9 +242,13 @@ final class MigrationRecordBuilder
     public function addIndex(string $tableAlias, string $indexName, array $columns, ?string $using = null):string
     {
         $indexType = $using === null ? 'false' : "'".ColumnToCode::escapeQuotes($using)."'";
-        return sprintf(self::ADD_INDEX, $indexName, $tableAlias,
+        return sprintf(
+            self::ADD_INDEX,
+            $indexName,
+            $tableAlias,
             count($columns) === 1 ? "'{$columns[0]}'" : '["'.implode('", "', $columns).'"]',
-            $indexType);
+            $indexType
+        );
     }
 
     public function addPrimaryKey(string $tableAlias, array $columns, string $pkName= null):string
