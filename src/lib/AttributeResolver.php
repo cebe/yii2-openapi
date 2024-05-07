@@ -436,10 +436,25 @@ class AttributeResolver
             }
             $props = array_map('trim', explode(',', trim($props)));
             $columns = [];
+            $xFkColumnNames = [];
+            foreach ($this->attributes as $key => $value) {
+                if (!empty($value->fkColName)) {
+                    $xFkColumnNames[$value->fkColName] = $key;
+                }
+            }
             foreach ($props as $prop) {
                 if (!isset($this->attributes[$prop])) {
-                    throw new InvalidDefinitionException('Invalid index definition - property ' . $prop
-                        . ' not declared');
+                    if (!in_array($prop, array_keys($xFkColumnNames))) {
+                        $refPropName = (substr($prop, -3) === '_id') ? rtrim($prop, '_id') : null;
+                        if ($refPropName && !isset($this->attributes[$refPropName])) {
+                            throw new InvalidDefinitionException('Invalid index definition - property ' . $prop
+                                . ' not declared');
+                        } else {
+                            $prop = $refPropName;
+                        }
+                    } else {
+                        $prop = $xFkColumnNames[$prop];
+                    }
                 }
                 $columns[] = $this->attributes[$prop]->columnName;
             }
