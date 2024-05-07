@@ -37,6 +37,8 @@ components:
       x-indexes:
         - 'unique:user_id,name'
         - 'unique:redelivery_of,name'
+        # - 'unique:rd2,name'
+        - 'unique:rd_abc_2,name'
       type: object
       description: example for x-fk-column-name
       properties:
@@ -51,4 +53,8 @@ components:
             - $ref: '#/components/schemas/Delivery'
             # this will automatically create `redelivery_of_id` column, but to avoid that use below extension
             - x-fk-column-name: redelivery_of # this will create `redelivery_of` column instead of `redelivery_of_id`
+        rd2:
+          allOf:
+            - $ref: '#/components/schemas/Delivery'
+            - x-fk-column-name: rd_abc_2
 
