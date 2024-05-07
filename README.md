@@ -285,7 +285,7 @@ Allow to set foreign key constraint in migrations for ON UPDATE event of row in 
 
 ### `x-fk-column-name`
 
-Provide custom column name in case of relationship column. Example:
+Provide custom database table column name in case of relationship column. This will not reflect in models, faker etc. Example:
 
 ```yaml
   components:
@@ -564,4 +564,3 @@ Professional support, consulting as well as software development services are av
 https://www.cebe.cc/en/contact
 
 Development of this library is sponsored by [cebe.:cloud: "Your Professional Deployment Platform"](https://cebe.cloud).
-
