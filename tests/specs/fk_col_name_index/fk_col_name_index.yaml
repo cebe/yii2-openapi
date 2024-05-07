@@ -46,6 +46,7 @@ components:
           type: integer
         name:
           type: string
+          maxLength: 255 # https://stackoverflow.com/a/1827099
         user:
           $ref: '#/components/schemas/User' # this will automatically create `user_id` column
         redelivery_of:
