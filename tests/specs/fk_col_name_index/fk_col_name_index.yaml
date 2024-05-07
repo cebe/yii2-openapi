@@ -37,8 +37,8 @@ components:
       x-indexes:
         - 'unique:user_id,name'
         - 'unique:redelivery_of,name'
-        # - 'unique:rd2,name'
-        - 'unique:rd_abc_2,name'
+        # - 'unique:rd2,name' # incorrect way
+        - 'unique:rd_abc_2,name' # correct way
       type: object
       description: example for x-fk-column-name
       properties:
