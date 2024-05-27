@@ -88,7 +88,7 @@ final class MigrationRecordBuilder
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
             $name = static::quote($column->name);
-            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, $converter->getCode());
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, ColumnToCode::escapeQuotes($converter->getCode()));
         }
 
         $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
@@ -103,7 +103,7 @@ final class MigrationRecordBuilder
         if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
             $name = static::quote($column->name);
-            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, ColumnToCode::escapeQuotes($converter->getCode()));
         }
         $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
@@ -120,7 +120,7 @@ final class MigrationRecordBuilder
                 ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
                 $tableAlias,
                 $column->name,
-                $converter->getCode()
+                ColumnToCode::escapeQuotes($converter->getCode())
             );
         }
         $converter = $this->columnToCode($tableAlias, $column, true);
@@ -340,7 +340,7 @@ final class MigrationRecordBuilder
             }
         }
 
-        $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT.'    ', "'"], $finalStr);
+        $codeColumns = str_replace([PHP_EOL], [PHP_EOL . self::INDENT.'    '], $finalStr);
         $codeColumns = trim($codeColumns);
         $codeColumns = '['.PHP_EOL.self::INDENT.'    '.$codeColumns.PHP_EOL . self::INDENT.']';
         return $codeColumns;

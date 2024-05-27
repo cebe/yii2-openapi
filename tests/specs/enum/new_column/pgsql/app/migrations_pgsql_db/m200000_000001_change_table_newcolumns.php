@@ -9,7 +9,7 @@ class m200000_000001_change_table_newcolumns extends \yii\db\Migration
     {
         $this->execute('CREATE TYPE "enum_itt_newcolumns_new_column" AS ENUM(\'ONE\', \'TWO\', \'THREE\')');
         $this->addColumn('{{%newcolumns}}', 'new_column', '"enum_itt_newcolumns_new_column" NOT NULL DEFAULT \'ONE\'');
-        $this->db->createCommand('ALTER TABLE {{%newcolumns}} ADD COLUMN new_column_x varchar(10) NOT NULL DEFAULT \'ONE\' AFTER id')->execute();
+        $this->db->createCommand('ALTER TABLE {{%newcolumns}} ADD COLUMN "new_column_x" varchar(10) NOT NULL DEFAULT \'ONE\'')->execute();
         $this->dropColumn('{{%newcolumns}}', 'delete_col');
         $this->execute('DROP TYPE "enum_itt_newcolumns_delete_col"');
     }
