@@ -59,6 +59,16 @@ components:
           default:
             ONE
           nullable: false
+        new_column_x:
+          type: string
+          enum:
+            - ONE
+            - TWO
+            - THREE
+          default:
+            ONE
+          x-db-type: varchar(10)
+          nullable: false
 
     Editcolumn:
       type: object
