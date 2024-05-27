@@ -226,7 +226,7 @@ class ColumnToCode
 
     public function isEnum():bool
     {
-        return !empty($this->column->enumValues) && empty($this->column->xDbType);
+        return BaseMigrationBuilder::isEnum($this->column);
     }
 
     public function isDecimal()
