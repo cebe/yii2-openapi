@@ -479,10 +479,7 @@ abstract class BaseMigrationBuilder
 
     public static function isEnum(\yii\db\ColumnSchema $columnSchema): bool
     {
-        if (!empty($columnSchema->enumValues) && is_array($columnSchema->enumValues)) {
-            return true;
-        }
-        return false;
+        return !empty($columnSchema->enumValues) && is_array($columnSchema->enumValues) && empty($columnSchema->xDbType);
     }
 
     public static function isEnumValuesChanged(

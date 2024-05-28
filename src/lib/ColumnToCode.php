@@ -169,7 +169,7 @@ class ColumnToCode
             $default = '';
         } elseif (ApiGenerator::isPostgres() && $this->isEnum()) {
             $default =
-                $this->rawParts['default'] !== null ? ' DEFAULT ' . self::escapeQuotes(trim($this->rawParts['default'])) : '';
+                $this->rawParts['default'] !== null ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
         } else {
             $default = $this->rawParts['default'] !== null ? ' DEFAULT ' . trim($this->rawParts['default']) : '';
         }
@@ -178,13 +178,10 @@ class ColumnToCode
         if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->rawParts['position']) {
             $code .= ' ' . $this->rawParts['position'];
         }
-        if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
-            return $quoted ? "'" . $code . "'" : $code;
-        }
         if (ApiGenerator::isPostgres() && $this->alterByXDbType) {
-            return $quoted ? "'" . $this->rawParts['type'] . "'" : $this->rawParts['type'];
+            return $quoted ? VarDumper::export($this->rawParts['type']) : $this->rawParts['type'];
         }
-        return $quoted ? "'" . $code . "'" : $code;
+        return $quoted ? VarDumper::export($code) : $code;
     }
 
     public function getAlterExpression(bool $addUsingExpression = false):string
@@ -226,7 +223,7 @@ class ColumnToCode
 
     public function isEnum():bool
     {
-        return !empty($this->column->enumValues);
+        return BaseMigrationBuilder::isEnum($this->column);
     }
 
     public function isDecimal()
@@ -313,14 +310,14 @@ class ColumnToCode
     private function defaultValueJson(array $value):string
     {
         if ($this->alter === true) {
-            return "'" . str_replace('"', '\"', Json::encode($value)). "'";
+            return "'" . str_replace('"', '\"', Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT)) . "'";
         }
-        return "\\'" . new Expression(Json::encode($value)) . "\\'";
+        return "'" . Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT) . "'";
     }
 
     private function defaultValueArray(array $value):string
     {
-        return "'{" . str_replace('"', "\"", trim(Json::encode($value), '[]')) . "}'";
+        return "'{" . trim(Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT), '[]') . "}'";
     }
 
     private function resolve():void
@@ -442,10 +439,10 @@ class ColumnToCode
                 break;
             case 'object':
                 if ($value instanceof JsonExpression) {
-                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
+                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT) . "')";
                     $this->rawParts['default'] = $this->defaultValueJson($value->getValue());
                 } elseif ($value instanceof ArrayExpression) {
-                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue()) . "')";
+                    $this->fluentParts['default'] = "defaultValue('" . Json::encode($value->getValue(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT) . "')";
                     $this->rawParts['default'] = $this->defaultValueArray($value->getValue());
                 } else {
                     // $value instanceof \yii\db\Expression
@@ -454,19 +451,15 @@ class ColumnToCode
                 }
                 break;
             case 'array':
-                $this->fluentParts['default'] = "defaultValue('" . Json::encode($value) . "')";
+                $this->fluentParts['default'] = "defaultValue('" . Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_QUOT) . "')";
                 $this->rawParts['default'] = $this->isJson()
                     ? $this->defaultValueJson($value)
                     : $this->defaultValueArray($value);
                 break;
             default:
                 $this->fluentParts['default'] = $expectInteger
-                    ? 'defaultValue(' . $value . ')' : 'defaultValue("' . self::escapeQuotes((string)$value) . '")';
-                $this->rawParts['default'] = $expectInteger ? $value : self::wrapQuotes($value);
-
-                if ((ApiGenerator::isMysql() || ApiGenerator::isMariaDb()) && $this->isEnum()) {
-                    $this->rawParts['default'] = self::escapeQuotes($this->rawParts['default']);
-                }
+                    ? 'defaultValue(' . $value . ')' : 'defaultValue(' . VarDumper::export((string)$value) . ')';
+                $this->rawParts['default'] = $expectInteger ? $value : VarDumper::export((string)$value);
         }
     }
 

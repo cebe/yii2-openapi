@@ -12,7 +12,7 @@ class m200000_000005_create_table_v2_comments extends \yii\db\Migration
             'post_id' => $this->bigInteger()->notNull(),
             'user_id' => $this->bigInteger()->null()->defaultValue(null),
             'message' => $this->text()->notNull(),
-            'meta_data' => $this->string(300)->null()->defaultValue(""),
+            'meta_data' => $this->string(300)->null()->defaultValue(''),
             'created_at' => $this->timestamp()->notNull(),
         ]);
         $this->addForeignKey('fk_v2_comments_post_id_v2_posts_id', '{{%v2_comments}}', 'post_id', '{{%v2_posts}}', 'id');

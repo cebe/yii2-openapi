@@ -103,6 +103,7 @@ class m100000_000000_pgsql extends Migration
                 'json3' => $this->json()->defaultValue(Json::encode(['foo' => 'bar', 'bar' => 'baz'])),
                 'json4' => "json DEFAULT '" . new Expression(Json::encode(['ffo' => 'bar'])) . "'",
                 'status' => '"'.$enumTypeName.'"',
+                'status_x' => 'varchar(10)',
                 'search' => 'tsvector'
             ]);
         $columns = [
