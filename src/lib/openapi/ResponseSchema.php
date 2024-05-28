@@ -49,6 +49,9 @@ class ResponseSchema
 //        if($schemaOrReference instanceof Reference){
 //            $schemaOrReference->resolve();
 //        }
+        if (!$schemaOrReference instanceof Reference) { # https://github.com/cebe/yii2-openapi/issues/175
+            return null;
+        }
         $ref = $schemaOrReference->getJsonReference()->getJsonPointer()->getPointer();
         $name = strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
         return str_replace(JunctionSchemas::PREFIX, '', $name);
