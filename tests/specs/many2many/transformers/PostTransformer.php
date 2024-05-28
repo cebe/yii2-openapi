@@ -6,8 +6,8 @@ use app\models\Post;
 
 class PostTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['postsAttaches', 'postsGallery', 'postsPhotos', 'tags', 'attaches', 'images', 'photos'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['postsAttaches', 'postsGallery', 'postsPhotos', 'tags', 'attaches', 'images', 'photos'];
+    protected array $defaultIncludes = [];
 
     public function transform(Post $model)
     {

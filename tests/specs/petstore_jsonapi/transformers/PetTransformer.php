@@ -6,8 +6,8 @@ use app\models\Pet;
 
 class PetTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['duplicates', 'doctor'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['duplicates', 'doctor'];
+    protected array $defaultIncludes = [];
 
     public function transform(Pet $model)
     {

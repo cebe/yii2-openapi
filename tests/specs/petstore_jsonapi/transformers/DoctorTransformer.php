@@ -6,8 +6,8 @@ use app\models\Doctor;
 
 class DoctorTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = [];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = [];
+    protected array $defaultIncludes = [];
 
     public function transform(Doctor $model)
     {

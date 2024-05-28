@@ -6,8 +6,8 @@ use app\models\Photo;
 
 class PhotoTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['postsAttaches', 'postsGallery', 'photosPosts', 'targets', 'articles', 'posts'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['postsAttaches', 'postsGallery', 'photosPosts', 'targets', 'articles', 'posts'];
+    protected array $defaultIncludes = [];
 
     public function transform(Photo $model)
     {
