@@ -59,7 +59,7 @@ class AttributeResolverTest extends DbTestCase
         $schema = new ComponentSchema($openApiSchema, $schemaName);
         $resolver = new AttributeResolver($schemaName, $schema, new JunctionSchemas([]));
         $model = $resolver->resolve();
-        echo $schemaName . PHP_EOL;
+        //echo $schemaName . PHP_EOL;
         self::assertEquals($expected->name, $model->name);
         self::assertEquals($expected->tableName, $model->tableName);
         self::assertEquals($expected->description, $model->description);

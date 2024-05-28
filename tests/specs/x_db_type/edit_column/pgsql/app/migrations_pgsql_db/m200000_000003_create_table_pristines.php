@@ -10,7 +10,7 @@ class m200000_000003_create_table_pristines extends \yii\db\Migration
         $this->createTable('{{%pristines}}', [
             0 => '"custom_id_col" serial primary key NOT NULL',
             1 => '"name" text NOT NULL',
-            'tag' => $this->text()->null()->defaultValue("4 leg"),
+            'tag' => $this->text()->null()->defaultValue('4 leg'),
             2 => '"new_col" varchar NULL DEFAULT NULL',
             3 => '"col_5" decimal(12,4) NULL DEFAULT NULL',
             4 => '"col_6" decimal(11,2) NULL DEFAULT NULL',

@@ -24,8 +24,8 @@ final class MigrationRecordBuilder
     public const DROP_FK = MigrationRecordBuilder::INDENT . "\$this->dropForeignKey('%s', '%s');";
     public const DROP_PK = MigrationRecordBuilder::INDENT . "\$this->dropPrimaryKey('%s', '%s');";
     public const ADD_TABLE = MigrationRecordBuilder::INDENT . "\$this->createTable('%s', %s);";
-    public const ADD_UNIQUE = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', true);";
-    public const ADD_INDEX = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', '%s', %s);";
+    public const ADD_UNIQUE = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', %s, true);";
+    public const ADD_INDEX = MigrationRecordBuilder::INDENT . "\$this->createIndex('%s', '%s', %s, %s);";
     public const DROP_COLUMN = MigrationRecordBuilder::INDENT . "\$this->dropColumn('%s', '%s');";
     public const ADD_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('CREATE TYPE \"enum_%s_%s\" AS ENUM(%s)');";
     public const DROP_ENUM = MigrationRecordBuilder::INDENT . "\$this->execute('DROP TYPE \"enum_%s_%s\"');";
@@ -88,7 +88,7 @@ final class MigrationRecordBuilder
         if (is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
             $name = static::quote($column->name);
-            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, $converter->getCode());
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $name, ColumnToCode::escapeQuotes($converter->getCode()));
         }
 
         $converter = $this->columnToCode($tableAlias, $column, false, false, false, false, $position);
@@ -103,7 +103,7 @@ final class MigrationRecordBuilder
         if (property_exists($column, 'xDbType') && is_string($column->xDbType) && !empty($column->xDbType)) {
             $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
             $name = static::quote($column->name);
-            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, $converter->getCode());
+            return sprintf(self::ADD_COLUMN_RAW, $tableAlias, $column->name, ColumnToCode::escapeQuotes($converter->getCode()));
         }
         $converter = $this->columnToCode($tableAlias, $column, true, false, false, false, $position);
         return sprintf(self::ADD_COLUMN, $tableAlias, $column->name, $converter->getCode(true));
@@ -120,7 +120,7 @@ final class MigrationRecordBuilder
                 ApiGenerator::isPostgres() ? self::ALTER_COLUMN_RAW_PGSQL : self::ALTER_COLUMN_RAW,
                 $tableAlias,
                 $column->name,
-                $converter->getCode()
+                ColumnToCode::escapeQuotes($converter->getCode())
             );
         }
         $converter = $this->columnToCode($tableAlias, $column, true);
@@ -231,13 +231,24 @@ final class MigrationRecordBuilder
 
     public function addUniqueIndex(string $tableAlias, string $indexName, array $columns):string
     {
-        return sprintf(self::ADD_UNIQUE, $indexName, $tableAlias, implode(',', $columns));
+        return sprintf(
+            self::ADD_UNIQUE,
+            $indexName,
+            $tableAlias,
+            count($columns) === 1 ? "'{$columns[0]}'" : '["'.implode('", "', $columns).'"]'
+        );
     }
 
     public function addIndex(string $tableAlias, string $indexName, array $columns, ?string $using = null):string
     {
         $indexType = $using === null ? 'false' : "'".ColumnToCode::escapeQuotes($using)."'";
-        return sprintf(self::ADD_INDEX, $indexName, $tableAlias, implode(',', $columns), $indexType);
+        return sprintf(
+            self::ADD_INDEX,
+            $indexName,
+            $tableAlias,
+            count($columns) === 1 ? "'{$columns[0]}'" : '["'.implode('", "', $columns).'"]',
+            $indexType
+        );
     }
 
     public function addPrimaryKey(string $tableAlias, array $columns, string $pkName= null):string
@@ -329,7 +340,7 @@ final class MigrationRecordBuilder
             }
         }
 
-        $codeColumns = str_replace([PHP_EOL, "\\\'"], [PHP_EOL . self::INDENT.'    ', "'"], $finalStr);
+        $codeColumns = str_replace([PHP_EOL], [PHP_EOL . self::INDENT.'    '], $finalStr);
         $codeColumns = trim($codeColumns);
         $codeColumns = '['.PHP_EOL.self::INDENT.'    '.$codeColumns.PHP_EOL . self::INDENT.']';
         return $codeColumns;
