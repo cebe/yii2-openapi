@@ -182,6 +182,8 @@ Such values are not allowed:
    - `int null default null after low_price` (null and default will be handled by `nullable` and `default` keys respectively)
    - MEDIUMINT(10) UNSIGNED ZEROFILL NULL DEFAULT '7' COMMENT 'comment' AFTER `seti`, ADD INDEX `t` (`w`)
 
+If `enum` and `x-db-type` both are provided then for database column schema (migrations), only `x-db-type` will be considered ignoring `enum`.
+
 ### `x-indexes`
 
 Specify table indexes
@@ -285,7 +287,7 @@ Allow to set foreign key constraint in migrations for ON UPDATE event of row in 
 
 ### `x-fk-column-name`
 
-Provide custom column name in case of relationship column. Example:
+Provide custom database table column name in case of relationship column. This will not reflect in models relations, faker etc. Example:
 
 ```yaml
   components:
@@ -445,6 +447,8 @@ It works on all 3 DB: MySQL, MariaDb and PgSQL.
 ```
 
 Note: Changes in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handled manually.
+
+It will be ignored for database column schema (migrations) if `x-db-type` is provided.
 
 ## Handling of `numeric` (#numeric, #MariaDb)
 

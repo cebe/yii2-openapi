@@ -32,7 +32,7 @@ class WebhookFaker extends BaseModelFaker
         //$model->id = $uniqueFaker->numberBetween(0, 1000000);
         $model->name = $faker->sentence;
         $model->user_id = $faker->randomElement(\app\models\User::find()->select("id")->column());
-        $model->redelivery_of = $faker->numberBetween(0, 1000000);
+        $model->redelivery_of = $faker->randomElement(\app\models\Delivery::find()->select("id")->column());
         if (!is_callable($attributes)) {
             $model->setAttributes($attributes, false);
         } else {

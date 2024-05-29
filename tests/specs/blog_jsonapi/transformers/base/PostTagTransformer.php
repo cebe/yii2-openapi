@@ -8,8 +8,8 @@ use app\transformers\TagTransformer;
 
 class PostTagTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['post', 'tag'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['post', 'tag'];
+    protected array $defaultIncludes = [];
 
     public function transform(PostTag $model)
     {

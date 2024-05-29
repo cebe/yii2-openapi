@@ -23,14 +23,14 @@ use <?=$mainNamespace?>\<?=$transformerClass?>;
 class <?=$transformer->name?> extends TransformerAbstract
 {
 <?php if (!empty($transformer->availableRelations)):?>
-    protected $availableIncludes = ['<?=implode("', '", $transformer->availableRelations)?>'];
+    protected array $availableIncludes = ['<?=implode("', '", $transformer->availableRelations)?>'];
 <?php else:?>
-    protected $availableIncludes = [];
+    protected array $availableIncludes = [];
 <?php endif;?>
 <?php if (!empty($transformer->defaultRelations)):?>
-    protected $defaultIncludes = ['<?=implode("', '", $transformer->defaultRelations)?>'];
+    protected array $defaultIncludes = ['<?=implode("', '", $transformer->defaultRelations)?>'];
 <?php else:?>
-    protected $defaultIncludes = [];
+    protected array $defaultIncludes = [];
 <?php endif;?>
 
     public function transform(<?=$transformer->dbModel->getClassName()?> $model)

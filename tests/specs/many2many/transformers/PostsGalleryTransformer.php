@@ -6,8 +6,8 @@ use app\models\PostsGallery;
 
 class PostsGalleryTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['image', 'article'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['image', 'article'];
+    protected array $defaultIncludes = [];
 
     public function transform(PostsGallery $model)
     {

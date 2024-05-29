@@ -70,6 +70,13 @@ components:
                     enum:
                         - active
                         - draft
+                status_x:
+                    type: string
+                    default: draft
+                    enum:
+                        - active
+                        - draft
+                    x-db-type: varchar(10)
                 search:
                   type: string
                   x-db-type: tsvector

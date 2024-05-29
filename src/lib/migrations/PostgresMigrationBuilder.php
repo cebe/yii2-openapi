@@ -147,6 +147,10 @@ final class PostgresMigrationBuilder extends BaseMigrationBuilder
         $tableAlias = $this->model->getTableAlias();
         $enums = $this->model->getEnumAttributes();
         foreach ($enums as $attr) {
+            if (!empty($attr->xDbType)) {
+                // do not generate enum types when custom x-db-type is used
+                continue;
+            }
             $this->migration
                 ->addUpCode($this->recordBuilder->createEnum($tableAlias, $attr->columnName, $attr->enumValues), true)
                 ->addDownCode($this->recordBuilder->dropEnum($tableAlias, $attr->columnName), true);

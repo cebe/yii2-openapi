@@ -6,8 +6,8 @@ use app\models\PetStatistic;
 
 class PetStatisticTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['parentPet', 'favoritePets', 'topDoctors'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['parentPet', 'favoritePets', 'topDoctors'];
+    protected array $defaultIncludes = [];
 
     public function transform(PetStatistic $model)
     {

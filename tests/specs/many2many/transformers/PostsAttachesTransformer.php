@@ -6,8 +6,8 @@ use app\models\PostsAttaches;
 
 class PostsAttachesTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['attach', 'target'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['attach', 'target'];
+    protected array $defaultIncludes = [];
 
     public function transform(PostsAttaches $model)
     {
