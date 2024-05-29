@@ -170,20 +170,19 @@ class ResponseSchema
     public static function guessModelClassFromJsonResource(SpecObjectInterface $property): array
     {
         $schema = $property instanceof Reference ? $property->resolve() : $property;
-
-        if (self::isObjectSchema($schema) && !self::hasAttributesReference($schema)) { # https://github.com/cebe/yii2-openapi/issues/172
-            $name = self::schemaNameByRef($property);
-            if ($name !== null) {
-                return [$name, '', '', 'object'];
+        if (self::isObjectSchema($schema)) {
+            if (self::hasAttributesReference($schema)) {
+                $name = self::schemaNameByRef($schema->properties['attributes']);
+                if ($name !== null) {
+                    return [$name, '', '', 'object'];
+                }
+                return [null, null, null, null];
+            } else { # https://github.com/cebe/yii2-openapi/issues/172
+                $name = self::schemaNameByRef($property);
+                if ($name !== null) {
+                    return [$name, '', '', 'object'];
+                }
             }
-        }
-
-        if (self::isObjectSchema($schema) && self::hasAttributesReference($schema)) {
-            $name = self::schemaNameByRef($schema->properties['attributes']);
-            if ($name !== null) {
-                return [$name, '', '', 'object'];
-            }
-            return [null, null, null, null];
         }
         if (self::isArraySchemaWithRefItems($property)) {
             $ref = $property->items->resolve();
