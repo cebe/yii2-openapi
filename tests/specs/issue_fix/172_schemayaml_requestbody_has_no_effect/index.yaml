@@ -1,0 +1,68 @@
+openapi: 3.0.3
+
+info:
+  title: 'Proxy-Service'
+  version: 1.0.0
+
+components:
+
+  requestBodies:
+
+    Account:
+      description: 'Create / update account'
+      required: true
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: '#/components/schemas/Account'
+
+  responses:
+
+    Account:
+      description: 'Returns one account by ID.'
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: '#/components/schemas/Account'
+
+  schemas:
+
+    Account:
+      description: Account
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          description: account name
+          type: string
+          maxLength: 128
+
+paths:
+
+  '/accounts':
+
+    post:
+      operationId: createAccount
+      summary: Create a account
+      description: Create account
+      requestBody:
+        $ref: '#/components/requestBodies/Account'
+      responses:
+        '201':
+          description: OK
+#          $ref: '#/components/responses/Account'
+        '400':
+          description: BodyParams must be an array.
+        '422':
+          description: Validation error.
+      tags:
+        - Accounts
+
