@@ -18,7 +18,7 @@
 		"source": "https://github.com/cebe/yii2-openapi"
 	},
 	"require": {
-		"php": ">=7.2.0",
+		"php": "^7.4 || ^8.0",
 		"cebe/php-openapi": "^1.5.0",
 		"yiisoft/yii2": "~2.0.48",
 		"yiisoft/yii2-gii": "~2.0.0 | ~2.1.0 | ~2.2.0| ~2.3.0",
