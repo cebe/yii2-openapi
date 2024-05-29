@@ -8,8 +8,8 @@ use app\transformers\UserTransformer;
 
 class CommentTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['post', 'user'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['post', 'user'];
+    protected array $defaultIncludes = [];
 
     public function transform(Comment $model)
     {

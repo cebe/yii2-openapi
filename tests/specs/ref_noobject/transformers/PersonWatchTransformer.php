@@ -6,8 +6,8 @@ use app\models\PersonWatch;
 
 class PersonWatchTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = [];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = [];
+    protected array $defaultIncludes = [];
 
     public function transform(PersonWatch $model)
     {

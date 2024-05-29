@@ -6,8 +6,8 @@ use app\models\User;
 
 class UserTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = [];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = [];
+    protected array $defaultIncludes = [];
 
     public function transform(User $model)
     {
