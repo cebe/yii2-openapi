@@ -26,7 +26,6 @@ abstract class Custom extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['status', 'status_x'], 'trim'],
             'num_integer' => [['num'], 'integer'],
             'num_default' => [['num'], 'default', 'value' => 0],
             'json1_default' => [['json1'], 'default', 'value' => []],

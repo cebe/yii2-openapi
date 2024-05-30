@@ -1,0 +1,40 @@
+
+openapi: 3.0.3
+
+info:
+  title: 'Proxy-Service'
+  version: 1.0.0
+
+components:
+
+  schemas:
+
+    Mailing:
+      description: Mailing
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          description: name
+          type: string
+          maxLength: 128
+        paymentMethodName:
+          type: string
+          enum:
+            - card
+            - cash
+            - ewallet
+
+paths:
+  '/':
+    get:
+      operationId: opId
+      summary: summary
+      responses:
+        '200':
+          description: OK

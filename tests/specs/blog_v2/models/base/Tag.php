@@ -21,7 +21,7 @@ abstract class Tag extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['name', 'lang'], 'trim'],
+            'trim' => [['name'], 'trim'],
             'required' => [['name', 'lang'], 'required'],
             'name_unique' => [['name'], 'unique'],
             'name_string' => [['name'], 'string', 'max' => 100],
