@@ -144,7 +144,6 @@ class ValidationRulesBuilder
         foreach ($patterns as $pattern => $validator) {
             if (empty($attribute->reference) # ignore column name based rules in case of reference/relation # https://github.com/cebe/yii2-openapi/issues/159
                 && preg_match($pattern, strtolower($attribute->columnName))) {
-
                 $key = $attribute->columnName . '_' . $validator;
                 $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator);
                 return;
