@@ -10,8 +10,8 @@ use app\transformers\PostTagTransformer;
 
 class PostTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['category', 'author', 'comments', 'postTags'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['category', 'author', 'comments', 'postTags'];
+    protected array $defaultIncludes = [];
 
     public function transform(Post $model)
     {

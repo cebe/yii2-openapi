@@ -7,8 +7,8 @@ use app\transformers\PostTransformer;
 
 class CategoryTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['posts'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['posts'];
+    protected array $defaultIncludes = [];
 
     public function transform(Category $model)
     {
