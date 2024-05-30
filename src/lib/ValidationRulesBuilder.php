@@ -233,7 +233,9 @@ class ValidationRulesBuilder
                 $this->typeScope['required'][$attribute->columnName] = $attribute->columnName;
             }
 
-            if ($attribute->phpType === 'string') {
+            if ($attribute->phpType === 'string' &&
+                empty($attribute->enumValues) # don't apply trim on enum columns # https://github.com/cebe/yii2-openapi/issues/158
+            ) {
                 $this->typeScope['trim'][$attribute->columnName] = $attribute->columnName;
             }
 
