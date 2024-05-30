@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\openapi;
 
+use cebe\openapi\exceptions\UnresolvableReferenceException;
 use cebe\openapi\spec\MediaType;
 use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\Reference;
@@ -36,10 +37,10 @@ class ResponseSchema
     protected static function isArraySchemaWithRefItems($schema): bool
     {
         return isset($schema->items) && $schema->items instanceof Reference &&
-            (isset($schema->type) &&  $schema->type === 'array');
+            (isset($schema->type) && $schema->type === 'array');
     }
 
-    protected static function hasAttributesReference($schema):bool
+    protected static function hasAttributesReference($schema): bool
     {
         return isset($schema->properties['attributes']) && $schema->properties['attributes'] instanceof Reference;
     }
@@ -49,17 +50,20 @@ class ResponseSchema
 //        if($schemaOrReference instanceof Reference){
 //            $schemaOrReference->resolve();
 //        }
+        if (!$schemaOrReference instanceof Reference) { # https://github.com/cebe/yii2-openapi/issues/175
+            return null;
+        }
         $ref = $schemaOrReference->getJsonReference()->getJsonPointer()->getPointer();
         $name = strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
         return str_replace(JunctionSchemas::PREFIX, '', $name);
     }
 
     /**
-     * @param \cebe\openapi\spec\Operation $operation
+     * @param Operation $operation
      * @return array
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws UnresolvableReferenceException
      */
-    public static function guessResponseRelations(Operation $operation):array
+    public static function guessResponseRelations(Operation $operation): array
     {
         if (!isset($operation->responses)) {
             return [];
@@ -109,12 +113,12 @@ class ResponseSchema
     }
 
     /**
-     * @param \cebe\openapi\spec\Operation $operation
+     * @param Operation $operation
      * @param                              $actionType
      * @return string|null
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws UnresolvableReferenceException
      */
-    public static function guessModelClass(Operation $operation, $actionType):?string
+    public static function guessModelClass(Operation $operation, $actionType): ?string
     {
         // first, check request body
         $requestBody = $operation->requestBody;
@@ -159,20 +163,26 @@ class ResponseSchema
     }
 
     /**
-     * @param \cebe\openapi\SpecObjectInterface $property
+     * @param SpecObjectInterface $property
      * @return array|null[]
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws UnresolvableReferenceException
      */
     public static function guessModelClassFromJsonResource(SpecObjectInterface $property): array
     {
-        $schema = $property instanceof Reference? $property->resolve() : $property;
-
-        if (self::isObjectSchema($schema) && self::hasAttributesReference($schema)) {
-            $name = self::schemaNameByRef($schema->properties['attributes']);
-            if ($name !== null) {
-                return [$name, '', '', 'object'];
+        $schema = $property instanceof Reference ? $property->resolve() : $property;
+        if (self::isObjectSchema($schema)) {
+            if (self::hasAttributesReference($schema)) {
+                $name = self::schemaNameByRef($schema->properties['attributes']);
+                if ($name !== null) {
+                    return [$name, '', '', 'object'];
+                }
+                return [null, null, null, null];
+            } else { # https://github.com/cebe/yii2-openapi/issues/172
+                $name = self::schemaNameByRef($property);
+                if ($name !== null) {
+                    return [$name, '', '', 'object'];
+                }
             }
-            return [null, null, null, null];
         }
         if (self::isArraySchemaWithRefItems($property)) {
             $ref = $property->items->resolve();
@@ -188,11 +198,11 @@ class ResponseSchema
     }
 
     /**
-     * @param \cebe\openapi\spec\MediaType $content
+     * @param MediaType $content
      * @return array|null[]
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws UnresolvableReferenceException
      */
-    public static function guessModelClassFromContent(MediaType $content):array
+    public static function guessModelClassFromContent(MediaType $content): array
     {
         /** @var $referencedSchema Schema */
         if ($content->schema instanceof Reference) {
@@ -255,9 +265,9 @@ class ResponseSchema
      * @param Operation $operation
      * @param           $modelClass
      * @return null|array
-     * @throws \cebe\openapi\exceptions\UnresolvableReferenceException
+     * @throws UnresolvableReferenceException
      */
-    public static function findResponseWrapper(Operation $operation, $modelClass):?array
+    public static function findResponseWrapper(Operation $operation, $modelClass): ?array
     {
         if (!isset($operation->responses)) {
             return null;

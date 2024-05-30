@@ -6,8 +6,8 @@ use app\models\Photos2Posts;
 
 class Photos2PostsTransformer extends TransformerAbstract
 {
-    protected $availableIncludes = ['photo', 'post'];
-    protected $defaultIncludes = [];
+    protected array $availableIncludes = ['photo', 'post'];
+    protected array $defaultIncludes = [];
 
     public function transform(Photos2Posts $model)
     {

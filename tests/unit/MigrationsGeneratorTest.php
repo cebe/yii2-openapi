@@ -148,7 +148,7 @@ class MigrationsGeneratorTest extends DbTestCase
                 '$this->createTable(\'{{%dummy}}\', [
                     \'id\' => $this->primaryKey(),
                     \'title\' => $this->string(60)->notNull(),
-                    \'article\' => $this->text()->null()->defaultValue(""),
+                    \'article\' => $this->text()->null()->defaultValue(\'\'),
                 ]);',
                 "\$this->createIndex('dummy_title_index', '{{%dummy}}', 'title', false);",
                 "\$this->createIndex('dummy_article_hash_index', '{{%dummy}}', 'article', 'hash');",

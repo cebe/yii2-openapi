@@ -24,7 +24,7 @@ abstract class User extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['login', 'email', 'password', 'role', 'created_at'], 'trim'],
+            'trim' => [['login', 'email', 'password', 'created_at'], 'trim'],
             'required' => [['login', 'email', 'password'], 'required'],
             'login_unique' => [['login'], 'unique'],
             'email_unique' => [['email'], 'unique'],

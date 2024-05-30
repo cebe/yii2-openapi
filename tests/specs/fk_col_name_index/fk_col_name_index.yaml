@@ -1,0 +1,61 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: ID not in rules test
+paths:
+  /:
+    get:
+      summary: List
+      operationId: list
+      responses:
+        '200':
+          description: The information
+
+components:
+  schemas:
+    User:
+      type: object
+      description: Test model for model code generation that should not contain id column in rules
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Delivery:
+      x-table: deliveries
+      required:
+        - id
+      properties:
+        id:
+           type: integer
+        title:
+           type: string
+    Webhook:
+      x-indexes:
+        - 'unique:user_id,name'
+        - 'unique:redelivery_of,name'
+        # - 'unique:rd2,name' # incorrect way
+        - 'unique:rd_abc_2,name' # correct way
+      type: object
+      description: example for x-fk-column-name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 255 # https://stackoverflow.com/a/1827099
+        user:
+          $ref: '#/components/schemas/User' # this will automatically create `user_id` column
+        redelivery_of:
+          allOf:
+            - $ref: '#/components/schemas/Delivery'
+            # this will automatically create `redelivery_of_id` column, but to avoid that use below extension
+            - x-fk-column-name: redelivery_of # this will create `redelivery_of` column instead of `redelivery_of_id`
+        rd2:
+          allOf:
+            - $ref: '#/components/schemas/Delivery'
+            - x-fk-column-name: rd_abc_2
+
