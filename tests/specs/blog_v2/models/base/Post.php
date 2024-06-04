@@ -29,7 +29,7 @@ abstract class Post extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            'trim' => [['title', 'slug', 'lang', 'created_at'], 'trim'],
+            'trim' => [['title', 'slug', 'created_at'], 'trim'],
             'required' => [['title', 'category_id', 'active'], 'required'],
             'category_id_integer' => [['category_id'], 'integer'],
             'category_id_exist' => [['category_id'], 'exist', 'targetRelation' => 'Category'],

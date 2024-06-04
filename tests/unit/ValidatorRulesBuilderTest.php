@@ -42,7 +42,6 @@ class ValidatorRulesBuilderTest extends TestCase
             'trim' => new ValidationRule([
                 'title',
                 'article',
-                'state',
                 'created_at',
                 'contact_email',
                 'required_with_def',

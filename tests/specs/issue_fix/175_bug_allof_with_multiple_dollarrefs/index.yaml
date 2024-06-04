@@ -1,0 +1,113 @@
+
+openapi: 3.0.3
+
+info:
+  title: 'Proxy-Service'
+  version: 1.0.0
+
+components:
+
+  responses:
+
+    AccountExpanded:
+      description: 'Returns one account by ID with additional information.'
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - status
+              - Account
+            properties:
+              status:
+                type: string
+                enum:
+                  - valid
+                  - invalid
+              Account:
+                allOf:
+                  - $ref: '#/components/schemas/Account'
+                  - type: object
+                    properties:
+                      invoiceContact:
+                        $ref: "#/components/schemas/Contact"
+                      paymentMethod:
+                        $ref: "#/components/schemas/PaymentMethod"
+              errors:
+                type: object
+                description: only exists if status = invalid
+
+  schemas:
+
+    Account:
+      description: Account
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          description: account name
+          type: string
+          maxLength: 128
+        paymentMethodName:
+          type: string
+
+    Contact:
+      description: Contact
+      type: object
+      required:
+        - id
+        - account
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        account:
+          $ref: '#/components/schemas/Account'
+        active:
+          type: boolean
+          default: false
+        nickname:
+          type: string
+
+    PaymentMethod:
+      type: object
+      description: PaymentMethod
+      x-indexes:
+        - 'unique:name'
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          example: Bank transfer within 14 days
+          maxLength: 150
+          x-faker: false
+
+paths:
+
+  '/account/{id}':
+    parameters:
+      - name: Id
+        in: path
+        description: ID of Account
+        required: true
+        schema:
+          type: integer
+
+    get:
+      operationId: getAccount
+      summary: Account information
+      responses:
+        '200':
+          $ref: '#/components/responses/AccountExpanded'
+        '404':
+          description: Account with id = "\<account_id\>" was not found.
